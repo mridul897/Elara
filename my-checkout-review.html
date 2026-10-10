@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELARA — Checkout</title>
+<meta name="description" content="Checkout: add your delivery details and choose cash on delivery, bKash, Nagad or card.">
+<meta name="theme-color" content="#FFFDF9">
+<link rel="icon" type="image/svg+xml" href="assets/home/favicon.svg">
+<meta name="robots" content="noindex">
+<!--
+  Checkout page — pixel-perfect build of Figma node 230:701 (Elara Women's bag E-commerce project).
+  1440px artboard; below 1440 the whole artboard scales down (same approach as the other pages).
+  Reads the bag from localStorage ("elara.cart.v1"), or one item from "elara.buynow.v1" when it is
+  opened from Buy Now (?buynow=1), which leaves the bag untouched and labels the summary "Buy Now Item".
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #fffdf9;
+    --bg-card: #f7f1e8;
+    --bg-panel: #f8f4ef;
+    --text: #4a4741;
+    --text-muted: #838280;
+    --text-faint: #a8a5a0;
+    --border-soft: rgba(74,71,65,0.25);
+    --accent: #2a72de;
+    --focus: #3184ff;
+    --success-bg: #e2edd5;
+    --success: #0ca817;
+    --danger: #d22c15;
+    --r-large: 32px;
+    --r-media: 12px;
+    --r-small: 8px;
+    --r-pill: 999px;
+    --ease: cubic-bezier(.4,0,.2,1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { overflow-x: clip; }   /* clip, not hidden: hidden turns html and body into two scroll containers (double scrollbar) */
+  body { background: var(--bg-page); color: var(--text); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+  [hidden] { display: none !important; }
+  a { color: inherit; text-decoration: none; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { background: none; border: none; cursor: pointer; }
+  img { display: block; }
+  .cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+
+  .page { position: relative; width: 1440px; margin: 0 auto; padding-top: 109px; zoom: var(--fit, 1); }
+  .abs { position: absolute; }
+
+  /* ===== Nav (22:641) — same component as the homepage ===== */
+  .nav { left: 0; top: 0; width: 1440px; height: 109px; padding: 10px; display: flex; align-items: center; justify-content: center; z-index: 20; }
+  .nav-inner { width: 100%; display: flex; gap: 144px; align-items: center; justify-content: center; padding: 0 37px; }
+  .nav-logo { position: relative; width: 222px; height: 101px; flex-shrink: 0; }
+  .nav-right { display: flex; gap: 104px; align-items: center; }
+  .nav-links { display: flex; gap: 32px; align-items: center; }
+  .nav-link { display: flex; gap: 6px; align-items: center; font-weight: 500; font-size: 16px; line-height: 1.5; text-transform: uppercase; white-space: nowrap; transition: background-color .15s var(--ease), color .15s var(--ease); }
+  .nav-link img { width: 16px; height: 16px; display: block; }
+  .nav-tools { display: flex; gap: 18px; align-items: center; }
+  .nav-icons { display: flex; gap: 20px; align-items: center; width: 58px; }
+  .ico20 { position: relative; width: 20px; height: 20px; flex-shrink: 0; overflow: clip; }
+  .ico20 img { position: absolute; display: block; }
+  /* Nav search / account icons: soft circle on hover, same cue as the cart pill */
+  .nav-icons .ico20 { overflow: visible; cursor: pointer; }
+  .nav-icons .ico20::before { content: ""; position: absolute; inset: -8px; border-radius: 50%; background: #f1e9dc; opacity: 0; transform: scale(.7); transition: opacity .15s cubic-bezier(.4,0,.2,1), transform .2s cubic-bezier(.4,0,.2,1); }
+  .nav-icons .ico20:hover::before, .nav-icons .ico20:focus-visible::before { opacity: 1; transform: scale(1); }
+  .nav-icons .ico20 img { z-index: 1; }
+  .nav-icons a.ico20 { display: block; }
+  .cart-btn { display: flex; gap: 10px; align-items: center; justify-content: center; height: 40px; padding: 10px 18px; border: 1px solid var(--text); border-radius: var(--r-pill); font-weight: 500; font-size: 16px; line-height: 1.5; text-transform: uppercase; white-space: nowrap; transition: background-color .15s var(--ease); }
+  .cart-btn:hover { background: var(--bg-card); }
+  .nav-item { position: relative; }
+  .nav-chev { transition: transform 220ms var(--ease); }
+  .nav-item.open .nav-chev { transform: rotate(180deg); }
+  .nav-menu-wrap { position: absolute; top: 99px; z-index: 10; background: var(--bg-page); box-shadow: 0 28px 56px rgba(28,27,26,0.12); opacity: 0; visibility: hidden; transform: translateY(-10px); transition: opacity 260ms var(--ease), transform 260ms var(--ease), visibility 0s linear 260ms, left 260ms var(--ease); pointer-events: none; overflow: hidden; }
+  .nav-menu-wrap.mega { left: 0; width: 1440px; border-radius: 0 0 var(--r-large) var(--r-large); }
+  .nav-menu-wrap.light { width: auto; border-radius: var(--r-large); }
+  .nav-menu-wrap.open { opacity: 1; visibility: visible; transform: translateY(0); transition: opacity 260ms var(--ease), transform 260ms var(--ease), height 320ms var(--ease), left 320ms var(--ease); pointer-events: auto; }
+  .nav-panel { display: none; padding: 48px 64px 56px; }
+  .nav-menu-wrap.light .nav-panel { padding: 20px; }
+  .nav-panel.active { display: block; animation: navPanelIn 240ms var(--ease); }
+  @keyframes navPanelIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .nav-menu-wrap.mega .nav-panel { padding: 0; }
+  .dd-panel { position: relative; width: 1440px; height: 360px; }
+  .dd-card { position: absolute; left: 82px; top: 56px; width: 332px; height: 248px; border-radius: var(--r-media); overflow: hidden; }
+  .dd-card .cover { border-radius: var(--r-media); transition: transform .4s var(--ease); }
+  .dd-card:hover .cover { transform: scale(1.05); }
+  .dd-card-fade { position: absolute; left: 50%; bottom: -14px; width: 604px; height: 83px; transform: translateX(-50%); pointer-events: none; }
+  .dd-card-fade i { position: absolute; inset: 0; filter: blur(52px); font-style: normal; }
+  .dd-card-fade i:first-child { background: rgba(40,40,40,0.53); }
+  .dd-card-fade i:last-child { background: rgba(40,40,40,0.88); mix-blend-mode: multiply; }
+  .dd-card-label { position: absolute; left: 14px; right: 14px; bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #fff; }
+  .dd-card-label:not(.two-line) > span:first-child { font-size: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dd-card-label img { width: 24px; height: 24px; flex-shrink: 0; }
+  .dd-card-label.two-line { flex-direction: column; align-items: flex-start; gap: 0; }
+  .dd-card-eyebrow { font-weight: 500; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; color: #d3d1ce; }
+  .dd-card-title { font-size: 16px; font-weight: 400; }
+  .dd-divider { position: absolute; left: 831px; top: 29px; width: 1px; height: 301.5px; }
+  .dd-list { position: absolute; left: 853px; top: 56px; width: 268px; display: flex; flex-direction: column; gap: 20px; }
+  .dd-list-group { display: flex; flex-direction: column; gap: 16px; }
+  .dd-list-coll { gap: 16px; }
+  .dd-row { display: flex; align-items: center; gap: 12px; color: var(--text); border-radius: var(--r-media); padding: 6px; margin: -6px; }
+  .dd-row:hover { background: var(--bg-card); }
+  .dd-row-thumb { position: relative; width: 48px; height: 48px; border-radius: 999px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-soft); }
+  .dd-row-thumb .cover { border-radius: 999px; }
+  .dd-row-thumb.icon { border: none; }
+  .dd-row-title { font-size: 18px; white-space: nowrap; }
+  .nm-simple-list { display: flex; flex-direction: column; gap: 2px; width: 280px; }
+  .nm-simple { padding: 12px 16px; border-radius: var(--r-media); font-size: 16px; color: var(--text); }
+  .nm-simple:hover { background: var(--bg-card); }
+
+  /* ===== Breadcrumb (230:749) ===== */
+  .breadcrumb { display: flex; align-items: flex-start; gap: 6px; padding: 16px 0 0 64px; font-size: 12px; line-height: 1.5; color: var(--text-muted); white-space: nowrap; }
+  .breadcrumb a:hover { color: var(--text); }
+  .breadcrumb [aria-current] { color: var(--text); }
+
+  /* ===== Title row (230:755) ===== */
+  .title-row { display: flex; align-items: flex-end; justify-content: space-between; padding: 24px 128px 0; white-space: nowrap; }
+  .title-block { display: flex; flex-direction: column; gap: 4px; }
+  .title-block h1 { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 300; font-size: 36px; line-height: 1.1; letter-spacing: -1.8px; }
+  .title-block .sub { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+  .legend { display: flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.5; color: var(--text-muted); }
+  .legend img, .req { width: 6px; height: 6px; flex-shrink: 0; }
+  .back { font-weight: 500; font-size: 18px; line-height: 1.5; color: var(--accent); }
+  .back:hover { text-decoration: underline; }
+
+  /* ===== Main (230:760) ===== */
+  .checkout-main { display: flex; align-items: flex-start; gap: 64px; padding: 32px 128px 64px; }
+  .steps { width: 740px; flex-shrink: 0; border-top: 1px solid var(--border-soft); }
+  .step { display: flex; flex-direction: column; gap: 24px; padding: 32px 0; border-bottom: 1px solid var(--border-soft); }
+  .step-head { display: flex; align-items: center; gap: 12px; }
+  .step-num { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: var(--r-pill); background: var(--text); color: var(--bg-page); font-weight: 500; font-size: 14px; line-height: 1.5; }
+  .step-head h2 { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 24px; line-height: 1.1; letter-spacing: -0.72px; white-space: nowrap; }
+  .row { display: flex; gap: 16px; }
+  .field { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .label-row { display: flex; align-items: flex-start; justify-content: space-between; font-size: 14px; line-height: 1.5; white-space: nowrap; }
+  .label-row label { display: flex; align-items: center; gap: 6px; }
+  .label-row .hint { font-size: 12px; color: var(--text-muted); }
+  .input { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 48px; padding: 0 16px; border: 1px solid var(--border-soft); border-radius: var(--r-small); transition: border-color .15s var(--ease); }
+  .input:focus-within { border-color: var(--text); }
+  .input.invalid { border-color: var(--danger); }
+  .input input, .input select, .input textarea { width: 100%; min-width: 0; padding: 0; border: 0; background: transparent; outline: none; font-size: 14px; line-height: 1.5; }
+  .input input::placeholder, .input textarea::placeholder { color: var(--text-faint); opacity: 1; }
+  .input select { appearance: none; -webkit-appearance: none; cursor: pointer; }
+  .input select:invalid, .input select.is-empty { color: var(--text-faint); }
+  .input.select img, .input .chev img { width: 16px; height: 16px; flex-shrink: 0; pointer-events: none; }
+  .input .chev { display: flex; flex-shrink: 0; padding: 0; }
+  .input input::-webkit-calendar-picker-indicator { display: none !important; }
+  .input.phone .prefix { font-size: 14px; line-height: 1.5; }
+  .input.phone .vr { flex-shrink: 0; width: 1px; height: 20px; background: var(--border-soft); }
+  .input.phone { justify-content: flex-start; }
+  .input.area { height: auto; min-height: 68px; padding: 23px 16px; }
+  .input.area textarea { resize: none; overflow: hidden; display: block; }
+  .err { font-size: 12px; line-height: 1.5; color: var(--danger); }
+  .note { font-size: 12px; line-height: 1.5; color: var(--text-muted); }
+
+  /* Option cards (delivery + payment) */
+  .opt { display: flex; align-items: center; gap: 16px; padding: 16px; border: 1px solid var(--border-soft); border-radius: var(--r-media); cursor: pointer; transition: border-color .15s var(--ease), background-color .15s var(--ease); }
+  .opt:not(.is-on):hover { border-color: var(--text); }
+  .opt.is-on { background: var(--bg-panel); border: 1.5px solid var(--accent); padding: 15.5px; }
+  .opt.static { cursor: default; }
+  .opt.static:not(.is-on):hover { border-color: var(--border-soft); }
+  .radio { position: relative; width: 20px; height: 20px; flex-shrink: 0; border: 1px solid rgba(74,71,65,0.5); border-radius: 50%; }
+  .opt.is-on .radio { border: 0; }
+  .radio img { position: absolute; inset: 0; width: 20px; height: 20px; opacity: 0; }
+  .opt.is-on .radio img { opacity: 1; }
+  .opt:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .opt-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.5; white-space: nowrap; }
+  .opt-text b { font-weight: 500; font-size: 14px; }
+  .opt-text span { font-size: 12px; color: var(--text-muted); }
+  .charge { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.5; white-space: nowrap; }
+  .charge b { font-weight: 500; font-size: 14px; }
+  .charge s { font-size: 12px; color: var(--text-faint); }
+  .badge { padding: 6px 12px; border-radius: var(--r-pill); background: var(--success-bg); font-weight: 500; font-size: 11px; line-height: 1.5; white-space: nowrap; }
+  .logo { position: relative; width: 62px; height: 40px; flex-shrink: 0; border: 0.5px solid var(--text); border-radius: var(--r-small); overflow: hidden; background: #fff; }
+  .logos { display: flex; gap: 6px; }
+
+  /* Place order (231:796) */
+  .place { display: flex; flex-direction: column; gap: 16px; padding-top: 32px; }
+  .btn { display: flex; align-items: center; justify-content: center; height: 50px; width: 100%; padding: 0 24px; border-radius: var(--r-pill); font-weight: 500; font-size: 15px; line-height: 1; white-space: nowrap; transition: background-color .15s var(--ease); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: #2056a6; }
+  .btn:disabled { opacity: .7; cursor: default; }
+  .place-notes { display: flex; flex-direction: column; gap: 8px; }
+  .secure { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; line-height: 1.5; color: var(--text-muted); }
+  .secure img { width: 16px; height: 16px; }
+  .terms { font-size: 12px; line-height: 1.5; text-align: center; color: var(--text-muted); }
+  .terms a { text-decoration: underline; }
+
+  /* Order summary (231:805) */
+  .summary { width: 380px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; padding: 24px; background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--r-media); }
+  .sum-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; white-space: nowrap; }
+  .sum-title h2 { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 24px; line-height: 1.1; letter-spacing: -0.72px; }
+  .sum-title a { font-size: 14px; line-height: 1.5; color: var(--accent); }
+  .sum-title a:hover { text-decoration: underline; }
+  .tag { padding: 4px 10px; border-radius: var(--r-pill); background: var(--text); color: var(--bg-page); font-weight: 500; font-size: 11px; line-height: 1.5; }
+  .sum-items { display: flex; flex-direction: column; gap: 16px; }
+  .sum-item { display: flex; align-items: flex-start; gap: 12px; }
+  .sum-photo { position: relative; width: 64px; height: 80px; flex-shrink: 0; border: 1px solid var(--border-soft); border-radius: var(--r-media); overflow: hidden; background: var(--bg-card); }
+  .sum-details { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.5; white-space: nowrap; }
+  .sum-details b { font-weight: 500; font-size: 14px; }
+  .sum-details span { font-size: 12px; color: var(--text-muted); }
+  .sum-price { font-weight: 500; font-size: 14px; line-height: 1.5; white-space: nowrap; }
+  .divider { height: 1px; border-bottom: 1px solid var(--border-soft); }
+  .line { display: flex; align-items: center; justify-content: space-between; font-size: 14px; line-height: 1.5; white-space: nowrap; }
+  .line .label { color: var(--text-muted); }
+  .line .value.strong { font-weight: 500; }
+  .total { display: flex; align-items: center; justify-content: space-between; white-space: nowrap; }
+  .total .label { font-size: 16px; line-height: 1.5; }
+  .total .value { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-size: 24px; line-height: 1.1; letter-spacing: -0.72px; }
+  .sum-note { font-size: 12px; line-height: 1.5; color: var(--text-muted); }
+
+  /* Empty bag + confirmation (not in Figma yet) */
+  .empty, .done { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; padding: 32px 0; }
+  .empty h2, .done h2 { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 24px; line-height: 1.1; letter-spacing: -0.72px; }
+  .empty p, .done > p { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+  .empty .btn, .done .btn { width: 240px; margin-top: 8px; }
+  .done-icon { width: 56px; height: 56px; }
+  .done-icon circle { fill: var(--success); }
+  .done-icon path { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .done-list { width: 100%; display: flex; flex-direction: column; margin-top: 8px; border-top: 1px solid var(--border-soft); }
+  .done-list div { display: flex; gap: 24px; padding: 16px 0; border-bottom: 1px solid var(--border-soft); font-size: 14px; line-height: 1.5; }
+  .done-list dt { width: 120px; flex-shrink: 0; color: var(--text-muted); }
+  .done-list dd { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="abs nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo" aria-label="ELARA home"><img class="cover" src="assets/home/logo.webp" alt="ELARA"></a>
+      <div class="nav-right">
+        <nav class="nav-links" aria-label="Primary">
+          <div class="nav-item" data-menu="new-arrivals"><a href="#" class="nav-link">New Arrivals <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="bags"><a href="#" class="nav-link">Bags <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="collections"><a href="#" class="nav-link">Collections <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="best-sellers"><a href="#" class="nav-link">Best Sellers <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <a href="my-contact-screen.html" class="nav-link">Contact Us</a>
+        </nav>
+        <div class="nav-tools">
+          <div class="nav-icons">
+            <button class="ico20" aria-label="Search"><img src="assets/home/icon-search.svg" alt="" style="inset:0;width:20px;height:20px;"></button>
+            <a href="my-account.html" class="ico20" aria-label="Account"><img src="assets/home/icon-account.svg" alt="" style="left:22.27%;top:8.33%;width:57.44%;height:82.55%;"></a>
+          </div>
+          <a href="my-cart-screen.html" class="cart-btn">My cart
+            <span class="ico20"><img src="assets/home/icon-cart.svg" alt="" style="left:5.21%;top:5.21%;width:87.63%;height:89.58%;"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-menu-wrap" id="navMenuWrap">
+      <div class="nav-panel" data-panel="new-arrivals">
+        <div class="dd-panel">
+          <a href="my-product-detail-screen.html?p=leather-tote-bag" class="dd-card">
+            <img class="cover" src="assets/home/dd-na-card-1.webp" alt="Leather Tote Bag">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Leather Tote Bag</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <a href="my-product-detail-screen.html?p=aveline-convertible-tote" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-na-card-2.webp" alt="Aveline Convertible Tote">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Aveline Convertible Tote</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
+          <div class="dd-list">
+            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-1.webp" alt=""></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
+            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-2.webp" alt=""></span><span class="dd-row-title">Sienna Structured Purse</span></a>
+            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-3.webp" alt=""></span><span class="dd-row-title">Isla Bags</span></a>
+            <a href="my-plp-screen.html?collection=new" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All New Arrivals</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="bags">
+        <div class="dd-panel">
+          <a href="my-product-detail-screen.html?p=suede-crossbody" class="dd-card">
+            <img class="cover" src="assets/home/dd-bags-card-1.webp" alt="Cross Body Bags">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Cross Body Bags</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <a href="my-product-detail-screen.html?p=structured-work-satchel" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-bags-card-2.webp" alt="Work &amp; Travel">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Work &amp; Travel</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
+          <div class="dd-list">
+            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-1.webp" alt=""></span><span class="dd-row-title">Tote</span></a>
+            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-2.webp" alt=""></span><span class="dd-row-title">Shoulder</span></a>
+            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-3.webp" alt=""></span><span class="dd-row-title">Mini</span></a>
+            <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All Category Bags</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="collections">
+        <div class="dd-panel">
+          <a href="#coming-soon" data-soon="Our Signature Pieces" class="dd-card">
+            <img class="cover" src="assets/home/dd-coll-card-1.webp" alt="Our Signature Pieces">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label two-line"><span class="dd-card-eyebrow">Signature</span><span class="dd-card-title">Our Signature Pieces</span></div>
+          </a>
+          <a href="#coming-soon" data-soon="Everyday Essentials" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-coll-card-2.webp" alt="Everyday Essentials">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label two-line"><span class="dd-card-eyebrow">Everyday</span><span class="dd-card-title">Everyday Essentials</span></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="" style="left:826px;">
+          <div class="dd-list dd-list-coll" style="left:850px; top:92px;">
+            <div class="dd-list-group">
+              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-1.webp" alt=""></span><span class="dd-row-title">The Evening Edit</span></a>
+              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-2.webp" alt=""></span><span class="dd-row-title">Designed for Work</span></a>
+            </div>
+            <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-see-all.svg" alt=""></span><span class="dd-row-title">See All Collections</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="best-sellers">
+        <div class="nm-simple-list">
+          <a href="my-plp-screen.html" class="nm-simple">All Best Sellers</a>
+          <a href="my-plp-screen.html" class="nm-simple">Customer Favorites</a>
+          <a href="my-plp-screen.html" class="nm-simple">Most Loved</a>
+          <a href="my-plp-screen.html" class="nm-simple">Trending Now</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="index.html">Home</a><span aria-hidden="true">/</span>
+    <a href="my-cart-screen.html">Your Bag</a><span aria-hidden="true">/</span>
+    <span aria-current="page">Checkout</span>
+  </nav>
+
+  <main>
+    <div class="title-row">
+      <div class="title-block">
+        <h1 id="pageTitle">Checkout</h1>
+        <p class="sub" id="pageSub">Guest checkout, no account needed</p>
+        <div class="legend" id="legend"><img src="assets/checkout/required-dot.svg" alt=""><span>Required field</span></div>
+      </div>
+      <a href="my-cart-screen.html" class="back" id="backLink">← Back to bag</a>
+    </div>
+
+    <div class="checkout-main">
+      <div class="steps" id="stepsCol">
+
+        <form id="checkoutForm" novalidate>
+          <!-- 1 Contact -->
+          <section class="step" aria-labelledby="h-contact">
+            <div class="step-head"><span class="step-num" aria-hidden="true">1</span><h2 id="h-contact">Contact</h2></div>
+            <div class="row">
+              <div class="field">
+                <div class="label-row"><label for="fName"><span>Full name</span><img class="req" src="assets/checkout/required-dot.svg" alt=""><span class="sr-only">required</span></label></div>
+                <div class="input" data-for="fName"><input id="fName" name="name" type="text" placeholder="Your full name" autocomplete="name" required aria-describedby="eName"></div>
+                <p class="err" id="eName" role="alert" hidden></p>
+              </div>
+              <div class="field">
+                <div class="label-row"><label for="fPhone"><span>Phone number</span><img class="req" src="assets/checkout/required-dot.svg" alt=""><span class="sr-only">required</span></label></div>
+                <div class="input phone" data-for="fPhone"><span class="prefix">+880</span><i class="vr" aria-hidden="true"></i><input id="fPhone" name="phone" type="tel" inputmode="numeric" placeholder="1XXX XXXXXX" autocomplete="tel-national" required aria-describedby="ePhone"></div>
+                <p class="err" id="ePhone" role="alert" hidden></p>
+              </div>
+            </div>
+            <div class="field">
+              <div class="label-row"><label for="fEmail"><span>Email</span></label><span class="hint">Optional, for your order receipt</span></div>
+              <div class="input" data-for="fEmail"><input id="fEmail" name="email" type="email" placeholder="name@example.com" autocomplete="email" aria-describedby="eEmail"></div>
+              <p class="err" id="eEmail" role="alert" hidden></p>
+            </div>
+          </section>
+
+          <!-- 2 Shipping address -->
+          <section class="step" aria-labelledby="h-address">
+            <div class="step-head"><span class="step-num" aria-hidden="true">2</span><h2 id="h-address">Shipping address</h2></div>
+            <div class="row">
+              <div class="field">
+                <div class="label-row"><label for="fDivision"><span>Division</span><img class="req" src="assets/checkout/required-dot.svg" alt=""><span class="sr-only">required</span></label></div>
+                <div class="input select" data-for="fDivision"><select id="fDivision" name="division" required aria-describedby="eDivision"></select><img src="assets/checkout/chevron.svg" alt=""></div>
+                <p class="err" id="eDivision" role="alert" hidden></p>
+              </div>
+              <div class="field">
+                <div class="label-row"><label for="fDistrict"><span>District</span><img class="req" src="assets/checkout/required-dot.svg" alt=""><span class="sr-only">required</span></label></div>
+                <div class="input select" data-for="fDistrict"><select id="fDistrict" name="district" required aria-describedby="eDistrict"></select><img src="assets/checkout/chevron.svg" alt=""></div>
+                <p class="err" id="eDistrict" role="alert" hidden></p>
+              </div>
+            </div>
+            <div class="row">
+              <div class="field">
+                <div class="label-row"><label for="fUpazila"><span>Upazila / Thana</span><img class="req" src="assets/checkout/required-dot.svg" alt=""><span class="sr-only">required</span></label></div>
+                <div class="input select" data-for="fUpazila"><input id="fUpazila" name="upazila" type="text" list="dlUpazila" placeholder="Select or type" autocomplete="off" required aria-describedby="eUpazila"><button type="button" class="chev" tabindex="-1" aria-hidden="true" data-open="fUpazila"><img src="assets/checkout/chevron.svg" alt=""></button></div>
+                <datalist id="dlUpazila"></datalist>
+                <p class="err" id="eUpazila" role="alert" hidden></p>
+              </div>
+              <div class="field">
+                <div class="label-row"><label for="fArea"><span>Area</span><img class="req" src="assets/checkout/required-dot.svg" alt=""><span class="sr-only">required</span></label></div>
+                <div class="input select" data-for="fArea"><input id="fArea" name="area" type="text" list="dlArea" placeholder="Select or type" autocomplete="off" required aria-describedby="eArea"><button type="button" class="chev" tabindex="-1" aria-hidden="true" data-open="fArea"><img src="assets/checkout/chevron.svg" alt=""></button></div>
+                <datalist id="dlArea"></datalist>
+                <p class="err" id="eArea" role="alert" hidden></p>
+              </div>
+            </div>
+            <div class="field">
+              <div class="label-row"><label for="fAddress1"><span>Address 01</span><img class="req" src="assets/checkout/required-dot.svg" alt=""><span class="sr-only">required</span></label></div>
+              <div class="input area" data-for="fAddress1"><textarea id="fAddress1" name="address1" rows="1" placeholder="House, road and landmark" autocomplete="address-line1" required aria-describedby="eAddress1"></textarea></div>
+              <p class="err" id="eAddress1" role="alert" hidden></p>
+            </div>
+            <div class="field">
+              <div class="label-row"><label for="fAddress2"><span>Address 02 (Optional)</span></label></div>
+              <div class="input area" data-for="fAddress2"><textarea id="fAddress2" name="address2" rows="1" placeholder="House, road and landmark" autocomplete="address-line2"></textarea></div>
+            </div>
+            <p class="note" id="chargeNote">Delivery to Dhaka: Tk. 60 · 1–3 working days. Free on orders over Tk. 3,000.</p>
+          </section>
+
+          <!-- 3 Delivery -->
+          <section class="step" aria-labelledby="h-delivery">
+            <div class="step-head"><span class="step-num" aria-hidden="true">3</span><h2 id="h-delivery">Delivery</h2></div>
+            <div class="opt static is-on">
+              <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
+              <div class="opt-text"><b id="delTitle">Standard delivery · Dhaka</b><span id="delDesc">1–3 working days to Dhaka</span></div>
+              <div class="charge" id="delCharge"><b>Free</b><s>Tk. 60/-</s></div>
+            </div>
+            <p class="note" id="delNote">Your order is over Tk. 3,000, so the Tk. 60 Dhaka charge is waived.</p>
+          </section>
+
+          <!-- 4 Payment -->
+          <section class="step" aria-labelledby="h-payment">
+            <div class="step-head"><span class="step-num" aria-hidden="true">4</span><h2 id="h-payment">Payment method</h2></div>
+            <div role="radiogroup" aria-label="Payment method" style="display:flex;flex-direction:column;gap:24px;">
+              <label class="opt is-on" data-pay="cod">
+                <input class="sr-only" type="radio" name="pay" value="cod" checked>
+                <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
+                <span class="opt-text"><b>Cash on Delivery</b><span>Pay in cash when your bag arrives</span></span>
+                <span class="badge">Available</span>
+              </label>
+              <label class="opt" data-pay="bkash">
+                <input class="sr-only" type="radio" name="pay" value="bkash">
+                <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
+                <span class="opt-text"><b>bKash</b><span>You will complete payment in the bKash app, then return here</span></span>
+                <span class="logo"><img class="cover" src="assets/cart/bkash.webp" alt="bKash"></span>
+              </label>
+              <label class="opt" data-pay="nagad">
+                <input class="sr-only" type="radio" name="pay" value="nagad">
+                <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
+                <span class="opt-text"><b>Nagad</b><span>You will complete payment in the Nagad app, then return here</span></span>
+                <span class="logo"><img class="cover" src="assets/cart/nagad.webp" alt="Nagad"></span>
+              </label>
+              <label class="opt" data-pay="card">
+                <input class="sr-only" type="radio" name="pay" value="card">
+                <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
+                <span class="opt-text"><b>Credit or debit card</b><span>Visa and Mastercard, paid securely on the next screen</span></span>
+                <span class="logos"><span class="logo"><img class="cover" src="assets/cart/visa.webp" alt="Visa"></span><span class="logo"><img class="cover" src="assets/checkout/mastercard.webp" alt="Mastercard"></span></span>
+              </label>
+            </div>
+          </section>
+
+          <!-- Place order -->
+          <div class="place">
+            <button type="submit" class="btn btn-accent" id="placeBtn">Place order</button>
+            <div class="place-notes">
+              <p class="secure"><img src="assets/checkout/lock.svg" alt=""><span>Secure checkout. Your details are encrypted, and unused items can be exchanged within 7 days.</span></p>
+              <p class="terms">By placing your order you agree to our <a href="#" data-soon="Terms" data-soon-page>Terms</a> and our <a href="#" data-soon="Returns and exchange policy" data-soon-page>Returns and exchange policy</a>.</p>
+            </div>
+          </div>
+        </form>
+
+        <section class="empty" id="emptyView" hidden>
+          <h2>Your bag is empty</h2>
+          <p>Add a bag you love, then come back to check out.</p>
+          <a href="my-plp-screen.html" class="btn btn-accent">Continue shopping</a>
+        </section>
+
+      </div>
+
+      <aside class="summary" id="summary" aria-label="Order summary">
+        <div class="sum-title"><h2>Order summary</h2><span class="tag" id="buyNowTag" hidden>Buy Now Item</span><a href="my-cart-screen.html" id="editBag">Edit bag</a></div>
+        <div class="sum-items" id="sumItems"></div>
+        <div class="divider"></div>
+        <div class="line"><span class="label" id="subLabel">Subtotal (2 items)</span><span class="value" id="subValue">Tk. 8,400/-</span></div>
+        <div class="line" id="discLine" hidden><span class="label" id="discLabel">Discount</span><span class="value strong" id="discValue"></span></div>
+        <div class="line"><span class="label" id="delLabel">Delivery · Dhaka</span><span class="value strong" id="delValue">Free</span></div>
+        <div class="divider"></div>
+        <div class="total"><span class="label">Total</span><span class="value" id="totalValue">Tk. 8,400/-</span></div>
+        <p class="sum-note" id="sumNote">Pay Tk. 8,400/- in cash when your order arrives.</p>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Below 1440 only: shrink the artboard to the viewport (never scales up).
+  function fit() { document.documentElement.style.setProperty('--fit', Math.min(1, document.documentElement.clientWidth / 1440)); }
+  fit();
+  new ResizeObserver(fit).observe(document.documentElement);
+
+  // ---------------- data ----------------
+  const CART_KEY = 'elara.cart.v1', BUY_KEY = 'elara.buynow.v1', PROMO_KEY = 'elara.promo.v1', ORDER_KEY = 'elara.order.v1';
+  const FREE_DELIVERY_AT = 3000;
+  const PROMOS = { MRIDUL13: { label: 'Mridul13', percent: 5 }, WELCOME10: { label: 'WELCOME10', percent: 10 } };
+  const DISTRICTS = {
+    'Barishal': ['Barguna', 'Barishal', 'Bhola', 'Jhalokati', 'Patuakhali', 'Pirojpur'],
+    'Chattogram': ['Bandarban', 'Brahmanbaria', 'Chandpur', 'Chattogram', "Cox's Bazar", 'Cumilla', 'Feni', 'Khagrachhari', 'Lakshmipur', 'Noakhali', 'Rangamati'],
+    'Dhaka': ['Dhaka', 'Faridpur', 'Gazipur', 'Gopalganj', 'Kishoreganj', 'Madaripur', 'Manikganj', 'Munshiganj', 'Narayanganj', 'Narsingdi', 'Rajbari', 'Shariatpur', 'Tangail'],
+    'Khulna': ['Bagerhat', 'Chuadanga', 'Jashore', 'Jhenaidah', 'Khulna', 'Kushtia', 'Magura', 'Meherpur', 'Narail', 'Satkhira'],
+    'Mymensingh': ['Jamalpur', 'Mymensingh', 'Netrokona', 'Sherpur'],
+    'Rajshahi': ['Bogura', 'Chapai Nawabganj', 'Joypurhat', 'Naogaon', 'Natore', 'Pabna', 'Rajshahi', 'Sirajganj'],
+    'Rangpur': ['Dinajpur', 'Gaibandha', 'Kurigram', 'Lalmonirhat', 'Nilphamari', 'Panchagarh', 'Rangpur', 'Thakurgaon'],
+    'Sylhet': ['Habiganj', 'Moulvibazar', 'Sunamganj', 'Sylhet'],
+  };
+  // Suggestions only for Dhaka for now; everywhere else the shopper types their own upazila/thana and area.
+  const DHAKA_THANAS = ['Adabor', 'Badda', 'Banani', 'Dhanmondi', 'Gulshan', 'Khilgaon', 'Lalbagh', 'Mirpur', 'Mohammadpur', 'Motijheel', 'Pallabi', 'Ramna', 'Rampura', 'Tejgaon', 'Uttara', 'Wari'];
+  const DHAKA_AREAS = {
+    'Dhanmondi': ['Zigatola', 'Dhanmondi R/A', 'Kalabagan', 'Shankar'],
+    'Gulshan': ['Gulshan 1', 'Gulshan 2', 'Baridhara', 'Niketan'],
+    'Banani': ['Banani', 'Kakoli', 'Mohakhali'],
+    'Mirpur': ['Mirpur 1', 'Mirpur 2', 'Mirpur 10', 'Mirpur 12'],
+    'Uttara': ['Uttara Sector 3', 'Uttara Sector 7', 'Uttara Sector 11'],
+    'Mohammadpur': ['Mohammadpur', 'Shyamoli', 'Adabor'],
+    'Motijheel': ['Motijheel', 'Arambagh', 'Dilkusha'],
+  };
+
+  const $ = (id) => document.getElementById(id);
+  function read(key, fallback) { try { const raw = localStorage.getItem(key); return raw === null ? fallback : JSON.parse(raw); } catch (e) { return fallback; } }
+  function write(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} }
+  const money = (n) => 'Tk. ' + Number(n).toLocaleString('en-US') + '/-';
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const pdpOf = (l) => { const p = String(l.id).split('|'); return 'my-product-detail-screen.html' + (p[0] ? '?p=' + encodeURIComponent(p[0]) + (p[1] ? '&colour=' + encodeURIComponent(p[1]) : '') : ''); };
+  const plural = (n) => n + (n === 1 ? ' item' : ' items');
+
+  // ---------------- what is being bought ----------------
+  let buyNow = new URLSearchParams(location.search).get('buynow') === '1';
+  let lines = buyNow ? read(BUY_KEY, []) : read(CART_KEY, []);
+  if (buyNow && !lines.length) { buyNow = false; lines = read(CART_KEY, []); }
+  const promoCode = read(PROMO_KEY, null);
+  const promo = promoCode && PROMOS[promoCode] ? PROMOS[promoCode] : null;
+  const count = lines.reduce((n, l) => n + l.qty, 0);
+  const subtotal = lines.reduce((n, l) => n + l.price * l.qty, 0);
+  const discount = promo ? Math.round(subtotal * promo.percent / 100) : 0;
+
+  // ---------------- address selects ----------------
+  const fDivision = $('fDivision'), fDistrict = $('fDistrict'), fUpazila = $('fUpazila'), fArea = $('fArea');
+  fDivision.innerHTML = '<option value="">Select division</option>' + Object.keys(DISTRICTS).map((d) => `<option>${d}</option>`).join('');
+  fDivision.value = 'Dhaka';
+  function fillDistricts(preselect) {
+    const list = DISTRICTS[fDivision.value] || [];
+    fDistrict.innerHTML = '<option value="">Select district</option>' + list.map((d) => `<option>${esc(d)}</option>`).join('');
+    fDistrict.value = preselect && list.includes(preselect) ? preselect : '';
+    syncEmpty();
+  }
+  function fillSuggestions() {
+    const isDhaka = fDivision.value === 'Dhaka' && fDistrict.value === 'Dhaka';
+    $('dlUpazila').innerHTML = isDhaka ? DHAKA_THANAS.map((t) => `<option value="${t}">`).join('') : '';
+    $('dlArea').innerHTML = isDhaka && DHAKA_AREAS[fUpazila.value] ? DHAKA_AREAS[fUpazila.value].map((a) => `<option value="${a}">`).join('') : '';
+  }
+  function syncEmpty() { [fDivision, fDistrict].forEach((s) => s.classList.toggle('is-empty', !s.value)); }
+  fillDistricts('Dhaka');
+  fillSuggestions();
+
+  // Signed in? Fill in who is checking out.
+  try {
+    const sid = JSON.parse(localStorage.getItem('elara.session.v1'));
+    const acc = sid && (JSON.parse(localStorage.getItem('elara.accounts.v1')) || []).find((x) => x.id === sid);
+    if (acc) {
+      $('fName').value = acc.name || '';
+      if (acc.phone) $('fPhone').value = acc.phone.replace(/^\+880/, '');
+      if (acc.email) $('fEmail').value = acc.email;
+    }
+  } catch (e) {}
+
+  // ---------------- delivery + totals ----------------
+  function deliveryInfo() {
+    const dhaka = fDivision.value === 'Dhaka' && fDistrict.value === 'Dhaka';
+    const free = subtotal >= FREE_DELIVERY_AT;
+    return { dhaka, charge: dhaka ? 60 : 120, days: dhaka ? '1–3' : '3–5', free, zone: dhaka ? 'Dhaka' : 'Outside Dhaka' };
+  }
+  const PAY = { cod: 'Cash on Delivery', bkash: 'bKash', nagad: 'Nagad', card: 'Credit or debit card' };
+  const payValue = () => document.querySelector('input[name="pay"]:checked').value;
+
+  function render() {
+    const d = deliveryInfo();
+    const total = subtotal - discount + (d.free ? 0 : d.charge);
+
+    $('sumItems').innerHTML = lines.map((l) => `
+      <div class="sum-item">
+        <div class="sum-photo"><img class="cover" src="${esc(l.img)}" alt=""></div>
+        <div class="sum-details"><b>${esc(l.name)}</b><span>${[l.colour, l.size].filter(Boolean).map(esc).concat('Qty ' + l.qty).join(' · ')}</span></div>
+        <span class="sum-price">${money(l.price * l.qty)}</span>
+      </div>`).join('');
+    $('subLabel').textContent = 'Subtotal (' + plural(count) + ')';
+    $('subValue').textContent = money(subtotal);
+    $('discLine').hidden = !discount;
+    if (discount) { $('discLabel').textContent = 'Discount (' + promo.label + ' · ' + promo.percent + '%)'; $('discValue').textContent = '– ' + money(discount); }
+    $('delLabel').textContent = 'Delivery · ' + d.zone;
+    $('delValue').textContent = d.free ? 'Free' : money(d.charge);
+    $('delValue').classList.add('strong');
+    $('totalValue').textContent = money(total);
+
+    const place = [fUpazila.value.trim(), fDistrict.value].filter(Boolean).join(', ') || 'your address';
+    $('chargeNote').textContent = (d.dhaka ? 'Delivery to Dhaka: Tk. 60' : 'Delivery outside Dhaka: Tk. 120') + ' · ' + d.days + ' working days. Free on orders over Tk. 3,000.';
+    $('delTitle').textContent = 'Standard delivery · ' + d.zone;
+    $('delDesc').textContent = d.days + ' working days to ' + place;
+    $('delCharge').innerHTML = d.free ? `<b>Free</b><s>${money(d.charge)}</s>` : `<b>${money(d.charge)}</b>`;
+    $('delNote').textContent = d.free ? 'Your order is over Tk. 3,000, so the ' + money(d.charge).replace('/-', '') + ' ' + (d.dhaka ? 'Dhaka' : 'delivery') + ' charge is waived.' : 'Free delivery on orders over Tk. 3,000.';
+    const pay = payValue();
+    $('sumNote').textContent = pay === 'cod' ? 'Pay ' + money(total) + ' in cash when your order arrives.' : 'You will complete payment of ' + money(total) + ' with ' + PAY[pay].replace('Credit or debit card', 'your card') + ' after placing your order.';
+    return { d, total };
+  }
+
+  // ---------------- form behaviour ----------------
+  fDivision.addEventListener('change', () => { fillDistricts(fDivision.value === 'Dhaka' ? 'Dhaka' : ''); fillSuggestions(); clearErr('fDivision'); render(); });
+  fDistrict.addEventListener('change', () => { fillSuggestions(); syncEmpty(); clearErr('fDistrict'); render(); });
+  fUpazila.addEventListener('input', () => { fillSuggestions(); render(); });
+  fArea.addEventListener('input', render);
+  document.querySelectorAll('[data-open]').forEach((b) => b.addEventListener('click', () => { const i = $(b.dataset.open); i.focus(); if (i.showPicker) { try { i.showPicker(); } catch (e) {} } }));
+  document.querySelectorAll('.input').forEach((box) => box.addEventListener('click', (e) => { const el = $(box.dataset.for); if (el && e.target === box) el.focus(); }));
+  document.querySelectorAll('textarea').forEach((t) => {
+    const grow = () => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; };
+    t.addEventListener('input', grow);
+    grow();
+  });
+  document.querySelectorAll('input[name="pay"]').forEach((r) => r.addEventListener('change', () => {
+    document.querySelectorAll('[data-pay]').forEach((o) => o.classList.toggle('is-on', o.querySelector('input').checked));
+    render();
+  }));
+  ['fName', 'fPhone', 'fEmail', 'fUpazila', 'fArea', 'fAddress1'].forEach((id) => $(id).addEventListener('input', () => clearErr(id)));
+
+  // ---------------- validation ----------------
+  function setErr(id, msg) {
+    const box = document.querySelector('.input[data-for="' + id + '"]') || $(id).closest('.input');
+    const el = $('e' + id.slice(1));
+    if (!el) return;
+    el.textContent = msg; el.hidden = false;
+    box.classList.add('invalid');
+    $(id).setAttribute('aria-invalid', 'true');
+  }
+  function clearErr(id) {
+    const box = document.querySelector('.input[data-for="' + id + '"]') || $(id).closest('.input');
+    const el = $('e' + id.slice(1));
+    if (el) { el.hidden = true; el.textContent = ''; }
+    if (box) box.classList.remove('invalid');
+    $(id).removeAttribute('aria-invalid');
+  }
+  function normalisePhone(v) {
+    let d = v.replace(/\D/g, '');
+    if (d.startsWith('880')) d = d.slice(3);
+    if (d.startsWith('0')) d = d.slice(1);
+    return d;
+  }
+  function validate() {
+    const problems = [];
+    const need = (id, ok, msg) => { if (!ok) { problems.push(id); setErr(id, msg); } else clearErr(id); };
+    need('fName', $('fName').value.trim().length >= 2, 'Please enter your full name.');
+    need('fPhone', /^1[3-9]\d{8}$/.test(normalisePhone($('fPhone').value)), 'Enter a valid mobile number, like 1712 345678.');
+    need('fDivision', !!fDivision.value, 'Choose your division.');
+    need('fDistrict', !!fDistrict.value, 'Choose your district.');
+    need('fUpazila', fUpazila.value.trim().length >= 2, 'Enter your upazila or thana.');
+    need('fArea', fArea.value.trim().length >= 2, 'Enter your area.');
+    need('fAddress1', $('fAddress1').value.trim().length >= 5, 'Enter your house, road and landmark.');
+    const email = $('fEmail').value.trim();
+    need('fEmail', !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email), 'That email address does not look right.');
+    return problems;
+  }
+
+  // ---------------- placing the order ----------------
+  $('checkoutForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const problems = validate();
+    if (problems.length) {
+      const first = $(problems[0]);
+      first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => first.focus({ preventScroll: true }), 250);
+      return;
+    }
+    const { d, total } = render();
+    const order = {
+      id: 'ELR-' + String(Date.now()).slice(-6),
+      placedAt: new Date().toISOString(),
+      items: lines, subtotal, discount, promo: promo ? promo.label : null,
+      delivery: d.free ? 0 : d.charge, total, zone: d.zone, days: d.days,
+      payment: payValue(), buyNow,
+      customer: { name: $('fName').value.trim(), phone: '+880' + normalisePhone($('fPhone').value), email: $('fEmail').value.trim() || null },
+      address: { division: fDivision.value, district: fDistrict.value, upazila: fUpazila.value.trim(), area: fArea.value.trim(), line1: $('fAddress1').value.trim(), line2: $('fAddress2').value.trim() || null },
+    };
+    // bKash / Nagad: the order is saved but the bag stays until the payment actually goes through (my-payment.html).
+    if (order.payment === 'bkash' || order.payment === 'nagad') {
+      order.payBy = Date.now() + 15 * 60000;
+      write(ORDER_KEY, order);
+      location.href = 'my-payment.html';
+      return;
+    }
+    write(ORDER_KEY, order);
+    if (buyNow) { try { localStorage.removeItem(BUY_KEY); } catch (err) {} } else { write(CART_KEY, []); }
+    try { localStorage.removeItem(PROMO_KEY); } catch (err) {}
+    if (window.ElaraCart) ElaraCart.refreshBadge();
+    location.href = 'my-order-success.html';
+  });
+
+  // ---------------- first paint ----------------
+  if (buyNow) {
+    $('buyNowTag').hidden = false;
+    const back = lines.length ? pdpOf(lines[0]) : 'my-product-detail-screen.html';
+    $('editBag').href = back;
+    $('editBag').textContent = 'Edit';
+    $('backLink').textContent = '← Back to product';
+    $('backLink').href = back;
+    document.querySelector('.breadcrumb a[href="my-cart-screen.html"]').textContent = 'Product';
+    document.querySelector('.breadcrumb a[href="my-cart-screen.html"]').href = back;
+  }
+  if (!lines.length) {
+    $('checkoutForm').hidden = true;
+    $('summary').hidden = true;
+    $('emptyView').hidden = false;
+    $('legend').hidden = true;
+  } else {
+    render();
+  }
+
+  // Nav dropdowns — identical behaviour to the homepage.
+  document.querySelectorAll('.nav-menu-wrap img').forEach((img) => { if (img.decode) img.decode().catch(() => {}); });
+  (function () {
+    const wrap = document.getElementById('navMenuWrap');
+    if (!wrap) return;
+    const items = document.querySelectorAll('.nav-item[data-menu]');
+    const panels = wrap.querySelectorAll('.nav-panel');
+    let closeTimer = null;
+    let openKey = null;
+
+    function showPanel(key, item) {
+      panels.forEach((p) => p.classList.toggle('active', p.dataset.panel === key));
+      const isMega = key !== 'best-sellers';
+      wrap.classList.toggle('mega', isMega);
+      wrap.classList.toggle('light', !isMega);
+      if (isMega) {
+        wrap.style.left = '0px';
+      } else {
+        const itemRect = item.getBoundingClientRect();
+        const navRect = document.querySelector('.nav').getBoundingClientRect();
+        wrap.style.left = Math.round(itemRect.left - navRect.left) + 'px';
+      }
+      const activeEl = wrap.querySelector('.nav-panel.active');
+      wrap.style.height = activeEl ? activeEl.offsetHeight + 'px' : 'auto';
+    }
+    function open(key, item) {
+      clearTimeout(closeTimer);
+      const wasOpen = wrap.classList.contains('open');
+      showPanel(key, item);
+      if (!wasOpen) { wrap.style.transition = 'none'; void wrap.offsetHeight; wrap.style.transition = ''; }
+      wrap.classList.add('open');
+      items.forEach((it) => it.classList.toggle('open', it.dataset.menu === key));
+      openKey = key;
+    }
+    function close() { wrap.classList.remove('open'); items.forEach((it) => it.classList.remove('open')); openKey = null; }
+    function scheduleClose() { clearTimeout(closeTimer); closeTimer = setTimeout(close, 150); }
+
+    items.forEach((item) => {
+      const key = item.dataset.menu;
+      item.addEventListener('mouseenter', () => open(key, item));
+      item.addEventListener('mouseleave', scheduleClose);
+      item.addEventListener('focusin', () => open(key, item));
+      item.querySelector('.nav-link').addEventListener('click', (e) => { e.preventDefault(); openKey === key ? close() : open(key, item); });
+    });
+    wrap.addEventListener('mouseenter', () => clearTimeout(closeTimer));
+    wrap.addEventListener('mouseleave', scheduleClose);
+    wrap.addEventListener('focusin', () => clearTimeout(closeTimer));
+    document.addEventListener('focusin', (e) => { if (openKey && !wrap.contains(e.target) && ![...items].some((it) => it.contains(e.target))) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    document.addEventListener('click', (e) => { if (openKey && !wrap.contains(e.target) && ![...items].some((it) => it.contains(e.target))) close(); });
+  })();
+</script>
+<script src="assets/cart-badge.js"></script>
+<script src="assets/search.js"></script>
+<script src="assets/soon.js"></script>
+</body>
+</html>

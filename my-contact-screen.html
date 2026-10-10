@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELARA — Contact us</title>
+<meta name="description" content="Contact ELARA: WhatsApp, phone, e-mail and a message form. We reply within one business day.">
+<meta name="theme-color" content="#FFFDF9">
+<link rel="icon" type="image/svg+xml" href="assets/home/favicon.svg">
+<!--
+  Contact page — idea sketch (no Figma frame yet). Same nav and tokens as the other pages.
+  Phone number, e-mail and studio address are PLACEHOLDERS: replace them with the real ones before launch.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #fffdf9;
+    --bg-card: #f7f1e8;
+    --bg-panel: #f8f4ef;
+    --text: #4a4741;
+    --text-muted: #838280;
+    --border-soft: rgba(74,71,65,0.25);
+    --accent: #2a72de;
+    --focus: #3184ff;
+    --r-large: 32px;
+    --r-media: 12px;
+    --r-pill: 999px;
+    --ease: cubic-bezier(.4,0,.2,1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { overflow-x: clip; }   /* clip, not hidden: hidden turns html and body into two scroll containers (double scrollbar) */
+  body { background: var(--bg-page); color: var(--text); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+  [hidden] { display: none !important; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+  img { display: block; }
+  .serif { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; }
+  .cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+
+  .page { position: relative; width: 1440px; margin: 0 auto; padding-top: 109px; zoom: var(--fit, 1); }
+  .abs { position: absolute; }
+
+  /* ===== Nav (22:641) — same component as the homepage ===== */
+  .nav { left: 0; top: 0; width: 1440px; height: 109px; padding: 10px; display: flex; align-items: center; justify-content: center; z-index: 20; }
+  .nav-inner { width: 100%; display: flex; gap: 144px; align-items: center; justify-content: center; padding: 0 37px; }
+  .nav-logo { position: relative; width: 222px; height: 101px; flex-shrink: 0; }
+  .nav-right { display: flex; gap: 104px; align-items: center; }
+  .nav-links { display: flex; gap: 32px; align-items: center; }
+  .nav-link { display: flex; gap: 6px; align-items: center; font-weight: 500; font-size: 16px; line-height: 1.5; text-transform: uppercase; white-space: nowrap; transition: background-color .15s var(--ease), color .15s var(--ease); }
+  .nav-link img { width: 16px; height: 16px; display: block; }
+  .nav-tools { display: flex; gap: 18px; align-items: center; }
+  .nav-icons { display: flex; gap: 20px; align-items: center; width: 58px; }
+  .ico20 { position: relative; width: 20px; height: 20px; flex-shrink: 0; overflow: clip; }
+  .ico20 img { position: absolute; display: block; }
+  /* Nav search / account icons: soft circle on hover, same cue as the cart pill */
+  .nav-icons .ico20 { overflow: visible; cursor: pointer; }
+  .nav-icons .ico20::before { content: ""; position: absolute; inset: -8px; border-radius: 50%; background: #f1e9dc; opacity: 0; transform: scale(.7); transition: opacity .15s cubic-bezier(.4,0,.2,1), transform .2s cubic-bezier(.4,0,.2,1); }
+  .nav-icons .ico20:hover::before, .nav-icons .ico20:focus-visible::before { opacity: 1; transform: scale(1); }
+  .nav-icons .ico20 img { z-index: 1; }
+  .nav-icons a.ico20 { display: block; }
+  .cart-btn { display: flex; gap: 10px; align-items: center; justify-content: center; height: 40px; padding: 10px 18px; border: 1px solid var(--text); border-radius: var(--r-pill); font-weight: 500; font-size: 16px; line-height: 1.5; text-transform: uppercase; white-space: nowrap; transition: background-color .15s var(--ease); }
+  .cart-btn:hover { background: var(--bg-card); }
+  .nav-item { position: relative; }
+  .nav-chev { transition: transform 220ms var(--ease); }
+  .nav-item.open .nav-chev { transform: rotate(180deg); }
+  .nav-menu-wrap { position: absolute; top: 99px; z-index: 10; background: var(--bg-page); box-shadow: 0 28px 56px rgba(28,27,26,0.12); opacity: 0; visibility: hidden; transform: translateY(-10px); transition: opacity 260ms var(--ease), transform 260ms var(--ease), visibility 0s linear 260ms, left 260ms var(--ease); pointer-events: none; overflow: hidden; }
+  .nav-menu-wrap.mega { left: 0; width: 1440px; border-radius: 0 0 var(--r-large) var(--r-large); }
+  .nav-menu-wrap.light { width: auto; border-radius: var(--r-large); }
+  .nav-menu-wrap.open { opacity: 1; visibility: visible; transform: translateY(0); transition: opacity 260ms var(--ease), transform 260ms var(--ease), height 320ms var(--ease), left 320ms var(--ease); pointer-events: auto; }
+  .nav-panel { display: none; padding: 48px 64px 56px; }
+  .nav-menu-wrap.light .nav-panel { padding: 20px; }
+  .nav-panel.active { display: block; animation: navPanelIn 240ms var(--ease); }
+  @keyframes navPanelIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .nav-menu-wrap.mega .nav-panel { padding: 0; }
+  .dd-panel { position: relative; width: 1440px; height: 360px; }
+  .dd-card { position: absolute; left: 82px; top: 56px; width: 332px; height: 248px; border-radius: var(--r-media); overflow: hidden; }
+  .dd-card .cover { border-radius: var(--r-media); transition: transform .4s var(--ease); }
+  .dd-card:hover .cover { transform: scale(1.05); }
+  .dd-card-fade { position: absolute; left: 50%; bottom: -14px; width: 604px; height: 83px; transform: translateX(-50%); pointer-events: none; }
+  .dd-card-fade i { position: absolute; inset: 0; filter: blur(52px); font-style: normal; }
+  .dd-card-fade i:first-child { background: rgba(40,40,40,0.53); }
+  .dd-card-fade i:last-child { background: rgba(40,40,40,0.88); mix-blend-mode: multiply; }
+  .dd-card-label { position: absolute; left: 14px; right: 14px; bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #fff; }
+  .dd-card-label:not(.two-line) > span:first-child { font-size: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dd-card-label img { width: 24px; height: 24px; flex-shrink: 0; }
+  .dd-card-label.two-line { flex-direction: column; align-items: flex-start; gap: 0; }
+  .dd-card-eyebrow { font-weight: 500; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; color: #d3d1ce; }
+  .dd-card-title { font-size: 16px; font-weight: 400; }
+  .dd-divider { position: absolute; left: 831px; top: 29px; width: 1px; height: 301.5px; }
+  .dd-list { position: absolute; left: 853px; top: 56px; width: 268px; display: flex; flex-direction: column; gap: 20px; }
+  .dd-list-group { display: flex; flex-direction: column; gap: 16px; }
+  .dd-list-coll { gap: 16px; }
+  .dd-row { display: flex; align-items: center; gap: 12px; color: var(--text); border-radius: var(--r-media); padding: 6px; margin: -6px; }
+  .dd-row:hover { background: var(--bg-card); }
+  .dd-row-thumb { position: relative; width: 48px; height: 48px; border-radius: 999px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-soft); }
+  .dd-row-thumb .cover { border-radius: 999px; }
+  .dd-row-thumb.icon { border: none; }
+  .dd-row-title { font-size: 18px; white-space: nowrap; }
+  .nm-simple-list { display: flex; flex-direction: column; gap: 2px; width: 280px; }
+  .nm-simple { padding: 12px 16px; border-radius: var(--r-media); font-size: 16px; color: var(--text); }
+  .nm-simple:hover { background: var(--bg-card); }
+
+  /* ===== Contact ===== */
+  .breadcrumb { display: flex; gap: 6px; padding: 16px 0 0 64px; font-size: 12px; line-height: 1.5; color: var(--text-muted); white-space: nowrap; }
+  .breadcrumb a:hover { color: var(--text); }
+  .breadcrumb [aria-current] { color: var(--text); }
+  .c-head { padding: 24px 128px 0; }
+  .c-head h1 { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 300; font-size: 56px; line-height: 1.05; letter-spacing: -2.4px; }
+  .c-head p { margin-top: 10px; max-width: 560px; font-size: 16px; line-height: 1.55; color: var(--text-muted); }
+  .c-main { display: flex; align-items: flex-start; gap: 64px; padding: 40px 128px 0; }
+  .c-cards { flex: 0 0 440px; display: flex; flex-direction: column; gap: 16px; }
+  .c-card { display: flex; gap: 16px; align-items: flex-start; padding: 22px 24px; border: 1px solid var(--border-soft); border-radius: var(--r-media); background: var(--bg-page); transition: box-shadow .2s var(--ease), transform .2s var(--ease), border-color .2s var(--ease); }
+  a.c-card:hover { box-shadow: 0 14px 30px rgba(74,71,65,0.1); transform: translateY(-2px); border-color: rgba(74,71,65,0.4); }
+  .c-ico { width: 44px; height: 44px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: var(--bg-card); }
+  .c-ico svg { width: 20px; height: 20px; }
+  .c-ico.wa { background: #25d366; }
+  .c-ico.wa img { width: 22px; height: 22px; }
+  .c-card h2 { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 20px; line-height: 1.15; letter-spacing: -0.4px; }
+  .c-card p { margin-top: 4px; font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+  .c-card .big { margin-top: 6px; font-size: 16px; font-weight: 500; color: var(--text); }
+  .c-card .go { margin-top: 8px; display: inline-block; font-size: 14px; font-weight: 500; color: var(--accent); }
+  .c-hours { padding: 18px 24px; border-radius: var(--r-media); background: var(--bg-panel); font-size: 13px; line-height: 1.7; color: var(--text-muted); }
+  .c-hours b { font-weight: 500; color: var(--text); }
+
+  .c-form { flex: 1; padding: 36px; border: 1px solid var(--border-soft); border-radius: var(--r-media); background: var(--bg-panel); }
+  .c-form h2 { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 28px; line-height: 1.1; letter-spacing: -0.8px; }
+  .c-form form > p { margin: 8px 0 24px; font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+  .f-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .f { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+  .f label { font-size: 14px; font-weight: 500; }
+  .f .opt { font-weight: 400; color: var(--text-muted); }
+  .in { width: 100%; padding: 13px 16px; border: 1px solid var(--border-soft); border-radius: 12px; background: var(--bg-page); font: inherit; font-size: 15px; line-height: 1.5; color: var(--text); transition: border-color .15s var(--ease), box-shadow .15s var(--ease); }
+  textarea.in { min-height: 140px; resize: vertical; }
+  select.in { appearance: none; padding-right: 40px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%234a4741' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; background-size: 16px; }
+  .in::placeholder { color: #a8a5a0; }
+  .in:hover { border-color: var(--text-muted); }
+  .in:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px rgba(49,132,255,0.18); }
+  .f.bad .in { border-color: #b4483f; }
+  .err { font-size: 12px; color: #b4483f; }
+  .err:empty { display: none; }
+  .c-send { display: inline-flex; align-items: center; justify-content: center; height: 50px; padding: 0 32px; border-radius: var(--r-pill); background: var(--accent); color: #fff; font-size: 15px; font-weight: 500; transition: background-color .15s var(--ease); }
+  .c-send:hover { background: #2056a6; }
+  .c-thanks { display: none; flex-direction: column; align-items: flex-start; gap: 12px; padding: 12px 0; }
+  .c-thanks.show { display: flex; }
+  .c-thanks svg { width: 44px; height: 44px; color: #2b8a4b; }
+  .c-thanks h2 { font-size: 28px; }
+  .c-thanks p { font-size: 14px; color: var(--text-muted); max-width: 420px; line-height: 1.55; }
+
+  .c-links { display: flex; gap: 16px; padding: 56px 128px 96px; }
+  .c-link { flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 24px; border: 1px solid var(--border-soft); border-radius: var(--r-media); font-size: 15px; font-weight: 500; transition: background-color .15s var(--ease); }
+  .c-link:hover { background: var(--bg-card); }
+  .c-link span { color: var(--text-muted); font-weight: 400; font-size: 13px; display: block; margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="abs nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo" aria-label="ELARA home"><img class="cover" src="assets/home/logo.webp" alt="ELARA"></a>
+      <div class="nav-right">
+        <nav class="nav-links" aria-label="Primary">
+          <div class="nav-item" data-menu="new-arrivals"><a href="#" class="nav-link">New Arrivals <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="bags"><a href="#" class="nav-link">Bags <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="collections"><a href="#" class="nav-link">Collections <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="best-sellers"><a href="#" class="nav-link">Best Sellers <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <a href="my-contact-screen.html" class="nav-link">Contact Us</a>
+        </nav>
+        <div class="nav-tools">
+          <div class="nav-icons">
+            <button class="ico20" aria-label="Search"><img src="assets/home/icon-search.svg" alt="" style="inset:0;width:20px;height:20px;"></button>
+            <a href="my-account.html" class="ico20" aria-label="Account"><img src="assets/home/icon-account.svg" alt="" style="left:22.27%;top:8.33%;width:57.44%;height:82.55%;"></a>
+          </div>
+          <a href="my-cart-screen.html" class="cart-btn">My cart
+            <span class="ico20"><img src="assets/home/icon-cart.svg" alt="" style="left:5.21%;top:5.21%;width:87.63%;height:89.58%;"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-menu-wrap" id="navMenuWrap">
+      <div class="nav-panel" data-panel="new-arrivals">
+        <div class="dd-panel">
+          <a href="my-product-detail-screen.html?p=leather-tote-bag" class="dd-card">
+            <img class="cover" src="assets/home/dd-na-card-1.webp" alt="Leather Tote Bag">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Leather Tote Bag</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <a href="my-product-detail-screen.html?p=aveline-convertible-tote" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-na-card-2.webp" alt="Aveline Convertible Tote">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Aveline Convertible Tote</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
+          <div class="dd-list">
+            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-1.webp" alt=""></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
+            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-2.webp" alt=""></span><span class="dd-row-title">Sienna Structured Purse</span></a>
+            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-3.webp" alt=""></span><span class="dd-row-title">Isla Bags</span></a>
+            <a href="my-plp-screen.html?collection=new" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All New Arrivals</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="bags">
+        <div class="dd-panel">
+          <a href="my-product-detail-screen.html?p=suede-crossbody" class="dd-card">
+            <img class="cover" src="assets/home/dd-bags-card-1.webp" alt="Cross Body Bags">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Cross Body Bags</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <a href="my-product-detail-screen.html?p=structured-work-satchel" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-bags-card-2.webp" alt="Work &amp; Travel">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Work &amp; Travel</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
+          <div class="dd-list">
+            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-1.webp" alt=""></span><span class="dd-row-title">Tote</span></a>
+            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-2.webp" alt=""></span><span class="dd-row-title">Shoulder</span></a>
+            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-3.webp" alt=""></span><span class="dd-row-title">Mini</span></a>
+            <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All Category Bags</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="collections">
+        <div class="dd-panel">
+          <a href="#coming-soon" data-soon="Our Signature Pieces" class="dd-card">
+            <img class="cover" src="assets/home/dd-coll-card-1.webp" alt="Our Signature Pieces">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label two-line"><span class="dd-card-eyebrow">Signature</span><span class="dd-card-title">Our Signature Pieces</span></div>
+          </a>
+          <a href="#coming-soon" data-soon="Everyday Essentials" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-coll-card-2.webp" alt="Everyday Essentials">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label two-line"><span class="dd-card-eyebrow">Everyday</span><span class="dd-card-title">Everyday Essentials</span></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="" style="left:826px;">
+          <div class="dd-list dd-list-coll" style="left:850px; top:92px;">
+            <div class="dd-list-group">
+              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-1.webp" alt=""></span><span class="dd-row-title">The Evening Edit</span></a>
+              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-2.webp" alt=""></span><span class="dd-row-title">Designed for Work</span></a>
+            </div>
+            <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-see-all.svg" alt=""></span><span class="dd-row-title">See All Collections</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="best-sellers">
+        <div class="nm-simple-list">
+          <a href="my-plp-screen.html" class="nm-simple">All Best Sellers</a>
+          <a href="my-plp-screen.html" class="nm-simple">Customer Favorites</a>
+          <a href="my-plp-screen.html" class="nm-simple">Most Loved</a>
+          <a href="my-plp-screen.html" class="nm-simple">Trending Now</a>
+        </div>
+      </div>
+    </div>
+  </header>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="index.html">Home</a><span>/</span>
+    <span aria-current="page">Contact us</span>
+  </nav>
+
+  <div class="c-head">
+    <h1>Contact us</h1>
+    <p>Questions about a bag, an order or an exchange? Reach us the way that suits you. We reply within 1 business day.</p>
+  </div>
+
+  <div class="c-main">
+    <div class="c-cards">
+      <a class="c-card" href="https://wa.me/?text=Hello%20ELARA" target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp">
+        <span class="c-ico wa"><img src="assets/pdp/11704.svg" alt=""></span>
+        <span><h2>WhatsApp</h2><p>The fastest way to reach us. Send a photo of the bag you are looking at.</p><span class="go">Chat on WhatsApp →</span></span>
+      </a>
+      <a class="c-card" href="tel:+8801000000000">
+        <span class="c-ico"><svg viewBox="0 0 20 20" fill="none" stroke="#4a4741" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 2.5h3l1.3 3.6-1.9 1.3a9 9 0 0 0 4.7 4.7l1.3-1.9 3.6 1.3v3a1.7 1.7 0 0 1-1.8 1.7A12.5 12.5 0 0 1 3.8 4.3 1.7 1.7 0 0 1 5.5 2.5z"/></svg></span>
+        <span><h2>Call us</h2><p>Talk to our team during business hours.</p><span class="big">+880 1XXX-XXXXXX</span></span>
+      </a>
+      <a class="c-card" href="mailto:hello@elara.bd">
+        <span class="c-ico"><svg viewBox="0 0 20 20" fill="none" stroke="#4a4741" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4.5" width="15" height="11" rx="2"/><path d="m3 6 7 5 7-5"/></svg></span>
+        <span><h2>E-mail</h2><p>For anything that needs a longer answer.</p><span class="big">hello@elara.bd</span></span>
+      </a>
+      <div class="c-card">
+        <span class="c-ico"><svg viewBox="0 0 20 20" fill="none" stroke="#4a4741" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 17.5s5.5-4.6 5.5-9a5.5 5.5 0 0 0-11 0c0 4.4 5.5 9 5.5 9z"/><circle cx="10" cy="8.5" r="2"/></svg></span>
+        <span><h2>Studio</h2><p>House 00, Road 00, Dhaka, Bangladesh</p><span class="go" style="color:var(--text-muted);font-weight:400;">Visits by appointment</span></span>
+      </div>
+      <p class="c-hours"><b>Support hours</b><br>Saturday to Thursday, 10:00 to 19:00<br>Friday: WhatsApp and e-mail only</p>
+    </div>
+
+    <div class="c-form">
+      <form id="cForm" novalidate>
+        <h2>Send us a message</h2>
+        <p>Tell us a little and we will get back to you, usually the same day.</p>
+        <div class="f-row">
+          <div class="f" id="fName"><label for="cName">Your name</label><input class="in" id="cName" autocomplete="name" placeholder="Full name"><span class="err" id="eName"></span></div>
+          <div class="f" id="fPhone"><label for="cPhone">Phone number</label><input class="in" id="cPhone" type="tel" autocomplete="tel" placeholder="01XXXXXXXXX" inputmode="tel"><span class="err" id="ePhone"></span></div>
+        </div>
+        <div class="f-row">
+          <div class="f"><label for="cTopic">Topic</label>
+            <select class="in" id="cTopic"><option>Question about a bag</option><option>My order</option><option>Exchange or return</option><option>Delivery</option><option>Something else</option></select></div>
+          <div class="f"><label for="cOrder">Order number <span class="opt">(optional)</span></label><input class="in" id="cOrder" placeholder="ELR-000000"></div>
+        </div>
+        <div class="f" id="fMsg"><label for="cMsg">Message</label><textarea class="in" id="cMsg" maxlength="1000" placeholder="How can we help?"></textarea><span class="err" id="eMsg"></span></div>
+        <button type="submit" class="c-send">Send message</button>
+      </form>
+      <div class="c-thanks" id="cThanks" role="status" tabindex="-1">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M5.2 8.2l1.9 1.9 3.7-3.9"/></svg>
+        <h2>Message received</h2>
+        <p>Thank you, <b id="tName"></b>. We will reply on your phone number within 1 business day.</p>
+        <a class="c-send" style="background:transparent;color:var(--text);border:1px solid var(--text);" href="my-plp-screen.html">Continue shopping</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="c-links">
+    <a class="c-link" href="my-order-tracking.html"><div>Track your order<span>Use your order and phone number</span></div>→</a>
+    <a class="c-link" href="my-plp-screen.html"><div>Delivery &amp; exchange<span>Dhaka Tk. 60, outside Dhaka Tk. 120. 7-day exchange</span></div>→</a>
+    <a class="c-link" href="my-plp-screen.html"><div>Browse all bags<span>Find your everyday bag</span></div>→</a>
+  </div>
+
+</div>
+
+<script>
+  function fit() { document.documentElement.style.setProperty('--fit', Math.min(1, document.documentElement.clientWidth / 1440)); }
+  fit();
+  new ResizeObserver(fit).observe(document.documentElement);
+  const $ = (id) => document.getElementById(id);
+
+  // ---- contact form (kept on this device only) ----
+  const form = $('cForm');
+  function setErr(f, e, m) { $(f).classList.add('bad'); $(e).textContent = m; }
+  function clr(f, e) { $(f).classList.remove('bad'); $(e).textContent = ''; }
+  $('cName').addEventListener('input', () => clr('fName', 'eName'));
+  $('cPhone').addEventListener('input', () => clr('fPhone', 'ePhone'));
+  $('cMsg').addEventListener('input', () => clr('fMsg', 'eMsg'));
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = $('cName').value.trim(), phone = $('cPhone').value.replace(/[\s-]/g, ''), msg = $('cMsg').value.trim();
+    let first = null;
+    if (name.length < 2) { setErr('fName', 'eName', 'Please add your name.'); first = first || $('cName'); }
+    if (!/^(\+?88)?01[3-9]\d{8}$/.test(phone)) { setErr('fPhone', 'ePhone', 'Enter a valid Bangladeshi mobile number.'); first = first || $('cPhone'); }
+    if (msg.length < 10) { setErr('fMsg', 'eMsg', 'Please write a few words so we can help.'); first = first || $('cMsg'); }
+    if (first) { first.focus(); return; }
+    try {
+      const all = JSON.parse(localStorage.getItem('elara.messages.v1') || '[]');
+      all.push({ ts: Date.now(), name, phone, topic: $('cTopic').value, order: $('cOrder').value.trim(), msg });
+      localStorage.setItem('elara.messages.v1', JSON.stringify(all));
+    } catch (err) {}
+    $('tName').textContent = name.split(' ')[0];
+    form.hidden = true; $('cThanks').classList.add('show'); $('cThanks').focus({ preventScroll: true });
+  });
+
+  // Nav dropdowns — identical behaviour to the homepage.
+  document.querySelectorAll('.nav-menu-wrap img').forEach((img) => { if (img.decode) img.decode().catch(() => {}); });
+  (function () {
+    const wrap = document.getElementById('navMenuWrap');
+    if (!wrap) return;
+    const items = document.querySelectorAll('.nav-item[data-menu]');
+    const panels = wrap.querySelectorAll('.nav-panel');
+    let closeTimer = null;
+    let openKey = null;
+
+    function showPanel(key, item) {
+      panels.forEach((p) => p.classList.toggle('active', p.dataset.panel === key));
+      const isMega = key !== 'best-sellers';
+      wrap.classList.toggle('mega', isMega);
+      wrap.classList.toggle('light', !isMega);
+      if (isMega) {
+        wrap.style.left = '0px';
+      } else {
+        const itemRect = item.getBoundingClientRect();
+        const navRect = document.querySelector('.nav').getBoundingClientRect();
+        wrap.style.left = Math.round(itemRect.left - navRect.left) + 'px';
+      }
+      const activeEl = wrap.querySelector('.nav-panel.active');
+      wrap.style.height = activeEl ? activeEl.offsetHeight + 'px' : 'auto';
+    }
+    function open(key, item) {
+      clearTimeout(closeTimer);
+      const wasOpen = wrap.classList.contains('open');
+      showPanel(key, item);
+      if (!wasOpen) { wrap.style.transition = 'none'; void wrap.offsetHeight; wrap.style.transition = ''; }
+      wrap.classList.add('open');
+      items.forEach((it) => it.classList.toggle('open', it.dataset.menu === key));
+      openKey = key;
+    }
+    function close() { wrap.classList.remove('open'); items.forEach((it) => it.classList.remove('open')); openKey = null; }
+    function scheduleClose() { clearTimeout(closeTimer); closeTimer = setTimeout(close, 150); }
+
+    items.forEach((item) => {
+      const key = item.dataset.menu;
+      item.addEventListener('mouseenter', () => open(key, item));
+      item.addEventListener('mouseleave', scheduleClose);
+      item.addEventListener('focusin', () => open(key, item));
+      item.querySelector('.nav-link').addEventListener('click', (e) => { e.preventDefault(); openKey === key ? close() : open(key, item); });
+    });
+    wrap.addEventListener('mouseenter', () => clearTimeout(closeTimer));
+    wrap.addEventListener('mouseleave', scheduleClose);
+    wrap.addEventListener('focusin', () => clearTimeout(closeTimer));
+    document.addEventListener('focusin', (e) => { if (openKey && !wrap.contains(e.target) && ![...items].some((it) => it.contains(e.target))) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    document.addEventListener('click', (e) => { if (openKey && !wrap.contains(e.target) && ![...items].some((it) => it.contains(e.target))) close(); });
+  })();
+</script>
+<script src="assets/cart-badge.js"></script>
+<script src="assets/search.js"></script>
+<script src="assets/soon.js"></script>
+</body>
+</html>

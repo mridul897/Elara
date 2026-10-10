@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shop by Category — Anchor Grid (preview)</title>
+<!--
+  Preview: layout structure borrowed from the skincare reference (2 small +
+  1 large + 2 small), stripped of its product-spotlight behaviour — every
+  tile here is a plain category link (same job as every other category
+  tile), not a single-SKU purchase panel. Matches ELARA's 5 categories
+  exactly: Tote, Shoulder, Crossbody, Mini, Work.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-bg-primary: #F7F1E8;
+    --color-bg-secondary: #EFE6DB;
+    --color-text-primary: #4A4741;
+    --color-text-muted: #838280;
+    --color-border: rgba(74,71,65,0.2);
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Inter', -apple-system, sans-serif;
+    --radius-card: 12px;
+    --ease-default: cubic-bezier(.4,0,.2,1);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--color-bg-primary); color: var(--color-text-primary);
+    font-family: var(--font-body); padding: 48px 20px;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; }
+  h2.title {
+    font-family: var(--font-display); font-weight: 300; letter-spacing: -0.02em;
+    font-size: clamp(1.6rem, 5vw, 2.3rem); margin: 0 0 28px;
+  }
+
+  .cat-tile {
+    position: relative; border-radius: var(--radius-card); overflow: hidden;
+    background: linear-gradient(150deg,#e6dccb,#d3c3ac);
+    display: flex; align-items: flex-end;
+    transition: transform 220ms var(--ease-default);
+    text-decoration: none; color: inherit;
+  }
+  .cat-tile:hover { transform: translateY(-3px); }
+  .cat-tile .ph {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    font-size: 0.65rem; color: rgba(74,71,65,0.4); text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .cat-caption {
+    position: relative; width: 100%; padding: 14px 16px;
+    background: linear-gradient(0deg, rgba(74,71,65,0.32) 0%, rgba(74,71,65,0) 100%);
+  }
+  .cat-caption span {
+    font-family: var(--font-display); font-weight: 400; font-size: 1.05rem; color: #fff;
+  }
+  .cat-tile.small .cat-caption span { font-size: 0.95rem; }
+  .cat-tile.large .cat-caption span { font-size: 1.5rem; }
+
+  /* Mobile: everything stacked, large one first as the anchor */
+  .grid { display: flex; flex-direction: column; gap: 12px; }
+  .cat-tile.small { aspect-ratio: 4/3; }
+  .cat-tile.large { aspect-ratio: 4/5; order: -1; }
+
+  @media (min-width: 768px) {
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1.6fr 1fr;
+      grid-template-rows: repeat(2, 220px);
+      gap: 16px;
+    }
+    .cat-tile.small { aspect-ratio: auto; order: 0; }
+    .cat-tile.large { aspect-ratio: auto; order: 0; grid-column: 2; grid-row: 1 / span 2; }
+    .col-left-1 { grid-column: 1; grid-row: 1; }
+    .col-left-2 { grid-column: 1; grid-row: 2; }
+    .col-right-1 { grid-column: 3; grid-row: 1; }
+    .col-right-2 { grid-column: 3; grid-row: 2; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h2 class="title">Shop by Category</h2>
+    <div class="grid">
+      <a class="cat-tile small col-left-1" href="#"><span class="ph">Photo</span><div class="cat-caption"><span>Tote</span></div></a>
+      <a class="cat-tile small col-left-2" href="#"><span class="ph">Photo</span><div class="cat-caption"><span>Shoulder</span></div></a>
+      <a class="cat-tile large" href="#"><span class="ph">Photo</span><div class="cat-caption"><span>Crossbody</span></div></a>
+      <a class="cat-tile small col-right-1" href="#"><span class="ph">Photo</span><div class="cat-caption"><span>Mini</span></div></a>
+      <a class="cat-tile small col-right-2" href="#"><span class="ph">Photo</span><div class="cat-caption"><span>Work</span></div></a>
+    </div>
+  </div>
+</body>
+</html>

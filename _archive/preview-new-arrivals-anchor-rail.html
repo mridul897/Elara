@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Arrivals — Anchor + Rail (preview)</title>
+<!--
+  Quick visual preview of the "Anchor + Rail" layout proposal for the New
+  Arrivals section, to compare against a symmetric grid before deciding.
+  Same token system as my-home-screen.html (cream theme, Fraunces + Inter).
+  Not wired into the real homepage yet — a standalone comparison piece.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-bg-primary: #F7F1E8;
+    --color-bg-secondary: #EFE6DB;
+    --color-text-primary: #4A4741;
+    --color-text-muted: #838280;
+    --color-text-faint: #A8A5A0;
+    --color-border: rgba(74,71,65,0.25);
+    --color-border-strong: rgba(74,71,65,1);
+    --color-accent: #2A72DE;
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Inter', -apple-system, sans-serif;
+    --radius-control: 999px;
+    --radius-card: 12px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--color-bg-primary); color: var(--color-text-primary);
+    font-family: var(--font-body); padding: 32px 20px;
+  }
+  .compare-label {
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--color-text-faint); margin: 0 0 8px;
+  }
+  h2.title {
+    font-family: var(--font-display); font-weight: 300; letter-spacing: -0.02em;
+    font-size: clamp(1.6rem, 5vw, 2.3rem); margin: 0 0 16px;
+  }
+
+  /* Filter pills */
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .filter-pill {
+    padding: 8px 16px; border-radius: var(--radius-control); border: 1px solid var(--color-border-strong);
+    font-size: 0.78rem; background: transparent; color: var(--color-text-primary);
+  }
+  .filter-pill.active { background: var(--color-text-primary); color: var(--color-bg-primary); border-color: var(--color-text-primary); }
+
+  /* ===== Anchor + Rail layout ===== */
+  .anchor-rail { display: flex; flex-direction: column; gap: 12px; }
+
+  .anchor {
+    position: relative; border-radius: var(--radius-card); overflow: hidden;
+    background: linear-gradient(150deg,#e6dccb,#d3c3ac);
+    aspect-ratio: 4/5; display: flex; align-items: flex-end;
+  }
+  .anchor .ph-label {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    font-size: 0.7rem; color: rgba(74,71,65,0.4); text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .anchor-caption {
+    position: relative; width: 100%; padding: 20px;
+    background: linear-gradient(0deg, rgba(74,71,65,0.55) 0%, rgba(74,71,65,0) 100%);
+    color: #fff;
+  }
+  .anchor-caption .name { font-family: var(--font-display); font-weight: 300; font-size: 1.3rem; margin: 0 0 4px; }
+  .anchor-caption .row { display: flex; align-items: center; justify-content: space-between; }
+  .anchor-caption .price { font-size: 0.9rem; }
+  .anchor-caption a { font-size: 0.78rem; color: #fff; text-decoration: underline; }
+
+  .rail { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .rail-card { border-radius: var(--radius-card); overflow: hidden; border: 1px solid var(--color-border); background: var(--color-bg-primary); }
+  .rail-media {
+    aspect-ratio: 1/1; background: linear-gradient(150deg,#efe6db,#e2d5c2);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .rail-media .ph-label { font-size: 0.6rem; color: var(--color-text-faint); text-transform: uppercase; letter-spacing: 0.06em; }
+  .rail-info { padding: 10px 12px; }
+  .rail-info .name { font-family: var(--font-body); font-weight: 400; font-size: 0.82rem; margin: 0 0 2px; }
+  .rail-info .price { font-size: 0.82rem; font-weight: 500; }
+
+  @media (min-width: 1024px) {
+    .anchor-rail { flex-direction: row; align-items: stretch; }
+    .anchor { flex: 1.1; aspect-ratio: auto; }
+    .rail { flex: 1; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); }
+  }
+
+  /* ===== Reference symmetric grid, for side-by-side comparison ===== */
+  .compare-wrap { max-width: 1200px; margin: 0 auto; }
+  .divider { height: 1px; background: var(--color-border); margin: 48px 0; }
+  .symmetric-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .sym-card { border-radius: var(--radius-card); overflow: hidden; border: 1px solid var(--color-border); }
+  .sym-media { aspect-ratio: 4/5; background: linear-gradient(150deg,#efe6db,#e2d5c2); }
+  .sym-info { padding: 10px 12px; font-size: 0.82rem; }
+  @media (min-width: 1024px) { .symmetric-grid { grid-template-columns: repeat(4, 1fr); } }
+</style>
+</head>
+<body>
+<div class="compare-wrap">
+
+  <p class="compare-label">Proposal A — Anchor + Rail</p>
+  <div class="filters">
+    <button class="filter-pill active">Best Sellers</button>
+    <button class="filter-pill">New Arrivals</button>
+    <button class="filter-pill">Limited Edition</button>
+    <button class="filter-pill">Accessories</button>
+  </div>
+  <h2 class="title">New Arrivals</h2>
+
+  <div class="anchor-rail">
+    <div class="anchor">
+      <span class="ph-label">Anchor product photo</span>
+      <div class="anchor-caption">
+        <div class="name">Nafisa Tote — Camel</div>
+        <div class="row">
+          <span class="price">৳4,200</span>
+          <a href="#">Shop this →</a>
+        </div>
+      </div>
+    </div>
+    <div class="rail">
+      <div class="rail-card">
+        <div class="rail-media"><span class="ph-label">Photo</span></div>
+        <div class="rail-info"><div class="name">Rhea Crossbody</div><div class="price">৳3,100</div></div>
+      </div>
+      <div class="rail-card">
+        <div class="rail-media"><span class="ph-label">Photo</span></div>
+        <div class="rail-info"><div class="name">Mira Shoulder Bag</div><div class="price">৳3,200</div></div>
+      </div>
+      <div class="rail-card">
+        <div class="rail-media"><span class="ph-label">Photo</span></div>
+        <div class="rail-info"><div class="name">Amara Mini Bag</div><div class="price">৳2,600</div></div>
+      </div>
+      <div class="rail-card">
+        <div class="rail-media"><span class="ph-label">Photo</span></div>
+        <div class="rail-info"><div class="name">Zara Work Tote</div><div class="price">৳3,900</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <p class="compare-label">For comparison — the original symmetric grid (my-home-screen.html)</p>
+  <h2 class="title">New Arrivals</h2>
+  <div class="symmetric-grid">
+    <div class="sym-card"><div class="sym-media"></div><div class="sym-info">Nafisa Tote — Camel<br>৳4,200</div></div>
+    <div class="sym-card"><div class="sym-media"></div><div class="sym-info">Rhea Crossbody<br>৳3,100</div></div>
+    <div class="sym-card"><div class="sym-media"></div><div class="sym-info">Mira Shoulder Bag<br>৳3,200</div></div>
+    <div class="sym-card"><div class="sym-media"></div><div class="sym-info">Amara Mini Bag<br>৳2,600</div></div>
+  </div>
+
+</div>
+</body>
+</html>

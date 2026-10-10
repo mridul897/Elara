@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELARA — Order confirmed</title>
+<meta name="description" content="Your ELARA order is confirmed.">
+<meta name="theme-color" content="#FFFDF9">
+<link rel="icon" type="image/svg+xml" href="assets/home/favicon.svg">
+<meta name="robots" content="noindex">
+<!--
+  Order Success page — pixel-perfect build of Figma node 240:748 (Elara Women's bag E-commerce project).
+  1440px artboard; below 1440 the whole artboard scales down (same approach as the other pages).
+  Reads the placed order from localStorage ("elara.order.v1"), written by my-checkout-review.html.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #fffdf9;
+    --bg-card: #f7f1e8;
+    --bg-panel: #f8f4ef;
+    --text: #4a4741;
+    --text-muted: #838280;
+    --border-soft: rgba(74,71,65,0.25);
+    --accent: #2a72de;
+    --focus: #3184ff;
+    --r-large: 32px;
+    --r-media: 12px;
+    --r-pill: 999px;
+    --ease: cubic-bezier(.4,0,.2,1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { overflow-x: clip; }   /* clip, not hidden: hidden turns html and body into two scroll containers (double scrollbar) */
+  body { background: var(--bg-page); color: var(--text); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+  [hidden] { display: none !important; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+  img { display: block; }
+  .serif { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; }
+  .cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+
+  .page { position: relative; width: 1440px; margin: 0 auto; padding-top: 109px; zoom: var(--fit, 1); }
+  .abs { position: absolute; }
+
+  /* ===== Nav (22:641) — same component as the homepage ===== */
+  .nav { left: 0; top: 0; width: 1440px; height: 109px; padding: 10px; display: flex; align-items: center; justify-content: center; z-index: 20; }
+  .nav-inner { width: 100%; display: flex; gap: 144px; align-items: center; justify-content: center; padding: 0 37px; }
+  .nav-logo { position: relative; width: 222px; height: 101px; flex-shrink: 0; }
+  .nav-right { display: flex; gap: 104px; align-items: center; }
+  .nav-links { display: flex; gap: 32px; align-items: center; }
+  .nav-link { display: flex; gap: 6px; align-items: center; font-weight: 500; font-size: 16px; line-height: 1.5; text-transform: uppercase; white-space: nowrap; transition: background-color .15s var(--ease), color .15s var(--ease); }
+  .nav-link img { width: 16px; height: 16px; display: block; }
+  .nav-tools { display: flex; gap: 18px; align-items: center; }
+  .nav-icons { display: flex; gap: 20px; align-items: center; width: 58px; }
+  .ico20 { position: relative; width: 20px; height: 20px; flex-shrink: 0; overflow: clip; }
+  .ico20 img { position: absolute; display: block; }
+  /* Nav search / account icons: soft circle on hover, same cue as the cart pill */
+  .nav-icons .ico20 { overflow: visible; cursor: pointer; }
+  .nav-icons .ico20::before { content: ""; position: absolute; inset: -8px; border-radius: 50%; background: #f1e9dc; opacity: 0; transform: scale(.7); transition: opacity .15s cubic-bezier(.4,0,.2,1), transform .2s cubic-bezier(.4,0,.2,1); }
+  .nav-icons .ico20:hover::before, .nav-icons .ico20:focus-visible::before { opacity: 1; transform: scale(1); }
+  .nav-icons .ico20 img { z-index: 1; }
+  .nav-icons a.ico20 { display: block; }
+  .cart-btn { display: flex; gap: 10px; align-items: center; justify-content: center; height: 40px; padding: 10px 18px; border: 1px solid var(--text); border-radius: var(--r-pill); font-weight: 500; font-size: 16px; line-height: 1.5; text-transform: uppercase; white-space: nowrap; transition: background-color .15s var(--ease); }
+  .cart-btn:hover { background: var(--bg-card); }
+  .nav-item { position: relative; }
+  .nav-chev { transition: transform 220ms var(--ease); }
+  .nav-item.open .nav-chev { transform: rotate(180deg); }
+  .nav-menu-wrap { position: absolute; top: 99px; z-index: 10; background: var(--bg-page); box-shadow: 0 28px 56px rgba(28,27,26,0.12); opacity: 0; visibility: hidden; transform: translateY(-10px); transition: opacity 260ms var(--ease), transform 260ms var(--ease), visibility 0s linear 260ms, left 260ms var(--ease); pointer-events: none; overflow: hidden; }
+  .nav-menu-wrap.mega { left: 0; width: 1440px; border-radius: 0 0 var(--r-large) var(--r-large); }
+  .nav-menu-wrap.light { width: auto; border-radius: var(--r-large); }
+  .nav-menu-wrap.open { opacity: 1; visibility: visible; transform: translateY(0); transition: opacity 260ms var(--ease), transform 260ms var(--ease), height 320ms var(--ease), left 320ms var(--ease); pointer-events: auto; }
+  .nav-panel { display: none; padding: 48px 64px 56px; }
+  .nav-menu-wrap.light .nav-panel { padding: 20px; }
+  .nav-panel.active { display: block; animation: navPanelIn 240ms var(--ease); }
+  @keyframes navPanelIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .nav-menu-wrap.mega .nav-panel { padding: 0; }
+  .dd-panel { position: relative; width: 1440px; height: 360px; }
+  .dd-card { position: absolute; left: 82px; top: 56px; width: 332px; height: 248px; border-radius: var(--r-media); overflow: hidden; }
+  .dd-card .cover { border-radius: var(--r-media); transition: transform .4s var(--ease); }
+  .dd-card:hover .cover { transform: scale(1.05); }
+  .dd-card-fade { position: absolute; left: 50%; bottom: -14px; width: 604px; height: 83px; transform: translateX(-50%); pointer-events: none; }
+  .dd-card-fade i { position: absolute; inset: 0; filter: blur(52px); font-style: normal; }
+  .dd-card-fade i:first-child { background: rgba(40,40,40,0.53); }
+  .dd-card-fade i:last-child { background: rgba(40,40,40,0.88); mix-blend-mode: multiply; }
+  .dd-card-label { position: absolute; left: 14px; right: 14px; bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #fff; }
+  .dd-card-label:not(.two-line) > span:first-child { font-size: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dd-card-label img { width: 24px; height: 24px; flex-shrink: 0; }
+  .dd-card-label.two-line { flex-direction: column; align-items: flex-start; gap: 0; }
+  .dd-card-eyebrow { font-weight: 500; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; color: #d3d1ce; }
+  .dd-card-title { font-size: 16px; font-weight: 400; }
+  .dd-divider { position: absolute; left: 831px; top: 29px; width: 1px; height: 301.5px; }
+  .dd-list { position: absolute; left: 853px; top: 56px; width: 268px; display: flex; flex-direction: column; gap: 20px; }
+  .dd-list-group { display: flex; flex-direction: column; gap: 16px; }
+  .dd-list-coll { gap: 16px; }
+  .dd-row { display: flex; align-items: center; gap: 12px; color: var(--text); border-radius: var(--r-media); padding: 6px; margin: -6px; }
+  .dd-row:hover { background: var(--bg-card); }
+  .dd-row-thumb { position: relative; width: 48px; height: 48px; border-radius: 999px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-soft); }
+  .dd-row-thumb .cover { border-radius: 999px; }
+  .dd-row-thumb.icon { border: none; }
+  .dd-row-title { font-size: 18px; white-space: nowrap; }
+  .nm-simple-list { display: flex; flex-direction: column; gap: 2px; width: 280px; }
+  .nm-simple { padding: 12px 16px; border-radius: var(--r-media); font-size: 16px; color: var(--text); }
+  .nm-simple:hover { background: var(--bg-card); }
+
+  /* ===== Breadcrumb (240:796) ===== */
+  .breadcrumb { display: flex; gap: 6px; padding: 16px 0 0 64px; font-size: 12px; line-height: 1.5; color: var(--text-muted); white-space: nowrap; }
+  .breadcrumb a:hover { color: var(--text); }
+  .breadcrumb [aria-current] { color: var(--text); }
+
+  /* ===== Title row (240:802) ===== */
+  .title-row { display: flex; align-items: flex-end; justify-content: space-between; padding: 24px 128px 0; }
+  .title-block { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+  .success-icon { padding-bottom: 12px; }
+  .success-icon img { width: 56px; height: 56px; }
+  .title-text { display: flex; flex-direction: column; gap: 4px; }
+  .title-text h1:focus { outline: none; }
+  .title-text h1 { font-size: 36px; font-weight: 300; line-height: 1.1; letter-spacing: -1.8px; }
+  .title-text p { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+  .chip-wrap { padding-top: 12px; }
+  .order-chip { display: flex; align-items: center; gap: 8px; padding: 6px 14px; border: 1px solid var(--border-soft); border-radius: var(--r-pill); line-height: 1.5; }
+  .order-chip span { font-size: 12px; color: var(--text-muted); }
+  .order-chip b { font-size: 14px; font-weight: 500; }
+  .title-link { font-size: 18px; font-weight: 500; line-height: 1.5; color: var(--accent); white-space: nowrap; }
+  .title-link:hover { text-decoration: underline; }
+
+  /* ===== Main (240:815) ===== */
+  .success-main { display: flex; align-items: flex-start; gap: 64px; padding: 32px 128px 64px; }
+  .details { display: flex; flex-direction: column; gap: 32px; width: 740px; flex-shrink: 0; }
+  .details h2, .summary h2 { font-size: 24px; font-weight: 400; line-height: 1.1; letter-spacing: -0.72px; }
+  .details-list { border-top: 1px solid var(--border-soft); font-size: 14px; }
+  .details-row { display: flex; gap: 24px; padding: 16px 0; border-bottom: 1px solid var(--border-soft); line-height: 1.5; }
+  .details-row dt { width: 140px; flex-shrink: 0; color: var(--text-muted); }
+  .details-row dd { flex: 1; min-width: 0; }
+  .actions { display: flex; gap: 16px; }
+  .btn { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; height: 50px; padding: 0 24px; border-radius: var(--r-pill); font-size: 15px; font-weight: 500; line-height: 1; white-space: nowrap; transition: background-color .15s var(--ease), color .15s var(--ease); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: #1f5fc4; }
+  .btn-outline { border: 1px solid var(--text); }
+  .btn-outline:hover { background: var(--bg-card); }
+
+  /* WhatsApp strip (241:796) */
+  .wa { display: flex; align-items: center; gap: 12px; padding: 16px 24px; background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--r-media); }
+  .wa-icon { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--r-pill); background: #25d366; flex-shrink: 0; }
+  .wa-icon img { width: 20px; height: 20px; }
+  .wa-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; line-height: 1.5; }
+  .wa-text b { font-size: 15px; font-weight: 500; }
+  .wa-text span { font-size: 14px; color: var(--text-muted); }
+  .wa-link { font-size: 14px; line-height: 1.5; color: var(--accent); white-space: nowrap; }
+  .wa-link:hover { text-decoration: underline; }
+
+  /* Order summary (240:847) */
+  .summary { display: flex; flex-direction: column; gap: 16px; width: 380px; flex-shrink: 0; padding: 24px; background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--r-media); }
+  .sum-item { display: flex; align-items: flex-start; gap: 12px; }
+  .sum-photo { position: relative; width: 64px; height: 80px; flex-shrink: 0; border: 1px solid var(--border-soft); border-radius: var(--r-media); background: #f2ecde; }
+  .sum-photo .cover { border-radius: var(--r-media); }
+  .sum-details { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.5; }
+  .sum-details b { font-size: 14px; font-weight: 500; }
+  .sum-details span { font-size: 12px; color: var(--text-muted); }
+  .sum-price { font-size: 14px; font-weight: 500; line-height: 1.5; white-space: nowrap; }
+  .divider { height: 1px; background: var(--border-soft); }
+  .sum-line { display: flex; align-items: center; justify-content: space-between; font-size: 14px; line-height: 1.5; }
+  .sum-line span:first-child { color: var(--text-muted); }
+  .sum-line .strong { font-weight: 500; }
+  .sum-total { display: flex; align-items: center; justify-content: space-between; }
+  .sum-total span:first-child { font-size: 16px; line-height: 1.5; }
+  .sum-total .serif { font-size: 24px; line-height: 1.1; letter-spacing: -0.72px; }
+  .sum-note { font-size: 12px; line-height: 1.5; color: var(--text-muted); }
+
+  /* No order to show (opened directly) */
+  .empty { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; padding: 48px 128px 120px; }
+  .empty h1 { font-size: 36px; font-weight: 300; line-height: 1.1; letter-spacing: -1.8px; }
+  .empty p { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+  .empty .btn { flex: none; width: 260px; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="abs nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo" aria-label="ELARA home"><img class="cover" src="assets/home/logo.webp" alt="ELARA"></a>
+      <div class="nav-right">
+        <nav class="nav-links" aria-label="Primary">
+          <div class="nav-item" data-menu="new-arrivals"><a href="#" class="nav-link">New Arrivals <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="bags"><a href="#" class="nav-link">Bags <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="collections"><a href="#" class="nav-link">Collections <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="best-sellers"><a href="#" class="nav-link">Best Sellers <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <a href="my-contact-screen.html" class="nav-link">Contact Us</a>
+        </nav>
+        <div class="nav-tools">
+          <div class="nav-icons">
+            <button class="ico20" aria-label="Search"><img src="assets/home/icon-search.svg" alt="" style="inset:0;width:20px;height:20px;"></button>
+            <a href="my-account.html" class="ico20" aria-label="Account"><img src="assets/home/icon-account.svg" alt="" style="left:22.27%;top:8.33%;width:57.44%;height:82.55%;"></a>
+          </div>
+          <a href="my-cart-screen.html" class="cart-btn">My cart
+            <span class="ico20"><img src="assets/home/icon-cart.svg" alt="" style="left:5.21%;top:5.21%;width:87.63%;height:89.58%;"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-menu-wrap" id="navMenuWrap">
+      <div class="nav-panel" data-panel="new-arrivals">
+        <div class="dd-panel">
+          <a href="my-product-detail-screen.html?p=leather-tote-bag" class="dd-card">
+            <img class="cover" src="assets/home/dd-na-card-1.webp" alt="Leather Tote Bag">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Leather Tote Bag</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <a href="my-product-detail-screen.html?p=aveline-convertible-tote" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-na-card-2.webp" alt="Aveline Convertible Tote">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Aveline Convertible Tote</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
+          <div class="dd-list">
+            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-1.webp" alt=""></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
+            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-2.webp" alt=""></span><span class="dd-row-title">Sienna Structured Purse</span></a>
+            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-3.webp" alt=""></span><span class="dd-row-title">Isla Bags</span></a>
+            <a href="my-plp-screen.html?collection=new" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All New Arrivals</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="bags">
+        <div class="dd-panel">
+          <a href="my-product-detail-screen.html?p=suede-crossbody" class="dd-card">
+            <img class="cover" src="assets/home/dd-bags-card-1.webp" alt="Cross Body Bags">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Cross Body Bags</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <a href="my-product-detail-screen.html?p=structured-work-satchel" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-bags-card-2.webp" alt="Work &amp; Travel">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Work &amp; Travel</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
+          <div class="dd-list">
+            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-1.webp" alt=""></span><span class="dd-row-title">Tote</span></a>
+            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-2.webp" alt=""></span><span class="dd-row-title">Shoulder</span></a>
+            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-3.webp" alt=""></span><span class="dd-row-title">Mini</span></a>
+            <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All Category Bags</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="collections">
+        <div class="dd-panel">
+          <a href="#coming-soon" data-soon="Our Signature Pieces" class="dd-card">
+            <img class="cover" src="assets/home/dd-coll-card-1.webp" alt="Our Signature Pieces">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label two-line"><span class="dd-card-eyebrow">Signature</span><span class="dd-card-title">Our Signature Pieces</span></div>
+          </a>
+          <a href="#coming-soon" data-soon="Everyday Essentials" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-coll-card-2.webp" alt="Everyday Essentials">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label two-line"><span class="dd-card-eyebrow">Everyday</span><span class="dd-card-title">Everyday Essentials</span></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="" style="left:826px;">
+          <div class="dd-list dd-list-coll" style="left:850px; top:92px;">
+            <div class="dd-list-group">
+              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-1.webp" alt=""></span><span class="dd-row-title">The Evening Edit</span></a>
+              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-2.webp" alt=""></span><span class="dd-row-title">Designed for Work</span></a>
+            </div>
+            <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-see-all.svg" alt=""></span><span class="dd-row-title">See All Collections</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="best-sellers">
+        <div class="nm-simple-list">
+          <a href="my-plp-screen.html" class="nm-simple">All Best Sellers</a>
+          <a href="my-plp-screen.html" class="nm-simple">Customer Favorites</a>
+          <a href="my-plp-screen.html" class="nm-simple">Most Loved</a>
+          <a href="my-plp-screen.html" class="nm-simple">Trending Now</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="index.html">Home</a><span>/</span>
+    <a href="my-checkout-review.html">Checkout</a><span>/</span>
+    <span aria-current="page">Order confirmed</span>
+  </nav>
+
+  <div id="view" hidden>
+    <div class="title-row">
+      <div class="title-block">
+        <div class="success-icon"><img src="assets/checkout/icon-success.svg" alt=""></div>
+        <div class="title-text">
+          <h1 class="serif" id="thanks" tabindex="-1">Thank you</h1>
+          <p>Your order is confirmed. Here is what happens next.</p>
+        </div>
+        <div class="chip-wrap"><div class="order-chip"><span>Order number</span><b id="orderId"></b></div></div>
+      </div>
+      <a href="my-plp-screen.html" class="title-link">Continue shopping →</a>
+    </div>
+
+    <div class="success-main">
+      <div class="details">
+        <h2 class="serif">Order details</h2>
+        <dl class="details-list">
+          <div class="details-row"><dt>Delivery</dt><dd id="dDelivery"></dd></div>
+          <div class="details-row"><dt>Address</dt><dd id="dAddress"></dd></div>
+          <div class="details-row"><dt>Payment</dt><dd id="dPayment"></dd></div>
+          <div class="details-row"><dt>Contact</dt><dd id="dContact"></dd></div>
+          <div class="details-row"><dt>Track your order</dt><dd>Use your order number and phone number any time. No account needed.</dd></div>
+        </dl>
+        <div class="actions">
+          <a href="my-order-tracking.html" class="btn btn-accent" id="trackBtn">Track order</a>
+          <a href="my-plp-screen.html" class="btn btn-outline">Continue shopping</a>
+        </div>
+        <div class="wa">
+          <span class="wa-icon"><img src="assets/pdp/11704.svg" alt=""></span>
+          <div class="wa-text"><b>Questions about your order?</b><span>Message us on WhatsApp, we reply within 1 business day.</span></div>
+          <a href="my-contact-screen.html" class="wa-link">Chat on WhatsApp →</a>
+        </div>
+      </div>
+
+      <aside class="summary" aria-label="Order summary">
+        <h2 class="serif">Order summary</h2>
+        <div id="sumItems" style="display:contents"></div>
+        <div class="divider"></div>
+        <div class="sum-line"><span id="subLabel"></span><span id="subValue"></span></div>
+        <div class="sum-line" id="discLine" hidden><span id="discLabel"></span><span id="discValue"></span></div>
+        <div class="sum-line"><span id="delLabel"></span><span class="strong" id="delValue"></span></div>
+        <div class="divider"></div>
+        <div class="sum-total"><span>Total</span><span class="serif" id="totalValue"></span></div>
+        <p class="sum-note" id="sumNote"></p>
+      </aside>
+    </div>
+  </div>
+
+  <div class="empty" id="emptyView" hidden>
+    <h1 class="serif">No recent order</h1>
+    <p>We could not find an order on this device. Your bag is waiting if you want to keep shopping.</p>
+    <a href="my-plp-screen.html" class="btn btn-accent">Continue shopping</a>
+  </div>
+
+</div>
+
+<script>
+  // Below 1440 only: shrink the artboard to the viewport (never scales up).
+  function fit() { document.documentElement.style.setProperty('--fit', Math.min(1, document.documentElement.clientWidth / 1440)); }
+  fit();
+  new ResizeObserver(fit).observe(document.documentElement);
+
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const money = (n) => 'Tk. ' + Number(n).toLocaleString('en-US') + '/-';
+  const PAY = { cod: 'Cash on Delivery', bkash: 'bKash', nagad: 'Nagad', card: 'Credit or debit card' };
+  let order = null;
+  try { order = JSON.parse(localStorage.getItem('elara.order.v1')); } catch (e) {}
+
+  if (order && (order.payment === 'bkash' || order.payment === 'nagad') && !order.paid) {
+    location.replace('my-payment.html');      // not paid yet: this is not a confirmation
+  } else if (!order || !order.items || !order.items.length) {
+    $('emptyView').hidden = false;
+  } else {
+    const o = order, a = o.address, count = o.items.reduce((n, l) => n + l.qty, 0);
+    document.title = 'ELARA — Order ' + o.id + ' confirmed';
+    if (o.promo === 'WELCOME10') { try { const w = JSON.parse(localStorage.getItem('elara.welcome.v1')) || {}; w.used = true; localStorage.setItem('elara.welcome.v1', JSON.stringify(w)); } catch (e) {} }
+    try {                                       // keep a history of confirmed orders for the account page
+      const hist = JSON.parse(localStorage.getItem('elara.orders.v1')) || [];
+      if (!hist.some((h) => h.id === o.id)) { hist.push(o); localStorage.setItem('elara.orders.v1', JSON.stringify(hist)); }
+    } catch (e) {}
+    $('view').hidden = false;
+    $('thanks').textContent = 'Thank you, ' + o.customer.name.split(' ')[0];
+    $('orderId').textContent = o.id;
+    $('dDelivery').textContent = o.days + ' working days to ' + a.upazila + ', ' + a.district;
+    $('dAddress').innerHTML = esc(a.line1) + (a.line2 ? ', ' + esc(a.line2) : '') + '<br>' + [a.area, a.upazila, a.district, a.division].map(esc).join(', ');
+    $('dPayment').textContent = o.paid
+      ? 'Paid ' + money(o.total) + ' with ' + PAY[o.payment] + '. Transaction ID ' + o.trxId + '.'
+      : o.payment === 'cod'
+        ? 'Cash on Delivery: pay ' + money(o.total) + ' to the delivery person when your order arrives.'
+        : 'Complete your ' + money(o.total) + ' payment with ' + PAY[o.payment].replace('Credit or debit card', 'your card') + '.';
+    $('dContact').textContent = o.customer.name + ' · ' + o.customer.phone.replace(/^\+880(\d{4})(\d{6})$/, '+880 $1 $2');
+
+    $('sumItems').innerHTML = o.items.map((l) => `
+      <div class="sum-item">
+        <div class="sum-photo"><img class="cover" src="${esc(l.img)}" alt=""></div>
+        <div class="sum-details"><b>${esc(l.name)}</b><span>${[l.colour, l.size].filter(Boolean).map(esc).concat('Qty ' + l.qty).join(' · ')}</span></div>
+        <span class="sum-price">${money(l.price * l.qty)}</span>
+      </div>`).join('');
+    $('subLabel').textContent = 'Subtotal (' + count + (count === 1 ? ' item' : ' items') + ')';
+    $('subValue').textContent = money(o.subtotal);
+    $('discLine').hidden = !o.discount;
+    if (o.discount) { $('discLabel').textContent = 'Discount (' + o.promo + ')'; $('discValue').textContent = '– ' + money(o.discount); }
+    $('delLabel').textContent = 'Delivery · ' + o.zone;
+    $('delValue').textContent = o.delivery ? money(o.delivery) : 'Free';
+    $('totalValue').textContent = money(o.total);
+    $('sumNote').textContent = o.paid
+      ? 'Paid ' + money(o.total) + ' with ' + PAY[o.payment] + '.'
+      : o.payment === 'cod'
+      ? 'Pay ' + money(o.total) + ' in cash when your order arrives.'
+      : 'Complete payment of ' + money(o.total) + ' with ' + PAY[o.payment].replace('Credit or debit card', 'your card') + '.';
+    $('trackBtn').href = 'my-order-tracking.html?order=' + encodeURIComponent(o.id);
+    $('thanks').focus({ preventScroll: true });
+  }
+
+  // Nav dropdowns — identical behaviour to the homepage.
+  document.querySelectorAll('.nav-menu-wrap img').forEach((img) => { if (img.decode) img.decode().catch(() => {}); });
+  (function () {
+    const wrap = document.getElementById('navMenuWrap');
+    if (!wrap) return;
+    const items = document.querySelectorAll('.nav-item[data-menu]');
+    const panels = wrap.querySelectorAll('.nav-panel');
+    let closeTimer = null;
+    let openKey = null;
+
+    function showPanel(key, item) {
+      panels.forEach((p) => p.classList.toggle('active', p.dataset.panel === key));
+      const isMega = key !== 'best-sellers';
+      wrap.classList.toggle('mega', isMega);
+      wrap.classList.toggle('light', !isMega);
+      if (isMega) {
+        wrap.style.left = '0px';
+      } else {
+        const itemRect = item.getBoundingClientRect();
+        const navRect = document.querySelector('.nav').getBoundingClientRect();
+        wrap.style.left = Math.round(itemRect.left - navRect.left) + 'px';
+      }
+      const activeEl = wrap.querySelector('.nav-panel.active');
+      wrap.style.height = activeEl ? activeEl.offsetHeight + 'px' : 'auto';
+    }
+    function open(key, item) {
+      clearTimeout(closeTimer);
+      const wasOpen = wrap.classList.contains('open');
+      showPanel(key, item);
+      if (!wasOpen) { wrap.style.transition = 'none'; void wrap.offsetHeight; wrap.style.transition = ''; }
+      wrap.classList.add('open');
+      items.forEach((it) => it.classList.toggle('open', it.dataset.menu === key));
+      openKey = key;
+    }
+    function close() { wrap.classList.remove('open'); items.forEach((it) => it.classList.remove('open')); openKey = null; }
+    function scheduleClose() { clearTimeout(closeTimer); closeTimer = setTimeout(close, 150); }
+
+    items.forEach((item) => {
+      const key = item.dataset.menu;
+      item.addEventListener('mouseenter', () => open(key, item));
+      item.addEventListener('mouseleave', scheduleClose);
+      item.addEventListener('focusin', () => open(key, item));
+      item.querySelector('.nav-link').addEventListener('click', (e) => { e.preventDefault(); openKey === key ? close() : open(key, item); });
+    });
+    wrap.addEventListener('mouseenter', () => clearTimeout(closeTimer));
+    wrap.addEventListener('mouseleave', scheduleClose);
+    wrap.addEventListener('focusin', () => clearTimeout(closeTimer));
+    document.addEventListener('focusin', (e) => { if (openKey && !wrap.contains(e.target) && ![...items].some((it) => it.contains(e.target))) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    document.addEventListener('click', (e) => { if (openKey && !wrap.contains(e.target) && ![...items].some((it) => it.contains(e.target))) close(); });
+  })();
+</script>
+<script src="assets/cart-badge.js"></script>
+<script src="assets/search.js"></script>
+<script src="assets/soon.js"></script>
+</body>
+</html>

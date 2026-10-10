@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELARA — Your Bag</title>
+<meta name="description" content="Your ELARA bag: review your items, apply a promo code and check out.">
+<meta name="theme-color" content="#FFFDF9">
+<link rel="icon" type="image/svg+xml" href="assets/home/favicon.svg">
+<meta name="robots" content="noindex">
+<!--
+  Cart page — pixel-perfect build of Figma node 216:636 (Elara Women's bag E-commerce project).
+  1440px artboard; below 1440 the whole artboard scales down (same approach as the homepage and PDP).
+  Data-driven: every line comes from localStorage ("elara.cart.v1"), so any product added from a
+  product page shows up with its own photo, name, price, colour and size.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #fffdf9;
+    --bg-card: #f7f1e8;
+    --bg-panel: #f8f4ef;
+    --text: #4a4741;
+    --text-muted: #838280;
+    --text-faint: #a8a5a0;
+    --border-soft: rgba(74,71,65,0.25);
+    --rail: #d3d1ce;
+    --accent: #2a72de;
+    --success: #0ca817;
+    --danger: #d22c15;
+    --focus: #3184ff;
+    --r-large: 32px;
+    --r-media: 12px;
+    --r-pill: 999px;
+    --ease: cubic-bezier(.4,0,.2,1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { overflow-x: clip; }   /* clip, not hidden: hidden turns html and body into two scroll containers (double scrollbar) */
+  body { background: var(--bg-page); color: var(--text); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  button, input { font: inherit; color: inherit; }
+  button { background: none; border: none; cursor: pointer; }
+  img { display: block; }
+  [hidden] { display: none !important; }
+  .cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+
+  .page { position: relative; width: 1440px; margin: 0 auto; padding-top: 109px; zoom: var(--fit, 1); }
+  .abs { position: absolute; }
+
+  /* ===== Nav (22:641) — same component as the homepage ===== */
+  .nav { left: 0; top: 0; width: 1440px; height: 109px; padding: 10px; display: flex; align-items: center; justify-content: center; z-index: 20; }
+  .nav-inner { width: 100%; display: flex; gap: 144px; align-items: center; justify-content: center; padding: 0 37px; }
+  .nav-logo { position: relative; width: 222px; height: 101px; flex-shrink: 0; }
+  .nav-right { display: flex; gap: 104px; align-items: center; }
+  .nav-links { display: flex; gap: 32px; align-items: center; }
+  .nav-link { display: flex; gap: 6px; align-items: center; font-weight: 500; font-size: 16px; line-height: 1.5; text-transform: uppercase; white-space: nowrap; transition: background-color .15s var(--ease), color .15s var(--ease); }
+  .nav-link img { width: 16px; height: 16px; display: block; }
+  .nav-tools { display: flex; gap: 18px; align-items: center; }
+  .nav-icons { display: flex; gap: 20px; align-items: center; width: 58px; }
+  .ico20 { position: relative; width: 20px; height: 20px; flex-shrink: 0; overflow: clip; }
+  .ico20 img { position: absolute; display: block; }
+  /* Nav search / account icons: soft circle on hover, same cue as the cart pill */
+  .nav-icons .ico20 { overflow: visible; cursor: pointer; }
+  .nav-icons .ico20::before { content: ""; position: absolute; inset: -8px; border-radius: 50%; background: #f1e9dc; opacity: 0; transform: scale(.7); transition: opacity .15s cubic-bezier(.4,0,.2,1), transform .2s cubic-bezier(.4,0,.2,1); }
+  .nav-icons .ico20:hover::before, .nav-icons .ico20:focus-visible::before { opacity: 1; transform: scale(1); }
+  .nav-icons .ico20 img { z-index: 1; }
+  .nav-icons a.ico20 { display: block; }
+  .cart-btn { display: flex; gap: 10px; align-items: center; justify-content: center; height: 40px; padding: 10px 18px; border: 1px solid var(--text); border-radius: var(--r-pill); font-weight: 500; font-size: 16px; line-height: 1.5; text-transform: uppercase; white-space: nowrap; transition: background-color .15s var(--ease); }
+  .cart-btn:hover { background: var(--bg-card); }
+  .nav-item { position: relative; }
+  .nav-chev { transition: transform 220ms var(--ease); }
+  .nav-item.open .nav-chev { transform: rotate(180deg); }
+  .nav-menu-wrap { position: absolute; top: 99px; z-index: 10; background: var(--bg-page); box-shadow: 0 28px 56px rgba(28,27,26,0.12); opacity: 0; visibility: hidden; transform: translateY(-10px); transition: opacity 260ms var(--ease), transform 260ms var(--ease), visibility 0s linear 260ms, left 260ms var(--ease); pointer-events: none; overflow: hidden; }
+  .nav-menu-wrap.mega { left: 0; width: 1440px; border-radius: 0 0 var(--r-large) var(--r-large); }
+  .nav-menu-wrap.light { width: auto; border-radius: var(--r-large); }
+  .nav-menu-wrap.open { opacity: 1; visibility: visible; transform: translateY(0); transition: opacity 260ms var(--ease), transform 260ms var(--ease), height 320ms var(--ease), left 320ms var(--ease); pointer-events: auto; }
+  .nav-panel { display: none; padding: 48px 64px 56px; }
+  .nav-menu-wrap.light .nav-panel { padding: 20px; }
+  .nav-panel.active { display: block; animation: navPanelIn 240ms var(--ease); }
+  @keyframes navPanelIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .nav-menu-wrap.mega .nav-panel { padding: 0; }
+  .dd-panel { position: relative; width: 1440px; height: 360px; }
+  .dd-card { position: absolute; left: 82px; top: 56px; width: 332px; height: 248px; border-radius: var(--r-media); overflow: hidden; }
+  .dd-card .cover { border-radius: var(--r-media); transition: transform .4s var(--ease); }
+  .dd-card:hover .cover { transform: scale(1.05); }
+  .dd-card-fade { position: absolute; left: 50%; bottom: -14px; width: 604px; height: 83px; transform: translateX(-50%); pointer-events: none; }
+  .dd-card-fade i { position: absolute; inset: 0; filter: blur(52px); font-style: normal; }
+  .dd-card-fade i:first-child { background: rgba(40,40,40,0.53); }
+  .dd-card-fade i:last-child { background: rgba(40,40,40,0.88); mix-blend-mode: multiply; }
+  .dd-card-label { position: absolute; left: 14px; right: 14px; bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #fff; }
+  .dd-card-label:not(.two-line) > span:first-child { font-size: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dd-card-label img { width: 24px; height: 24px; flex-shrink: 0; }
+  .dd-card-label.two-line { flex-direction: column; align-items: flex-start; gap: 0; }
+  .dd-card-eyebrow { font-weight: 500; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; color: #d3d1ce; }
+  .dd-card-title { font-size: 16px; font-weight: 400; }
+  .dd-divider { position: absolute; left: 831px; top: 29px; width: 1px; height: 301.5px; }
+  .dd-list { position: absolute; left: 853px; top: 56px; width: 268px; display: flex; flex-direction: column; gap: 20px; }
+  .dd-list-group { display: flex; flex-direction: column; gap: 16px; }
+  .dd-list-coll { gap: 16px; }
+  .dd-row { display: flex; align-items: center; gap: 12px; color: var(--text); border-radius: var(--r-media); padding: 6px; margin: -6px; }
+  .dd-row:hover { background: var(--bg-card); }
+  .dd-row-thumb { position: relative; width: 48px; height: 48px; border-radius: 999px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-soft); }
+  .dd-row-thumb .cover { border-radius: 999px; }
+  .dd-row-thumb.icon { border: none; }
+  .dd-row-title { font-size: 18px; white-space: nowrap; }
+  .nm-simple-list { display: flex; flex-direction: column; gap: 2px; width: 280px; }
+  .nm-simple { padding: 12px 16px; border-radius: var(--r-media); font-size: 16px; color: var(--text); }
+  .nm-simple:hover { background: var(--bg-card); }
+
+  /* ===== Breadcrumb (216:684) ===== */
+  .breadcrumb { display: flex; align-items: flex-start; gap: 6px; padding: 16px 0 0 64px; font-size: 12px; line-height: 1.5; color: var(--text-muted); white-space: nowrap; }
+  .breadcrumb a:hover { color: var(--text); }
+  .breadcrumb [aria-current] { color: var(--text); }
+
+  /* ===== Title row (216:688) ===== */
+  .title-row { display: flex; align-items: flex-end; justify-content: space-between; padding: 24px 128px 0; white-space: nowrap; }
+  .title-block { display: flex; flex-direction: column; gap: 4px; }
+  .title-block h1 { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 300; font-size: 36px; line-height: 1.1; letter-spacing: -1.8px; }
+  .title-block p { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+  .continue { font-weight: 500; font-size: 18px; line-height: 1.25; color: var(--accent); }
+  .continue:hover { text-decoration: underline; }
+
+  /* ===== Cart main (217:682) ===== */
+  .cart-main { display: flex; align-items: flex-start; gap: 64px; padding: 32px 128px 64px; }
+  .items { width: 740px; flex-shrink: 0; border-top: 1px solid var(--border-soft); }
+  .item { display: flex; align-items: flex-start; gap: 24px; padding: 24px 0; border-bottom: 1px solid var(--border-soft); }
+  .item-photo { position: relative; width: 120px; height: 150px; flex-shrink: 0; border: 1px solid var(--border-soft); border-radius: var(--r-media); overflow: hidden; background: var(--bg-card); }
+  .item-details { flex: 1; min-width: 0; height: 150px; display: flex; flex-direction: column; justify-content: space-between; }
+  .item-top { display: flex; flex-direction: column; gap: 4px; }
+  .item-name-row { display: flex; align-items: flex-start; justify-content: space-between; white-space: nowrap; }
+  .item-name { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 24px; line-height: 1.1; letter-spacing: -0.72px; }
+  .item-name a:hover { text-decoration: underline; }
+  .item-price { font-weight: 500; font-size: 16px; line-height: 1.5; }
+  .item-meta { font-size: 14px; line-height: 1.5; color: var(--text-muted); white-space: pre; }
+  .item-bottom { display: flex; align-items: center; justify-content: space-between; }
+  .stepper { display: inline-flex; align-items: center; border: 1px solid var(--text); border-radius: var(--r-pill); overflow: hidden; }
+  .stepper button { width: 40px; height: 40px; font-size: 16px; line-height: 1.5; }
+  .stepper button:disabled { color: var(--text-faint); cursor: not-allowed; }
+  .stepper button:not(:disabled):hover { background: var(--bg-card); }
+  .stepper output { display: flex; align-items: center; justify-content: center; width: 32px; height: 40px; font-size: 14px; line-height: 1.5; }
+  .actions { display: flex; gap: 24px; font-size: 14px; line-height: 1.5; }
+  .act-primary { color: var(--accent); }
+  .act-primary:hover { text-decoration: underline; }
+  .act-remove { color: var(--text-muted); text-decoration: underline; text-decoration-skip-ink: auto; }
+  .act-remove:hover { color: var(--text); }
+
+  /* Saved for later (only shows once something is saved) */
+  .saved { margin-top: 48px; }
+  .saved h2 { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 17px; line-height: 1.1; padding-bottom: 16px; }
+  .saved .items { border-top: 1px solid var(--border-soft); }
+
+
+  /* Right column: order summary, then the delivery/returns card and the "Can we help?" card */
+  .side { width: 380px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; }
+  .svc-card { display: flex; flex-direction: column; gap: 20px; padding: 24px 20px; background: var(--bg-card); border-radius: var(--r-media); text-align: center; }
+  .svc-card h3 { font-weight: 600; font-size: 13px; letter-spacing: 1.3px; text-transform: uppercase; line-height: 1.4; }
+  .svc-card p { font-size: 13px; line-height: 1.5; color: var(--text-muted); margin-top: 6px; }
+  .help-card { padding: 28px 24px 12px; background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--r-media); }
+  .help-card h3 { text-align: center; font-weight: 600; font-size: 16px; letter-spacing: 1.6px; text-transform: uppercase; margin-bottom: 14px; }
+  .acc + .acc { border-top: 1px solid var(--border-soft); }
+  .acc-btn { width: 100%; display: flex; align-items: center; gap: 12px; padding: 18px 0; font-weight: 600; font-size: 15px; text-align: left; cursor: pointer; }
+  .acc-btn svg.ic { width: 24px; height: 24px; flex-shrink: 0; }
+  .acc-btn .pm { margin-left: auto; width: 18px; height: 18px; flex-shrink: 0; position: relative; }
+  .acc-btn .pm::before, .acc-btn .pm::after { content: ""; position: absolute; left: 50%; top: 50%; width: 16px; height: 1.6px; background: currentColor; transform: translate(-50%, -50%); transition: transform .3s var(--ease); }
+  .acc-btn .pm::after { transform: translate(-50%, -50%) rotate(90deg); }
+  .acc-btn[aria-expanded="true"] .pm::after { transform: translate(-50%, -50%) rotate(0deg); }
+  .acc-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+  .acc-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s var(--ease); }
+  .acc-body > div { overflow: hidden; }
+  .acc.open .acc-body { grid-template-rows: 1fr; }
+  .acc-in { padding: 0 0 20px 36px; display: flex; flex-direction: column; gap: 14px; font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+  .acc-in a.mail { color: var(--accent); text-decoration: underline; width: fit-content; }
+  .acc-chat { align-self: center; margin-top: 4px; padding: 14px 28px; background: var(--text); color: var(--bg-card); font-weight: 600; font-size: 13px; letter-spacing: 1.4px; text-transform: uppercase; transition: background-color .15s var(--ease); }
+  .acc-chat:hover { background: #2b2926; }
+  @media (prefers-reduced-motion: reduce) { .acc-body, .acc-btn .pm::before, .acc-btn .pm::after { transition: none; } }
+
+  /* Order summary (225:1720) */
+  .summary { width: 380px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; padding: 24px; background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--r-media); }
+  .summary h2 { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 24px; line-height: 1.1; letter-spacing: -0.72px; white-space: nowrap; }
+  /* Free-delivery progress, on top of the bag items */
+  .ship { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 16px; border: 1px solid rgba(47,158,85,0.28); border-radius: var(--r-media); background: #f4faf5; }
+  .ship[hidden] { display: none; }
+  .ship-msg { display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 1.4; color: #2b8a4b; }
+  .ship-msg b { font-weight: 600; }
+  .ship-msg svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .track { height: 8px; border-radius: var(--r-pill); background: #dcebdf; overflow: hidden; }
+  .track i { display: block; height: 8px; border-radius: var(--r-pill); background: linear-gradient(90deg, #3aa75f, #2b8a4b); transition: width .6s var(--ease); }
+  .ship.done .track i { background: #2b8a4b; }
+  .track.intro i { transition-duration: .9s; transition-timing-function: cubic-bezier(.22,.8,.3,1); }
+  .progress-note { font-size: 12px; line-height: 1.5; color: var(--text-muted); }
+  .divider { height: 1px; border-bottom: 1px solid var(--border-soft); }
+  .line { display: flex; align-items: center; justify-content: space-between; font-size: 14px; line-height: 1.5; white-space: nowrap; }
+  .line .label { color: var(--text-muted); }
+  .line .value.strong { font-weight: 500; }
+  .total { display: flex; align-items: center; justify-content: space-between; white-space: nowrap; }
+  .total .label { font-size: 16px; line-height: 1.5; }
+  .total .value { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-size: 24px; line-height: 1.1; letter-spacing: -0.72px; }
+  .btn { display: flex; align-items: center; justify-content: center; height: 50px; width: 100%; padding: 0 24px; border-radius: var(--r-pill); font-weight: 500; font-size: 15px; line-height: 1; white-space: nowrap; transition: background-color .15s var(--ease); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: #2056a6; }
+  .alt-pay { display: flex; flex-direction: column; gap: 8px; }
+  .alt-pay-title { display: flex; align-items: center; gap: 11px; }
+  .alt-pay-title img { width: 92px; height: 1px; flex-shrink: 0; }
+  .alt-pay-title span { font-size: 16px; line-height: 1.4; letter-spacing: -0.4px; white-space: nowrap; }
+  .alt-pay-logos { display: flex; gap: 6px; }
+  .alt-pay-logos a { position: relative; width: 78px; height: 51px; flex-shrink: 0; border: 0.5px solid var(--text); border-radius: 4px; overflow: hidden; background: #fff; transition: transform .15s var(--ease); }
+  .alt-pay-logos a:hover { transform: translateY(-2px); }
+  .alt-pay-logos a:last-child img { object-position: bottom; }
+  .promo { display: flex; flex-direction: column; gap: 8px; }
+  .promo label { font-size: 14px; line-height: 1.5; }
+  .promo-row { display: flex; align-items: center; gap: 8px; }
+  .promo-input { flex: 1; min-width: 0; height: 44px; padding: 0 16px; border: 1px solid var(--border-soft); border-radius: var(--r-pill); background: transparent; font-size: 14px; line-height: 1.5; }
+  .promo-input::placeholder { color: var(--text-faint); }
+  .promo-input:focus { border-color: var(--text); outline: none; }
+  .promo-apply { flex-shrink: 0; width: 80px; height: 44px; padding: 0 20px; border: 1px solid var(--text); border-radius: var(--r-pill); font-weight: 500; font-size: 14px; line-height: 1.5; transition: background-color .15s var(--ease); }
+  .promo-apply:hover { background: var(--bg-card); }
+  .promo-msg { font-size: 12px; line-height: 1.5; color: var(--danger); }
+  .promo-applied { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 44px; padding: 0 16px; border: 1px solid var(--border-soft); border-radius: var(--r-pill); font-size: 14px; line-height: 1.5; }
+  .promo-applied span { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .promo-applied b { font-weight: 500; }
+  .promo-applied svg { flex-shrink: 0; width: 16px; height: 16px; }
+  .promo-applied circle { fill: var(--success); }
+  .promo-applied path { fill: none; stroke: #fff; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .promo-applied button { flex-shrink: 0; color: var(--text-muted); text-decoration: underline; }
+  .promo-applied button:hover { color: var(--text); }
+
+  /* Empty bag (not in Figma yet) */
+  .empty { width: 100%; padding: 32px 0 0; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; border-top: 1px solid var(--border-soft); }
+  .empty h2 { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 24px; line-height: 1.1; letter-spacing: -0.72px; margin-top: 16px; }
+  .empty p { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+  .empty .btn { width: 240px; margin-top: 8px; }
+
+  /* Free-delivery congratulations (centred card, no confetti) */
+  .modal { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(28,27,26,0.42); opacity: 0; visibility: hidden; transition: opacity .25s var(--ease), visibility 0s linear .25s; }
+  .modal.open { opacity: 1; visibility: visible; transition: opacity .25s var(--ease); }
+  .modal { backdrop-filter: blur(3px); }
+  .modal-card { position: relative; width: 440px; max-width: 100%; overflow: hidden; background: var(--bg-page); border: 1px solid rgba(255,255,255,0.4); border-radius: 24px; box-shadow: 0 40px 80px -20px rgba(18,28,22,0.55), 0 0 0 1px rgba(28,27,26,0.06); text-align: center; display: flex; flex-direction: column; align-items: stretch; }
+  .modal.open .modal-card { animation: fdCard .6s cubic-bezier(.22,.8,.3,1) both; }
+  @keyframes fdCard { from { opacity: 0; transform: translateY(28px) scale(.95); } to { opacity: 1; transform: none; } }
+  .modal-close { position: absolute; top: 14px; right: 14px; z-index: 3; width: 36px; height: 36px; border-radius: var(--r-pill); font-size: 20px; line-height: 1; color: var(--text); background: rgba(255,253,249,0.82); transition: background-color .15s var(--ease), color .15s var(--ease); }
+  .modal-close:hover { background: #fffdf9; }
+
+  /* hero: a street map; the camera follows the route from ELARA to the customer's door */
+  .fd-hero { position: relative; height: 196px; overflow: hidden; background: #e9e7e2; }
+  .fd-hero svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .fd-hero::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 -26px 28px -22px rgba(28,27,26,0.28), inset 0 0 0 1px rgba(28,27,26,0.06); }
+  .fd-lbl { font-family: Inter, sans-serif; font-weight: 600; letter-spacing: .06em; paint-order: stroke; stroke: #fff; stroke-linejoin: round; }
+  .fd-place { font-family: Inter, sans-serif; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; fill: #7a7f85; }
+
+  .fd-body { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 30px 36px 32px; background: linear-gradient(180deg, #fffdf9 0%, #f9f3e8 100%); }
+  .fd-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: #2b8a4b; }
+  .modal-card h2 { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 300; font-size: 36px; line-height: 1.08; letter-spacing: -1.4px; color: var(--text); }
+  .modal-card h2 em { font-style: italic; font-weight: 300; color: #2b8a4b; }
+  .modal-card p { font-size: 14px; line-height: 1.6; color: var(--text-muted); max-width: 330px; }
+  .modal-card p b { font-weight: 500; color: var(--text); }
+  .fd-ticket { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 14px; width: 100%; margin-top: 8px; padding: 14px 18px; border: 1.5px dashed rgba(74,71,65,0.3); border-radius: 14px; background: rgba(255,253,249,0.7); }
+  .fd-ticket::before, .fd-ticket::after { content: ""; position: absolute; top: 50%; width: 14px; height: 14px; margin-top: -7px; border-radius: 50%; background: #fbf6ec; border: 1.5px dashed rgba(74,71,65,0.3); }
+  .fd-ticket::before { left: -8px; clip-path: inset(0 0 0 50%); }
+  .fd-ticket::after { right: -8px; clip-path: inset(0 50% 0 0); }
+  .fd-ticket .lbl { font-size: 13px; color: var(--text-muted); text-align: left; line-height: 1.35; }
+  .fd-ticket .lbl b { display: block; font-size: 14px; font-weight: 500; color: var(--text); }
+  .fd-price { position: relative; font-size: 16px; color: var(--text-faint); white-space: nowrap; }
+  .fd-price::after { content: ""; position: absolute; left: -3px; right: -3px; top: 50%; height: 1.5px; background: var(--text-muted); transform-origin: left center; }
+  .modal.open .fd-price::after { animation: fdStrike .45s ease-out 1.95s both; }
+  @keyframes fdStrike { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .fd-free { position: relative; overflow: hidden; padding: 8px 18px; border-radius: 999px; background: #2b8a4b; color: #fff; font-size: 14px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; box-shadow: 0 8px 18px rgba(43,138,75,0.35); }
+  .fd-free::after { content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%; background: linear-gradient(100deg, transparent, rgba(255,255,255,0.55), transparent); transform: skewX(-18deg); }
+  .modal.open .fd-free { animation: fdPop .6s cubic-bezier(.3,1.5,.5,1) 2.1s both; }
+  .modal.open .fd-free::after { animation: fdShine 1s ease-in-out 2.55s both; }
+  @keyframes fdPop { from { opacity: 0; transform: scale(.4) rotate(-8deg); } to { opacity: 1; transform: none; } }
+  @keyframes fdShine { from { left: -60%; } to { left: 130%; } }
+  .modal.open .fd-eyebrow { animation: fdUp .6s ease-out .55s both; }
+  .modal.open .modal-card h2 { animation: fdUp .7s ease-out .7s both; }
+  .modal.open .fd-body > p { animation: fdUp .7s ease-out .85s both; }
+  .modal.open .fd-ticket { animation: fdUp .7s ease-out 1s both; }
+  .modal.open .fd-actions { animation: fdUp .7s ease-out 1.15s both; }
+  @keyframes fdUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  .fd-actions { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; margin-top: 8px; }
+  .modal-card .btn { width: 100%; }
+  .fd-link { font-size: 14px; color: var(--text-muted); transition: color .15s var(--ease); }
+  .fd-link:hover { color: var(--text); text-decoration: underline; }
+  @media (prefers-reduced-motion: reduce) {
+    .track i, .track.intro i, .modal { transition: none !important; }
+    .modal *, .modal.open *, .modal.open .modal-card { animation: none !important; }
+  }
+
+  /* ===== Related (218:716) ===== */
+  .related { padding: 48px 128px; display: flex; flex-direction: column; gap: 16px; }
+  .related h2 { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 24px; line-height: 1.1; letter-spacing: -0.72px; white-space: nowrap; }
+  .related-cards { display: flex; gap: 16px; }
+  .rcard { display: flex; flex-direction: column; gap: 8px; width: 180px; }
+  .rcard-media { position: relative; height: 225px; border: 1px solid var(--border-soft); border-radius: var(--r-media); overflow: hidden; }
+  .rcard-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .4s var(--ease); }
+  .rcard:hover .rcard-media img { transform: scale(1.04); }
+  .rcard-meta { display: flex; flex-direction: column; gap: 2px; font-size: 13px; line-height: 20px; white-space: nowrap; }
+  .rcard-meta b { font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="abs nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo" aria-label="ELARA home"><img class="cover" src="assets/home/logo.webp" alt="ELARA"></a>
+      <div class="nav-right">
+        <nav class="nav-links" aria-label="Primary">
+          <div class="nav-item" data-menu="new-arrivals"><a href="#" class="nav-link">New Arrivals <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="bags"><a href="#" class="nav-link">Bags <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="collections"><a href="#" class="nav-link">Collections <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="best-sellers"><a href="#" class="nav-link">Best Sellers <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <a href="my-contact-screen.html" class="nav-link">Contact Us</a>
+        </nav>
+        <div class="nav-tools">
+          <div class="nav-icons">
+            <button class="ico20" aria-label="Search"><img src="assets/home/icon-search.svg" alt="" style="inset:0;width:20px;height:20px;"></button>
+            <a href="my-account.html" class="ico20" aria-label="Account"><img src="assets/home/icon-account.svg" alt="" style="left:22.27%;top:8.33%;width:57.44%;height:82.55%;"></a>
+          </div>
+          <a href="my-cart-screen.html" class="cart-btn" aria-current="page">My cart
+            <span class="ico20"><img src="assets/home/icon-cart.svg" alt="" style="left:5.21%;top:5.21%;width:87.63%;height:89.58%;"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-menu-wrap" id="navMenuWrap">
+      <div class="nav-panel" data-panel="new-arrivals">
+        <div class="dd-panel">
+          <a href="my-product-detail-screen.html?p=leather-tote-bag" class="dd-card">
+            <img class="cover" src="assets/home/dd-na-card-1.webp" alt="Leather Tote Bag">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Leather Tote Bag</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <a href="my-product-detail-screen.html?p=aveline-convertible-tote" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-na-card-2.webp" alt="Aveline Convertible Tote">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Aveline Convertible Tote</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
+          <div class="dd-list">
+            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-1.webp" alt=""></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
+            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-2.webp" alt=""></span><span class="dd-row-title">Sienna Structured Purse</span></a>
+            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-3.webp" alt=""></span><span class="dd-row-title">Isla Bags</span></a>
+            <a href="my-plp-screen.html?collection=new" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All New Arrivals</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="bags">
+        <div class="dd-panel">
+          <a href="my-product-detail-screen.html?p=suede-crossbody" class="dd-card">
+            <img class="cover" src="assets/home/dd-bags-card-1.webp" alt="Cross Body Bags">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Cross Body Bags</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <a href="my-product-detail-screen.html?p=structured-work-satchel" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-bags-card-2.webp" alt="Work &amp; Travel">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Work &amp; Travel</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
+          <div class="dd-list">
+            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-1.webp" alt=""></span><span class="dd-row-title">Tote</span></a>
+            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-2.webp" alt=""></span><span class="dd-row-title">Shoulder</span></a>
+            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-3.webp" alt=""></span><span class="dd-row-title">Mini</span></a>
+            <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All Category Bags</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="collections">
+        <div class="dd-panel">
+          <a href="#coming-soon" data-soon="Our Signature Pieces" class="dd-card">
+            <img class="cover" src="assets/home/dd-coll-card-1.webp" alt="Our Signature Pieces">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label two-line"><span class="dd-card-eyebrow">Signature</span><span class="dd-card-title">Our Signature Pieces</span></div>
+          </a>
+          <a href="#coming-soon" data-soon="Everyday Essentials" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-coll-card-2.webp" alt="Everyday Essentials">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label two-line"><span class="dd-card-eyebrow">Everyday</span><span class="dd-card-title">Everyday Essentials</span></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="" style="left:826px;">
+          <div class="dd-list dd-list-coll" style="left:850px; top:92px;">
+            <div class="dd-list-group">
+              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-1.webp" alt=""></span><span class="dd-row-title">The Evening Edit</span></a>
+              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-2.webp" alt=""></span><span class="dd-row-title">Designed for Work</span></a>
+            </div>
+            <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-see-all.svg" alt=""></span><span class="dd-row-title">See All Collections</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="best-sellers">
+        <div class="nm-simple-list">
+          <a href="my-plp-screen.html" class="nm-simple">All Best Sellers</a>
+          <a href="my-plp-screen.html" class="nm-simple">Customer Favorites</a>
+          <a href="my-plp-screen.html" class="nm-simple">Most Loved</a>
+          <a href="my-plp-screen.html" class="nm-simple">Trending Now</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="index.html">Home</a><span aria-hidden="true">/</span>
+    <span aria-current="page">Your Bag</span>
+  </nav>
+
+  <main>
+    <div class="title-row">
+      <div class="title-block">
+        <h1>Your Bag</h1>
+        <p id="itemCount" aria-live="polite">2 items</p>
+      </div>
+      <a href="my-plp-screen.html" class="continue">← Continue shopping</a>
+    </div>
+
+    <div class="cart-main" id="cartMain">
+      <div id="itemsCol" style="width:740px;flex-shrink:0;">
+        <div class="items" id="items"></div>
+        <section class="saved" id="saved" hidden>
+          <h2 id="savedTitle">Saved for later</h2>
+          <div class="items" id="savedItems"></div>
+        </section>
+      </div>
+
+      <div class="side" id="side">
+      <aside class="summary" id="summary" aria-label="Order summary">
+        <h2>Order summary</h2>
+        <div class="ship" id="shipBanner" role="status" aria-live="polite">
+          <p class="ship-msg" id="progressMsg"></p>
+          <div class="track"><i id="progressFill" style="width:0%"></i></div>
+        </div>
+        <div class="divider"></div>
+        <div class="line"><span class="label" id="subtotalLabel">Subtotal (2 items)</span><span class="value" id="subtotalValue">Tk. 8,400/-</span></div>
+        <div class="line" id="discountLine" hidden><span class="label" id="discountLabel">Discount</span><span class="value strong" id="discountValue"></span></div>
+        <div class="line"><span class="label">Delivery</span><span class="value strong" id="deliveryValue">Free</span></div>
+        <div class="divider"></div>
+        <div class="total"><span class="label">Total</span><span class="value" id="totalValue">Tk. 8,400/-</span></div>
+        <a href="my-checkout-review.html" class="btn btn-accent">Proceed to Checkout</a>
+        <div class="alt-pay">
+          <div class="alt-pay-title"><img src="assets/cart/line.svg" alt=""><span>Or checkout with</span><img src="assets/cart/line.svg" alt=""></div>
+          <div class="alt-pay-logos">
+            <a href="my-checkout-review.html" aria-label="Checkout with bKash"><img class="cover" src="assets/cart/bkash.webp" alt="bKash"></a>
+            <a href="my-checkout-review.html" aria-label="Checkout with Nagad"><img class="cover" src="assets/cart/nagad.webp" alt="Nagad"></a>
+            <a href="my-checkout-review.html" aria-label="Checkout with Visa"><img class="cover" src="assets/cart/visa.webp" alt="Visa"></a>
+            <a href="my-checkout-review.html" aria-label="Checkout with Mastercard"><img class="cover" src="assets/cart/mastercard.webp" alt="Mastercard"></a>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <form class="promo" id="promoForm" novalidate>
+          <label for="promoInput">Promo code</label>
+          <div class="promo-row" id="promoEntry">
+            <input class="promo-input" id="promoInput" type="text" placeholder="Enter code" autocomplete="off">
+            <button class="promo-apply" type="submit">Apply</button>
+          </div>
+          <div class="promo-applied" id="promoApplied" hidden>
+            <span><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8"/><path d="M4.6 8.3 7 10.7l4.4-5"/></svg><b id="promoAppliedText"></b></span>
+            <button type="button" id="promoRemove">Remove</button>
+          </div>
+          <p class="promo-msg" id="promoMsg" role="status" hidden></p>
+        </form>
+      </aside>
+
+      <section class="svc-card" aria-label="Delivery and returns">
+        <div><h3>Free delivery</h3><p>Orders over Tk. 3,000 ship free, anywhere in Bangladesh. Dhaka Tk. 60/- (1–3 days), outside Dhaka Tk. 120/- (3–5 days).</p></div>
+        <div><h3>Easy returns</h3><p>7-day returns on unused bags in their original packaging.</p></div>
+      </section>
+
+      <section class="help-card" aria-label="Can we help?">
+        <h3>Can we help?</h3>
+        <div class="acc">
+          <button type="button" class="acc-btn" aria-expanded="false" aria-controls="accCs"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 3.5h3l1.6 4-2 1.4a11 11 0 0 0 5 5l1.4-2 4 1.6v3a2 2 0 0 1-2.2 2A15 15 0 0 1 3.5 5.7 2 2 0 0 1 5.5 3.5z"/></svg><span>Customer Service</span><i class="pm" aria-hidden="true"></i></button>
+          <div class="acc-body" id="accCs"><div><div class="acc-in">
+            <span>Call or message us on +880 1320575476. We reply within 1 business day.</span>
+            <a class="mail" href="mailto:hello@elara.com.bd">hello@elara.com.bd</a>
+          </div></div></div>
+        </div>
+        <div class="acc">
+          <button type="button" class="acc-btn" aria-expanded="false" aria-controls="accChat"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h12v9H9l-3 3v-3H4z"/><path d="M9 13v2h6l3 3v-3h2V8h-3"/></svg><span>Chat with us</span><i class="pm" aria-hidden="true"></i></button>
+          <div class="acc-body" id="accChat"><div><div class="acc-in">
+            <span>Saturday to Thursday, 10 AM–8 PM (Bangladesh time).</span>
+            <a class="acc-chat" href="https://wa.me/8801320575476" target="_blank" rel="noopener">Chat now</a>
+          </div></div></div>
+        </div>
+      </section>
+      </div>
+    </div>
+
+    <section class="related" aria-label="You may also like">
+      <h2>You may also like</h2>
+      <div class="related-cards">
+        <a class="rcard" href="my-product-detail-screen.html?p=verona-luxe-tote"><div class="rcard-media"><img src="assets/plp/tote/39d9c.jpg" alt="Verona Luxe Tote" loading="lazy"></div><div class="rcard-meta"><span>Verona Luxe Tote</span><b>Tk. 3,200/-</b></div></a>
+        <a class="rcard" href="my-product-detail-screen.html?p=bellora-tote"><div class="rcard-media"><img src="assets/plp/tote/5fb37.jpg" alt="Bellora Tote" loading="lazy"></div><div class="rcard-meta"><span>Bellora Tote</span><b>Tk. 4,600/-</b></div></a>
+        <a class="rcard" href="my-product-detail-screen.html?p=roseau-leather-tote"><div class="rcard-media"><img src="assets/plp/tote/ead8d.jpg" alt="Roseau Leather Tote" loading="lazy"></div><div class="rcard-meta"><span>Roseau Leather Tote</span><b>Tk. 5,200/-</b></div></a>
+        <a class="rcard" href="my-product-detail-screen.html?p=vuitton-lockit-tote"><div class="rcard-media"><img src="assets/plp/tote/789a5.jpg" alt="Vuitton Lockit Tote" loading="lazy"></div><div class="rcard-meta"><span>Vuitton Lockit Tote</span><b>Tk. 3,800/-</b></div></a>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal" id="freeModal" role="dialog" aria-modal="true" aria-labelledby="freeTitle" aria-describedby="freeBody">
+  <div class="modal-card">
+    <button type="button" class="modal-close" id="freeClose" aria-label="Close">×</button>
+    <div class="fd-hero" aria-hidden="true">
+      <svg viewBox="0 0 440 196" preserveAspectRatio="xMidYMid slice"><g id="fdWorld"></g></svg>
+    </div>
+    <div class="fd-body">
+      <span class="fd-eyebrow">Free delivery unlocked</span>
+      <h2 id="freeTitle">Delivery is <em>on us.</em></h2>
+      <p id="freeBody">Your bag has crossed <b>Tk. 3,000</b>, so shipping anywhere in Bangladesh costs you nothing.</p>
+      <div class="fd-ticket">
+        <span class="lbl"><b>Delivery fee</b>Dhaka or outside</span>
+        <span class="fd-price">Tk. 60 – 120</span>
+        <span class="fd-free">Free</span>
+      </div>
+      <div class="fd-actions">
+        <button type="button" class="btn btn-accent" id="freeOk">Continue shopping</button>
+        <a class="fd-link" href="my-checkout-review.html">Go to checkout →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Below 1440 only: shrink the artboard to the viewport (never scales up).
+  function fit() { document.documentElement.style.setProperty('--fit', Math.min(1, document.documentElement.clientWidth / 1440)); }
+  fit();
+  new ResizeObserver(fit).observe(document.documentElement);
+
+  // ---------- Cart state ----------
+  // A line is { id, name, price, img, colour, size, qty }. Same shape for every product, so any
+  // product page can add to the bag and it renders here with its own data.
+  const CART_KEY = 'elara.cart.v1';
+  const SAVED_KEY = 'elara.saved.v1';
+  const FREE_DELIVERY_AT = 3000;
+  const MAX_QTY = 5;
+  const SEED = [
+    { id: 'nafisa-tote|camel|medium', name: 'Nafisa Tote', price: 4200, img: 'assets/plp/tote/70c84.jpg', colour: 'Camel', size: 'Medium', qty: 1 },
+    { id: 'nafisa-tote|black|medium', name: 'Nafisa Tote', price: 4200, img: 'assets/plp/tote/nafisa-black.jpg', colour: 'Black', size: 'Medium', qty: 1 },
+  ];
+  function read(key, fallback) {
+    try { const raw = localStorage.getItem(key); return raw === null ? fallback : JSON.parse(raw); } catch (e) { return fallback; }
+  }
+  function write(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} }
+
+  // A new visitor starts with an empty bag (the empty state below); nothing is added on their behalf.
+  let cart = read(CART_KEY, null);
+  if (!Array.isArray(cart)) cart = [];
+  let saved = read(SAVED_KEY, []);
+
+  // Promo codes. Matching ignores case and spaces; the discount is a percentage of the subtotal.
+  const PROMO_KEY = 'elara.promo.v1';
+  const PROMOS = { MRIDUL13: { label: 'Mridul13', percent: 5 }, WELCOME10: { label: 'WELCOME10', percent: 10, welcome: true } };
+  // The welcome code only works once it has been claimed on this device (welcome popup) and has not been used on an order yet.
+  const welcomeOk = () => { const w = read('elara.welcome.v1', null); return !!(w && w.status === 'claimed' && !w.used); };
+  let promo = read(PROMO_KEY, null);          // stored as the normalised code, e.g. "MRIDUL13"
+  if (promo && (!PROMOS[promo] || (PROMOS[promo].welcome && !welcomeOk()))) promo = null;
+  const discountFor = (subtotal) => promo ? Math.round(subtotal * PROMOS[promo].percent / 100) : 0;
+
+  const money = (n) => 'Tk. ' + Number(n).toLocaleString('en-US') + '/-';
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const pdpOf = (l) => { const p = String(l.id).split('|'); return 'my-product-detail-screen.html' + (p[0] ? '?p=' + encodeURIComponent(p[0]) + (p[1] ? '&colour=' + encodeURIComponent(p[1]) : '') : ''); };
+  const plural = (n) => n + (n === 1 ? ' item' : ' items');
+
+  function metaText(l, showEach) {
+    const parts = [];
+    if (l.colour) parts.push('Colour: ' + esc(l.colour));
+    if (l.size) parts.push('Size: ' + esc(l.size));
+    if (showEach && l.qty > 1) parts.push(money(l.price) + ' each');
+    return parts.join('  ·  ');
+  }
+
+  function itemHTML(l) {
+    return `
+      <article class="item" data-id="${esc(l.id)}">
+        <a class="item-photo" href="${pdpOf(l)}" tabindex="-1" aria-hidden="true"><img class="cover" src="${esc(l.img)}" alt=""></a>
+        <div class="item-details">
+          <div class="item-top">
+            <div class="item-name-row">
+              <p class="item-name"><a href="${pdpOf(l)}">${esc(l.name)}</a></p>
+              <p class="item-price">${money(l.price * l.qty)}</p>
+            </div>
+            <p class="item-meta">${metaText(l, true)}</p>
+          </div>
+          <div class="item-bottom">
+            <div class="stepper" role="group" aria-label="Quantity for ${esc(l.name)}${l.colour ? ', ' + esc(l.colour) : ''}">
+              <button type="button" data-act="dec" aria-label="Decrease quantity"${l.qty <= 1 ? ' disabled' : ''}>–</button>
+              <output aria-live="polite">${l.qty}</output>
+              <button type="button" data-act="inc" aria-label="Increase quantity"${l.qty >= MAX_QTY ? ' disabled' : ''}>+</button>
+            </div>
+            <div class="actions">
+              <button type="button" class="act-primary" data-act="save">Save for later</button>
+              <button type="button" class="act-remove" data-act="remove">Remove</button>
+            </div>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function savedHTML(l) {
+    return `
+      <article class="item" data-id="${esc(l.id)}">
+        <a class="item-photo" href="${pdpOf(l)}" tabindex="-1" aria-hidden="true"><img class="cover" src="${esc(l.img)}" alt=""></a>
+        <div class="item-details">
+          <div class="item-top">
+            <div class="item-name-row">
+              <p class="item-name"><a href="${pdpOf(l)}">${esc(l.name)}</a></p>
+              <p class="item-price">${money(l.price)}</p>
+            </div>
+            <p class="item-meta">${metaText(l, false)}</p>
+          </div>
+          <div class="item-bottom">
+            <span></span>
+            <div class="actions">
+              <button type="button" class="act-primary" data-act="move">Move to bag</button>
+              <button type="button" class="act-remove" data-act="remove-saved">Remove</button>
+            </div>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function render() {
+    const count = cart.reduce((n, l) => n + l.qty, 0);
+    const subtotal = cart.reduce((n, l) => n + l.price * l.qty, 0);
+    const empty = cart.length === 0;
+    const list = document.getElementById('items');
+
+    document.getElementById('itemCount').textContent = plural(count);
+
+    if (empty) {
+      list.className = 'empty';
+      list.innerHTML = '<h2>Your bag is empty</h2><p>Add a bag you love and it will appear here.</p><a href="my-plp-screen.html" class="btn btn-accent">Continue shopping</a>';
+    } else {
+      list.className = 'items';
+      list.innerHTML = cart.map(itemHTML).join('');
+    }
+    document.getElementById('summary').hidden = empty;
+    document.getElementById('side').hidden = empty;
+    document.getElementById('shipBanner').hidden = empty;
+
+    const savedSec = document.getElementById('saved');
+    savedSec.hidden = saved.length === 0;
+    document.getElementById('savedTitle').textContent = 'Saved for later (' + saved.length + ')';
+    document.getElementById('savedItems').innerHTML = saved.map(savedHTML).join('');
+
+    if (!empty) {
+      const free = subtotal >= FREE_DELIVERY_AT;
+      document.getElementById('subtotalLabel').textContent = 'Subtotal (' + plural(count) + ')';
+      document.getElementById('subtotalValue').textContent = money(subtotal);
+      document.getElementById('deliveryValue').textContent = free ? 'Free' : 'At checkout';
+      document.getElementById('deliveryValue').classList.toggle('strong', free);
+      const discount = discountFor(subtotal);
+      document.getElementById('discountLine').hidden = !discount;
+      if (discount) {
+        document.getElementById('discountLabel').textContent = 'Discount (' + PROMOS[promo].label + ' · ' + PROMOS[promo].percent + '%)';
+        document.getElementById('discountValue').textContent = '– ' + money(discount);
+      }
+      document.getElementById('totalValue').textContent = money(subtotal - discount);
+      document.getElementById('promoEntry').hidden = !!promo;
+      document.getElementById('promoApplied').hidden = !promo;
+      if (promo) document.getElementById('promoAppliedText').textContent = PROMOS[promo].label + ' · ' + PROMOS[promo].percent + '% off';
+      const msg = document.getElementById('progressMsg');
+      document.getElementById('shipBanner').classList.toggle('done', free);
+      msg.innerHTML = free
+        ? '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M5.2 8.2l1.9 1.9 3.7-3.9"/></svg><span>You have qualified for <b>FREE</b> delivery!</span>'
+        : '<span>Spend <b>' + money(FREE_DELIVERY_AT - subtotal).replace('/-', '') + '</b> more to reach free delivery!</span>';
+      setProgress(Math.min(100, Math.round(subtotal / FREE_DELIVERY_AT * 100)), free);
+    }
+  }
+
+  // ---------- Free-delivery bar + congratulations card ----------
+  const fill = document.getElementById('progressFill');
+  const track = fill.parentElement;
+  const modal = document.getElementById('freeModal');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const SHOWN_KEY = 'elara.freeShipShown';
+  let firstPaint = true;
+  let wasFree = false;
+  let dismissTimer = null;
+  let lastFocus = null;
+
+  function setProgress(pct, free) {
+    if (firstPaint) {
+      // Entering the page: the bar fills from empty, then the card follows.
+      firstPaint = false;
+      fill.style.width = reduceMotion ? pct + '%' : '0%';
+      if (!reduceMotion) {
+        track.classList.add('intro');
+        requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.width = pct + '%'; }));
+        setTimeout(() => track.classList.remove('intro'), 1000);
+      }
+      wasFree = free;
+      if (free && !readSession()) setTimeout(openModal, reduceMotion ? 0 : 1050);
+      return;
+    }
+    fill.style.width = pct + '%';
+    if (free && !wasFree && !readSession()) setTimeout(openModal, reduceMotion ? 0 : 450);
+    if (!free) { try { sessionStorage.removeItem(SHOWN_KEY); } catch (e) {} }
+    wasFree = free;
+  }
+  // The pop-up shows every time the bag page opens with free delivery unlocked, and again whenever the total crosses Tk. 3,000.
+  function readSession() { return false; }
+
+  // ---------- Delivery map: camera follows the route from ELARA to the customer's door ----------
+  const FDMap = (function () {
+    const NS = 'http://www.w3.org/2000/svg', VW = 440, VH = 196;
+    const ROUTE = [[250,430],[300,395],[360,350],[360,300],[430,300],[430,250],[520,250],[560,210],[640,210],[640,170],[760,150]];
+    const PLACES = [['DHANMONDI',300,505],['TEJGAON',500,345],['MOHAKHALI',640,290],['BANANI',560,110],['GULSHAN',830,235],['UTTARA',930,70],['MIRPUR',110,300],['MOTIJHEEL',430,560]];
+    let built = false, raf = 0, world, routeEl, tip, startG, endG, startLbl, endLbl, len = 0;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function el(tag, attrs, parent) {
+      const n = document.createElementNS(NS, tag);
+      for (const k in attrs) n.setAttribute(k, attrs[k]);
+      if (parent) parent.appendChild(n);
+      return n;
+    }
+    function build() {
+      if (built) return;
+      world = document.getElementById('fdWorld');
+      el('rect', { x: -400, y: -300, width: 2000, height: 1300, fill: '#e9e7e2' }, world);
+      [[120,120,150,90],[700,330,110,70],[820,430,140,60],[330,40,90,60],[900,170,80,70],[40,440,120,70],[560,430,100,60]].forEach((p) => el('rect', { x: p[0], y: p[1], width: p[2], height: p[3], rx: 14, fill: '#cfe6c3' }, world));
+      el('path', { d: 'M520 760 C 560 560 700 470 900 430 S 1180 380 1400 440', fill: 'none', stroke: '#a9cdee', 'stroke-width': 46, 'stroke-linecap': 'round' }, world);
+      const grid = el('g', { transform: 'rotate(-14 500 300)', stroke: '#fff', 'stroke-width': 2, fill: 'none' }, world);
+      for (let y = -200; y <= 900; y += 64) el('path', { d: 'M-400 ' + y + ' H1500' }, grid);
+      for (let x = -300; x <= 1400; x += 74) el('path', { d: 'M' + x + ' -300 V1100' }, grid);
+      const major = el('g', { fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, world);
+      [['M-200 640 L1200 -80'], ['M0 760 L1000 -140'], ['M-100 220 C 300 200 600 420 1200 360'], ['M300 -100 C 360 200 420 400 380 800']].forEach((d) => {
+        el('path', { d: d[0], stroke: '#e5b94f', 'stroke-width': 6 }, major);
+        el('path', { d: d[0], stroke: '#fbe08a', 'stroke-width': 4 }, major);
+      });
+      const pts = ROUTE.map((p) => p.join(',')).join(' ');
+      el('polyline', { points: pts, fill: 'none', stroke: '#e5b94f', 'stroke-width': 6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, world);
+      el('polyline', { points: pts, fill: 'none', stroke: '#fbe08a', 'stroke-width': 4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, world);
+      PLACES.forEach((p) => { const t = el('text', { x: p[1], y: p[2], 'font-size': 13, class: 'fd-place', 'text-anchor': 'middle' }, world); t.textContent = p[0]; });
+      routeEl = el('polyline', { points: pts, fill: 'none', stroke: '#1f6b45', 'stroke-width': 3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, world);
+      len = routeEl.getTotalLength();
+      startG = el('g', {}, world);
+      el('circle', { r: 16, fill: '#1f6b45', 'fill-opacity': .18, class: 'fd-halo' }, startG);
+      el('circle', { r: 7, fill: '#fff' }, startG);
+      el('circle', { r: 4.5, fill: '#1f6b45' }, startG);
+      tip = el('circle', { r: 6, fill: '#fff', stroke: '#1f6b45', 'stroke-width': 3 }, world);
+      endG = el('g', {}, world);
+      el('circle', { r: 20, fill: '#1f6b45', 'fill-opacity': .2, class: 'fd-pulse' }, endG);
+      el('path', { d: 'M0 0 C -9 -11 -13 -17 -13 -24 a13 13 0 1 1 26 0 c0 7 -4 13 -13 24z', fill: '#1f6b45', stroke: '#fff', 'stroke-width': 2 }, endG);
+      el('path', { d: 'M-6 -22 0 -28 6 -22v7h-12z', fill: '#fff' }, endG);
+      startLbl = el('text', { 'font-size': 12, class: 'fd-lbl', 'text-anchor': 'middle', fill: '#1d2b24', 'stroke-width': 4 }, world); startLbl.textContent = 'ELARA';
+      endLbl = el('text', { 'font-size': 12, class: 'fd-lbl', 'text-anchor': 'end', fill: '#1d2b24', 'stroke-width': 4 }, world); endLbl.textContent = 'Your door';
+      built = true;
+    }
+    const clamp = (v) => Math.max(0, Math.min(1, v));
+    const lerp = (a, b, t) => a + (b - a) * t;
+    const inOut = (t) => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    const out = (t) => 1 - Math.pow(1 - t, 3);
+    const back = (t) => { const c = 1.9; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+    const S = ROUTE[0], E = ROUTE[ROUTE.length - 1], MID = [(S[0] + E[0]) / 2, (S[1] + E[1]) / 2 + 4];
+    function draw(t) {
+      const pd = inOut(clamp((t - 0.14) / 0.64));
+      const p = routeEl.getPointAtLength(len * pd);
+      const s = lerp(2.3, 0.4, inOut(clamp(t / 0.92)));
+      const settle = inOut(clamp((t - 0.72) / 0.28));
+      const cx = lerp(p.x, MID[0], settle);
+      const cy = lerp(p.y, MID[1] - 2, settle);
+      world.setAttribute('transform', 'translate(' + VW / 2 + ' ' + VH / 2 + ') scale(' + s + ') translate(' + -cx + ' ' + -cy + ')');
+      routeEl.setAttribute('stroke-width', (5.5 / s).toFixed(2));
+      routeEl.style.strokeDasharray = len;
+      routeEl.style.strokeDashoffset = len * (1 - pd);
+      const k = 1 / s;
+      startG.setAttribute('transform', 'translate(' + S[0] + ' ' + S[1] + ') scale(' + k + ')');
+      const halo = startG.firstChild; halo.setAttribute('r', 16 + 6 * Math.sin(t * 18));
+      tip.setAttribute('cx', p.x); tip.setAttribute('cy', p.y); tip.setAttribute('r', 6 * k); tip.setAttribute('stroke-width', 3 * k);
+      tip.style.opacity = pd >= 0.995 ? 0 : 1;
+      const pop = clamp((t - 0.78) / 0.18);
+      endG.setAttribute('transform', 'translate(' + E[0] + ' ' + E[1] + ') scale(' + k * back(pop) + ')');
+      endG.style.opacity = pop > 0 ? 1 : 0;
+      const ring = endG.firstChild; const rp = clamp((t - 0.86) / 0.14); ring.setAttribute('r', 20 + 26 * rp); ring.setAttribute('fill-opacity', (0.22 * (1 - rp)).toFixed(3));
+      startLbl.setAttribute('transform', 'translate(' + S[0] + ' ' + (S[1] + 26 * k) + ') scale(' + k + ')');
+      startLbl.style.opacity = clamp((t - 0.05) / 0.12);
+      endLbl.setAttribute('transform', 'translate(' + (E[0] - 22 * k) + ' ' + (E[1] - 18 * k) + ') scale(' + k + ')');
+      endLbl.style.opacity = pop;
+    }
+    function play() {
+      build(); cancelAnimationFrame(raf);
+      if (reduce) { draw(1); return; }
+      const T = 3800, t0 = performance.now();
+      draw(0);
+      (function step(now) {
+        const t = clamp((now - t0) / T);
+        draw(t);
+        if (t < 1) raf = requestAnimationFrame(step);
+      })(t0);
+    }
+    return { play, stop: () => cancelAnimationFrame(raf) };
+  })();
+
+  function openModal() {
+    if (!cart.length || cart.reduce((n, l) => n + l.price * l.qty, 0) < FREE_DELIVERY_AT) return;
+    try { sessionStorage.setItem(SHOWN_KEY, '1'); } catch (e) {}
+    lastFocus = document.activeElement;
+    modal.classList.add('open');
+    FDMap.play();
+    document.getElementById('freeOk').focus({ preventScroll: true });
+    clearTimeout(dismissTimer);
+    dismissTimer = setTimeout(closeModal, 8000);
+  }
+  function closeModal() {
+    clearTimeout(dismissTimer);
+    FDMap.stop();
+    modal.classList.remove('open');
+    if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+  }
+  document.getElementById('freeOk').addEventListener('click', closeModal);
+  document.getElementById('freeClose').addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  modal.addEventListener('mouseenter', () => clearTimeout(dismissTimer));
+  modal.addEventListener('mouseleave', () => { if (modal.classList.contains('open')) dismissTimer = setTimeout(closeModal, 4000); });
+  document.addEventListener('keydown', (e) => {
+    if (!modal.classList.contains('open')) return;
+    if (e.key === 'Escape') { e.stopPropagation(); closeModal(); }
+    if (e.key === 'Tab') {
+      const f = [document.getElementById('freeClose'), document.getElementById('freeOk'), document.querySelector('.fd-link')];
+      const i = f.indexOf(document.activeElement);
+      e.preventDefault();
+      f[(i + (e.shiftKey ? f.length - 1 : 1)) % f.length].focus();
+    }
+  }, true);
+
+  function persist() { write(CART_KEY, cart); write(SAVED_KEY, saved); render(); if (window.ElaraCart) ElaraCart.refreshBadge(); }
+  const rowId = (el) => el.closest('.item').dataset.id;
+
+  document.getElementById('cartMain').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-act]');
+    if (!btn) return;
+    const id = rowId(btn);
+    const act = btn.dataset.act;
+    const line = cart.find((l) => l.id === id);
+    if (act === 'inc' && line) line.qty = Math.min(MAX_QTY, line.qty + 1);
+    if (act === 'dec' && line) line.qty = Math.max(1, line.qty - 1);
+    if (act === 'remove') cart = cart.filter((l) => l.id !== id);
+    if (act === 'save' && line) { cart = cart.filter((l) => l.id !== id); saved = saved.filter((l) => l.id !== id).concat({ ...line, qty: 1 }); }
+    if (act === 'move') {
+      const s = saved.find((l) => l.id === id);
+      if (s) {
+        saved = saved.filter((l) => l.id !== id);
+        const same = cart.find((l) => l.id === id);
+        if (same) same.qty = Math.min(MAX_QTY, same.qty + 1); else cart = cart.concat({ ...s, qty: 1 });
+      }
+    }
+    if (act === 'remove-saved') saved = saved.filter((l) => l.id !== id);
+    persist();
+  });
+
+  // Promo form: a valid code is applied; anything else is answered, never silently ignored.
+  document.getElementById('promoForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('promoMsg');
+    const input = document.getElementById('promoInput');
+    const code = input.value.replace(/\s+/g, '').toUpperCase();
+    if (!code) { msg.hidden = false; msg.textContent = 'Enter a promo code first.'; return; }
+    if (!PROMOS[code] || (PROMOS[code].welcome && !welcomeOk())) { msg.hidden = false; msg.textContent = "Sorry, that code isn't valid."; return; }
+    promo = code;
+    write(PROMO_KEY, promo);
+    input.value = '';
+    msg.hidden = true;
+    render();
+  });
+  document.getElementById('promoRemove').addEventListener('click', () => {
+    promo = null;
+    write(PROMO_KEY, null);
+    render();
+    document.getElementById('promoInput').focus({ preventScroll: true });
+  });
+
+  render();
+
+  // Nav dropdowns — identical behaviour to the homepage.
+  document.querySelectorAll('.nav-menu-wrap img').forEach((img) => { if (img.decode) img.decode().catch(() => {}); });
+  (function () {
+    const wrap = document.getElementById('navMenuWrap');
+    if (!wrap) return;
+    const items = document.querySelectorAll('.nav-item[data-menu]');
+    const panels = wrap.querySelectorAll('.nav-panel');
+    let closeTimer = null;
+    let openKey = null;
+
+    function showPanel(key, item) {
+      panels.forEach((p) => p.classList.toggle('active', p.dataset.panel === key));
+      const isMega = key !== 'best-sellers';
+      wrap.classList.toggle('mega', isMega);
+      wrap.classList.toggle('light', !isMega);
+      if (isMega) {
+        wrap.style.left = '0px';
+      } else {
+        const itemRect = item.getBoundingClientRect();
+        const navRect = document.querySelector('.nav').getBoundingClientRect();
+        wrap.style.left = Math.round(itemRect.left - navRect.left) + 'px';
+      }
+      const activeEl = wrap.querySelector('.nav-panel.active');
+      wrap.style.height = activeEl ? activeEl.offsetHeight + 'px' : 'auto';
+    }
+    function open(key, item) {
+      clearTimeout(closeTimer);
+      const wasOpen = wrap.classList.contains('open');
+      showPanel(key, item);
+      if (!wasOpen) { wrap.style.transition = 'none'; void wrap.offsetHeight; wrap.style.transition = ''; }
+      wrap.classList.add('open');
+      items.forEach((it) => it.classList.toggle('open', it.dataset.menu === key));
+      openKey = key;
+    }
+    function close() { wrap.classList.remove('open'); items.forEach((it) => it.classList.remove('open')); openKey = null; }
+    function scheduleClose() { clearTimeout(closeTimer); closeTimer = setTimeout(close, 150); }
+
+    items.forEach((item) => {
+      const key = item.dataset.menu;
+      item.addEventListener('mouseenter', () => open(key, item));
+      item.addEventListener('mouseleave', scheduleClose);
+      item.addEventListener('focusin', () => open(key, item));
+      item.querySelector('.nav-link').addEventListener('click', (e) => { e.preventDefault(); openKey === key ? close() : open(key, item); });
+    });
+    wrap.addEventListener('mouseenter', () => clearTimeout(closeTimer));
+    wrap.addEventListener('mouseleave', scheduleClose);
+    wrap.addEventListener('focusin', () => clearTimeout(closeTimer));
+    document.addEventListener('focusin', (e) => { if (openKey && !wrap.contains(e.target) && ![...items].some((it) => it.contains(e.target))) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    document.addEventListener('click', (e) => { if (openKey && !wrap.contains(e.target) && ![...items].some((it) => it.contains(e.target))) close(); });
+  })();
+</script>
+<script src="assets/cart-badge.js"></script>
+<script src="assets/search.js"></script>
+<script src="assets/soon.js"></script>
+<script>
+  // "Can we help?" accordion: one row open at a time
+  document.querySelectorAll('.acc-btn').forEach((btn) => btn.addEventListener('click', () => {
+    const row = btn.closest('.acc'), open = !row.classList.contains('open');
+    document.querySelectorAll('.acc').forEach((r) => { r.classList.remove('open'); r.querySelector('.acc-btn').setAttribute('aria-expanded', 'false'); });
+    if (open) { row.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); }
+  }));
+</script>
+</body>
+</html>

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELARA — Low-fidelity wireframes</title>
+<!--
+  Phase 2 (Structure) of brief-to-tasks.md. Low-fidelity: layout and hierarchy
+  only, deliberately grayscale — no brand colour, no real type, no imagery.
+  Each frame is one screen from information-architecture.md Part 2, labelled
+  with the journey step it serves (IA Part 1). Frames are grouped the same
+  way the screen inventory is grouped: Discover, Evaluate, Save, Buy, After.
+  Homepage and Product Detail were built high-fidelity first (early preview,
+  by direct request) — they are included here anyway as a retroactive
+  structure check against information-architecture.md, per brief-to-tasks.md's note.
+-->
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --line: #9a9a9a;
+    --line-light: #cfcfcf;
+    --fill: #e8e8e8;
+    --fill-deep: #d3d3d3;
+    --paper: #fafafa;
+    --accent-note: #b4483f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #f1f1ee; color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 32px 20px 80px;
+  }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  .intro { color: #555; max-width: 70ch; font-size: 0.9rem; margin: 0 0 32px; }
+  .group { margin-bottom: 48px; }
+  .group-title {
+    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em;
+    color: #555; border-bottom: 2px solid var(--ink); padding-bottom: 6px; margin-bottom: 20px;
+  }
+  .frame-row { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+  .frame {
+    width: 300px; background: var(--paper); border: 1.5px solid var(--ink);
+  }
+  .frame-label {
+    font-size: 0.72rem; font-weight: 700; padding: 8px 10px; border-bottom: 1.5px solid var(--ink);
+    display: flex; justify-content: space-between; gap: 6px;
+  }
+  .frame-label .step { font-weight: 400; color: #555; }
+  .frame-body { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .box { background: var(--fill); border: 1px dashed var(--line); }
+  .box.deep { background: var(--fill-deep); }
+  .lbl {
+    font-size: 0.62rem; color: #555; text-align: center; padding: 3px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .line { height: 8px; background: var(--fill-deep); border-radius: 2px; }
+  .line.w60 { width: 60%; } .line.w80 { width: 80%; } .line.w40 { width: 40%; }
+  .btn-block { height: 26px; border: 1.5px solid var(--ink); display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 700; }
+  .btn-block.ghost { border-style: dashed; }
+  .row { display: flex; gap: 6px; }
+  .row > * { flex: 1; }
+  .note {
+    font-size: 0.68rem; color: var(--accent-note); border: 1px dashed var(--accent-note);
+    padding: 4px 6px; margin-top: 2px;
+  }
+  .state-tag {
+    display: inline-block; font-size: 0.62rem; padding: 1px 6px; border: 1px solid var(--ink);
+    border-radius: 10px; margin-left: 4px;
+  }
+  .nav-check {
+    background: var(--paper); border: 1.5px solid var(--ink); padding: 16px 20px; font-size: 0.85rem; line-height: 1.6;
+  }
+  .nav-check h3 { margin: 0 0 8px; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+  <h1>ELARA — Low-fidelity wireframes</h1>
+  <p class="intro">Phase 2 of brief-to-tasks.md. Structure only — boxes stand in for content, no colour or type decisions here. Each frame names the journey step it serves, from information-architecture.md Part 1. Grouped by the same categories as the screen inventory.</p>
+
+  <!-- ===================== DISCOVER / BROWSE ===================== -->
+  <div class="group">
+    <div class="group-title">Discover &amp; browse — journey steps 2, 3</div>
+    <div class="frame-row">
+
+      <!-- Homepage — retroactive check -->
+      <div class="frame">
+        <div class="frame-label">Homepage <span class="step">steps 2–3</span></div>
+        <div class="frame-body">
+          <div class="box" style="height:34px"><div class="lbl">header: menu · logo · search · wishlist · account · bag</div></div>
+          <div class="box deep" style="height:120px"><div class="lbl">hero image + headline + 1 CTA</div></div>
+          <div class="line w40"></div>
+          <div class="row"><div class="box" style="height:70px"></div><div class="box" style="height:70px"></div><div class="box" style="height:70px"></div></div>
+          <div class="lbl">new arrivals scroller</div>
+          <div class="row"><div class="box" style="height:50px"></div><div class="box" style="height:50px"></div></div>
+          <div class="lbl">shop by category grid</div>
+          <div class="box" style="height:60px"><div class="lbl">featured collection banner</div></div>
+          <div class="box deep" style="height:50px"><div class="lbl">brand story (dark section)</div></div>
+          <div class="box" style="height:50px"><div class="lbl">reviews / social proof</div></div>
+          <div class="box" style="height:34px"><div class="lbl">newsletter capture</div></div>
+          <div class="box" style="height:40px"><div class="lbl">footer</div></div>
+          <div class="note">Built high-fi already (early preview). Checked against this structure — matches.</div>
+        </div>
+      </div>
+
+      <!-- Product Listing -->
+      <div class="frame">
+        <div class="frame-label">Product Listing <span class="step">step 3</span></div>
+        <div class="frame-body">
+          <div class="box" style="height:24px"><div class="lbl">breadcrumb</div></div>
+          <div class="row"><div class="box" style="height:20px"></div><div class="box" style="height:20px"></div></div>
+          <div class="lbl">filters (category/price/colour/material/size/availability) · sort</div>
+          <div class="lbl">result count</div>
+          <div class="row"><div class="box" style="height:80px"></div><div class="box" style="height:80px"></div></div>
+          <div class="row"><div class="box" style="height:80px"></div><div class="box" style="height:80px"></div></div>
+          <div class="lbl">product grid: image · name · price · wishlist · quick add</div>
+        </div>
+      </div>
+
+      <!-- Product Listing empty -->
+      <div class="frame">
+        <div class="frame-label">Product Listing <span class="step">step 3</span><span class="state-tag">empty</span></div>
+        <div class="frame-body">
+          <div class="box" style="height:24px"><div class="lbl">filters (as selected)</div></div>
+          <div class="box deep" style="height:140px"><div class="lbl">"No bags match these filters"<br>+ suggestion to clear filters</div></div>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <div class="frame">
+        <div class="frame-label">Search overlay <span class="step">step 3</span></div>
+        <div class="frame-body">
+          <div class="box" style="height:30px"><div class="lbl">search input, autofocus</div></div>
+          <div class="lbl">recent searches</div>
+          <div class="line w60"></div><div class="line w40"></div>
+          <div class="lbl">popular searches (chips)</div>
+          <div class="row"><div class="box" style="height:20px"></div><div class="box" style="height:20px"></div><div class="box" style="height:20px"></div></div>
+          <div class="lbl">suggested products</div>
+          <div class="row"><div class="box" style="height:60px"></div><div class="box" style="height:60px"></div></div>
+        </div>
+      </div>
+
+      <div class="frame">
+        <div class="frame-label">Search results <span class="step">step 3</span></div>
+        <div class="frame-body">
+          <div class="box" style="height:24px"><div class="lbl">query: "black leather bag" · result count</div></div>
+          <div class="row"><div class="box" style="height:70px"></div><div class="box" style="height:70px"></div></div>
+          <div class="row"><div class="box" style="height:70px"></div><div class="box" style="height:70px"></div></div>
+        </div>
+      </div>
+
+      <div class="frame">
+        <div class="frame-label">Search, no results <span class="step">step 3</span><span class="state-tag">empty</span></div>
+        <div class="frame-body">
+          <div class="box" style="height:24px"><div class="lbl">query shown</div></div>
+          <div class="box deep" style="height:100px"><div class="lbl">"No results for [query]"<br>+ suggested products</div></div>
+        </div>
+      </div>
+
+      <!-- Quick view -->
+      <div class="frame">
+        <div class="frame-label">Quick view <span class="step">steps 4, 7</span></div>
+        <div class="frame-body">
+          <div class="box" style="height:20px"><div class="lbl">close ✕, overlays the listing behind it</div></div>
+          <div class="row">
+            <div class="box deep" style="height:110px; flex:1.1"><div class="lbl">image</div></div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
+              <div class="line w80"></div><div class="line w40"></div>
+              <div class="lbl">colour · size chips</div>
+              <div class="btn-block">Add to Bag</div>
+              <div class="line w60"></div>
+              <div class="lbl">→ full PDP link</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== EVALUATE / TRUST ===================== -->
+  <div class="group">
+    <div class="group-title">Evaluate &amp; trust — journey steps 4, 5</div>
+    <div class="frame-row">
+
+      <!-- PDP retroactive -->
+      <div class="frame">
+        <div class="frame-label">Product Detail <span class="step">steps 4, 5, 7</span></div>
+        <div class="frame-body">
+          <div class="box" style="height:24px"><div class="lbl">back · logo · search · bag</div></div>
+          <div class="box" style="height:20px"><div class="lbl">breadcrumb (desktop only)</div></div>
+          <div class="box deep" style="height:130px"><div class="lbl">image gallery + thumbnails</div></div>
+          <div class="line w80"></div><div class="line w40"></div>
+          <div class="lbl">rating · price</div>
+          <div class="box" style="height:50px"><div class="lbl">trust strip: delivery · payment methods · exchange</div></div>
+          <div class="lbl">colour · size (cm + comparison) · quantity</div>
+          <div class="row"><div class="btn-block ghost">Add to Bag</div><div class="btn-block">Buy Now</div></div>
+          <div class="lbl">expandable: description · dimensions · care · shipping/returns</div>
+          <div class="box" style="height:40px"><div class="lbl">reviews</div></div>
+          <div class="box" style="height:30px"><div class="lbl">WhatsApp contact strip</div></div>
+          <div class="lbl">related products</div>
+          <div class="note">Built high-fi already (early preview). Checked against this structure — matches; mobile sticky buy bar duplicated the inline actions until fixed 2026-09-22.</div>
+        </div>
+      </div>
+
+      <!-- Size guide -->
+      <div class="frame">
+        <div class="frame-label">Size &amp; dimensions sheet <span class="step">step 4</span></div>
+        <div class="frame-body">
+          <div class="box" style="height:20px"><div class="lbl">opens over PDP, close ✕</div></div>
+          <div class="box deep" style="height:80px"><div class="lbl">bag outline with cm measurements marked</div></div>
+          <div class="lbl">"about the width of an A4 notebook" comparison line</div>
+          <div class="line w60"></div><div class="line w60"></div>
+        </div>
+      </div>
+
+      <!-- About -->
+      <div class="frame">
+        <div class="frame-label">About <span class="step">step 5</span></div>
+        <div class="frame-body">
+          <div class="box deep" style="height:90px"><div class="lbl">craftsmanship imagery</div></div>
+          <div class="line w80"></div><div class="line w80"></div><div class="line w40"></div>
+        </div>
+      </div>
+
+      <!-- Contact -->
+      <div class="frame">
+        <div class="frame-label">Contact <span class="step">step 5</span></div>
+        <div class="frame-body">
+          <div class="box" style="height:34px"><div class="lbl">WhatsApp button + "reply within 1 business day"</div></div>
+          <div class="box" style="height:34px"><div class="lbl">email option</div></div>
+          <div class="line w60"></div>
+        </div>
+      </div>
+
+      <!-- Policy pages -->
+      <div class="frame">
+        <div class="frame-label">Shipping &amp; Delivery <span class="step">step 5</span></div>
+        <div class="frame-body">
+          <div class="line w80"></div><div class="line w80"></div><div class="line w60"></div>
+          <div class="lbl">Dhaka ৳60 (1–3d) · outside ৳120 (3–5d) · free ৳3,000+</div>
+        </div>
+      </div>
+
+      <div class="frame">
+        <div class="frame-label">Returns &amp; Exchange <span class="step">step 5</span></div>
+        <div class="frame-body">
+          <div class="line w80"></div><div class="line w60"></div>
+          <div class="lbl">exchange within 7 days, unused, original packaging</div>
+          <div class="box" style="height:28px"><div class="lbl">Contact Us / Message Us button</div></div>
+          <div class="note">No request-flow screen — decided out of scope, engagement.md.</div>
+        </div>
+      </div>
+
+      <div class="frame">
+        <div class="frame-label">Privacy · Terms <span class="step">step 5</span></div>
+        <div class="frame-body">
+          <div class="line w80"></div><div class="line w80"></div><div class="line w80"></div><div class="line w40"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== SAVE / RETURN ===================== -->
+  <div class="group">
+    <div class="group-title">Save &amp; return — journey steps 6, 14</div>
+    <div class="frame-row">
+
+      <div class="frame">
+        <div class="frame-label">Wishlist <span class="step">steps 6, 14</span></div>
+        <div class="frame-body">
+          <div class="row"><div class="box" style="height:70px"></div><div class="box" style="height:70px"></div></div>
+          <div class="row"><div class="box" style="height:70px"></div><div class="box" style="height:70px"></div></div>
+          <div class="lbl">each card: image · name · price · Add to Bag</div>
+        </div>
+      </div>
+
+      <div class="frame">
+        <div class="frame-label">Wishlist <span class="step">step 6</span><span class="state-tag">empty</span></div>
+        <div class="frame-body">
+          <div class="box deep" style="height:100px"><div class="lbl">"Nothing saved yet" + browse CTA</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== BUY ===================== -->
+  <div class="group">
+    <div class="group-title">Buy — journey steps 7–12</div>
+    <div class="frame-row">
+
+      <div class="frame">
+        <div class="frame-label">Mini cart drawer <span class="step">steps 7, 8</span></div>
+        <div class="frame-body">
+          <div class="row"><div class="box" style="height:50px; flex:0.6"></div><div style="flex:1"><div class="line w80"></div><div class="line w40"></div></div></div>
+          <div class="row"><div class="btn-block ghost">Continue Shopping</div><div class="btn-block">View Cart</div></div>
+        </div>
+      </div>
+
+      <div class="frame">
+        <div class="frame-label">Cart <span class="step">step 8</span></div>
+        <div class="frame-body">
+          <div class="row"><div class="box" style="height:60px; flex:0.6"></div><div style="flex:1"><div class="line w80"></div><div class="line w40"></div><div class="lbl">qty · remove · save for later</div></div></div>
+          <div class="row"><div class="box" style="height:60px; flex:0.6"></div><div style="flex:1"><div class="line w80"></div><div class="line w40"></div></div></div>
+          <div class="lbl">progress toward ৳3,000 free delivery</div>
+          <div class="box" style="height:40px"><div class="lbl">subtotal · delivery · total</div></div>
+          <div class="btn-block">Proceed to Checkout</div>
+        </div>
+      </div>
+
+      <div class="frame">
+        <div class="frame-label">Cart <span class="step">step 8</span><span class="state-tag">empty</span></div>
+        <div class="frame-body">
+          <div class="box deep" style="height:90px"><div class="lbl">"Your bag is empty" + browse CTA</div></div>
+        </div>
+      </div>
+
+      <!-- Checkout 5 steps as one connected frame set -->
+      <div class="frame">
+        <div class="frame-label">Checkout — Contact + Address <span class="step">step 9</span></div>
+        <div class="frame-body">
+          <div class="box" style="height:16px"><div class="lbl">●━●━○━○━○ step indicator</div></div>
+          <div class="line w60"></div>
+          <div class="row"><div class="box" style="height:20px"></div><div class="box" style="height:20px"></div></div>
+          <div class="lbl">name · phone · email (guest, no account forced)</div>
+          <div class="row"><div class="box" style="height:20px"></div><div class="box" style="height:20px"></div></div>
+          <div class="lbl">division · district · upazila/thana · area · postcode (optional)</div>
+          <div class="btn-block">Continue</div>
+        </div>
+      </div>
+
+      <div class="frame">
+        <div class="frame-label">Checkout — Delivery <span class="step">step 10</span></div>
+        <div class="frame-body">
+          <div class="box" style="height:16px"><div class="lbl">●━●━●━○━○ step indicator</div></div>
+          <div class="box" style="height:30px"><div class="lbl">charge resolved from address: ৳60 / ৳120 / free</div></div>
+          <div class="btn-block">Continue</div>
+        </div>
+      </div>
+
+      <div class="frame">
+        <div class="frame-label">Checkout — Payment <span class="step">step 10</span></div>
+        <div class="frame-body">
+          <div class="box" style="height:16px"><div class="lbl">●━●━●━●━○ step indicator</div></div>
+          <div class="row"><div class="box" style="height:30px"></div><div class="box" style="height:30px"></div></div>
+          <div class="row"><div class="box" style="height:30px"></div><div class="box" style="height:30px"></div></div>
+          <div class="lbl">COD · bKash · Nagad · Card — COD never hidden</div>
+          <div class="note">Blocked on gateway choice (Week 1 commitment, engagement.md)</div>
+        </div>
+      </div>
+
+      <div class="frame">
+        <div class="frame-label">Checkout — Review Order <span class="step">steps 10, 11</span></div>
+        <div class="frame-body">
+          <div class="box" style="height:16px"><div class="lbl">●━●━●━●━● step indicator</div></div>
+          <div class="box" style="height:50px"><div class="lbl">order summary: item(s) · address · delivery · payment</div></div>
+          <div class="btn-block">Place Order</div>
+        </div>
+      </div>
+
+      <div class="frame">
+        <div class="frame-label">Checkout — Review Order <span class="step">steps 10, 11</span><span class="state-tag">Buy Now</span></div>
+        <div class="frame-body">
+          <div class="box deep" style="height:20px"><div class="lbl">"Buy Now Item" label, prominent</div></div>
+          <div class="box" style="height:40px"><div class="lbl">single product only, not the cart</div></div>
+          <div class="btn-block">Place Order</div>
+        </div>
+      </div>
+
+      <div class="frame">
+        <div class="frame-label">Payment — Processing <span class="step">step 11</span></div>
+        <div class="frame-body">
+          <div class="box deep" style="height:90px"><div class="lbl">redirect / waiting indicator</div></div>
+        </div>
+      </div>
+
+      <div class="frame">
+        <div class="frame-label">Payment — Failed <span class="step">step 11</span></div>
+        <div class="frame-body">
+          <div class="box deep" style="height:50px"><div class="lbl">reason (from gateway) + reassurance no money taken</div></div>
+          <div class="row"><div class="btn-block">Retry</div><div class="btn-block ghost">Switch to COD</div></div>
+          <div class="note">"Switch to COD" pending client decision (brief-interrogated.md Q2)</div>
+        </div>
+      </div>
+
+      <div class="frame">
+        <div class="frame-label">Order Confirmation <span class="step">step 12</span></div>
+        <div class="frame-body">
+          <div class="box deep" style="height:30px"><div class="lbl">"Order placed" + order number</div></div>
+          <div class="box" style="height:40px"><div class="lbl">items · total · delivery estimate · address</div></div>
+          <div class="btn-block">Track Order</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== AFTER THE ORDER ===================== -->
+  <div class="group">
+    <div class="group-title">After the order — journey steps 13, 14</div>
+    <div class="frame-row">
+
+      <div class="frame">
+        <div class="frame-label">Order Tracking <span class="step">step 13</span></div>
+        <div class="frame-body">
+          <div class="box" style="height:24px"><div class="lbl">order number + phone (guest) — no account required</div></div>
+          <div class="box" style="height:50px"><div class="lbl">status timeline</div></div>
+          <div class="line w60"></div>
+        </div>
+      </div>
+
+      <div class="frame">
+        <div class="frame-label">Account <span class="step">steps 13, 14</span></div>
+        <div class="frame-body">
+          <div class="lbl">login / signup</div>
+          <div class="row"><div class="box" style="height:20px"></div><div class="box" style="height:20px"></div></div>
+          <div class="lbl">profile · orders · saved addresses · wishlist</div>
+          <div class="box" style="height:24px"><div class="lbl">saved payment method (preferred method, masked bKash/Nagad)</div></div>
+          <div class="note">Saved-card sub-state pending gateway (tokenisation support unknown)</div>
+          <div class="lbl">logout</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== NAV PATTERN CHECK ===================== -->
+  <div class="group">
+    <div class="group-title">Navigation pattern check — information-architecture.md Part 3</div>
+    <div class="nav-check">
+      <h3>Checked against every frame above</h3>
+      <p><strong>Mobile (390px):</strong> top bar (menu · logo · search · bag) + full-height drawer for categories/account/wishlist. No bottom tab bar — product and checkout screens carry their own sticky primary action instead, so a tab bar never competes with Add to Bag/Buy Now or the checkout step buttons. Confirmed consistent across Homepage, PDP, Listing, Cart, Checkout.</p>
+      <p><strong>Desktop (1024px+):</strong> full header nav, light dropdown under "Bags" (no mega-menu), breadcrumbs on Listing/PDP, cart as a right-side drawer, checkout header reduced to logo + "Continue shopping" link. Confirmed consistent.</p>
+      <p><strong>Gap found:</strong> Quick View and the Size &amp; Dimensions sheet are both overlays with no shared close/back convention documented yet — same ✕ pattern should be used for both; add this as an explicit rule before high-fi.</p>
+    </div>
+  </div>
+
+</body>
+</html>

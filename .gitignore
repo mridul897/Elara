@@ -1,0 +1,20 @@
+# macOS / Windows / editors
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# secrets and local config: never commit these
+.env
+.env.*
+*.pem
+*.key
+*.p12
+secrets.*
+
+# dependencies, build output, logs
+node_modules/
+dist/
+*.log
+.vercel/

@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELARA — Product Listing</title>
+<meta name="description" content="Shop all ELARA bags: totes, shoulder, crossbody, mini and travel & work bags. Filter by colour, material and size.">
+<meta name="theme-color" content="#FFFDF9">
+<link rel="icon" type="image/svg+xml" href="assets/home/favicon.svg">
+<!--
+  Product Listing Page — now wired to the designer's real Figma content
+  (node 1:16, the five category screens: Tote 137:164, Shoulder 153:351,
+  Crossbody 161:777, Mini 164:1101, Travel/Work 167:1370). Real product
+  photos, names and prices per get_design_context on each category's
+  "Product Grid" node; images downloaded to assets/plp/<category>/ and
+  re-encoded to JPEG for file size. Some images repeat across cards within a
+  category — that's the client's own placeholder choice while more product
+  photography arrives, not a build error; kept as-is on request.
+
+  This one page now serves all five categories for real: the Category filter
+  actually switches which product set renders (title, breadcrumb, count, and
+  grid all update), and the Price filter actually filters by each product's
+  real price. Colour, Material, Size and Availability stay visible but are
+  NOT wired yet — the client hasn't sent per-product colour/material/size/
+  stock data, so there is nothing real to filter by; wiring them now would
+  mean faking that data, which the designer's build should never do silently.
+
+  Card layout (244x340 media, 24px gap, Fraunces Light 24px name, Inter
+  Medium 16px price) is pixel-matched to the Figma product card. Colours
+  themselves (swatch dots) are not shown per-product — the designer said
+  colour isn't decided yet and to place things sensibly myself; the badge/
+  price/discount treatment IS real, taken straight from each Figma card.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,200;9..144,300;9..144,400&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-bg-primary: #FFFDF9;
+    --color-bg-secondary: #EFE6DB;
+    --color-bg-inverse: #1C1B1A;
+    --color-page: #FFFDF9;
+    --color-text-primary: #4A4741;
+    --color-text-on-inverse: #F7F1E8;
+    --color-text-muted: #838280;
+    --color-text-faint: #A8A5A0;
+    --color-border: rgba(74,71,65,0.25);
+    --color-border-strong: rgba(74,71,65,1);
+    --color-rail: #D3D1CE;
+    --color-accent: #2A72DE;
+    --color-accent-hover: #2056A6;
+    --color-focus-ring: #3184FF;
+    --color-danger: #D22C15;
+    --color-white: #FFFFFF;
+
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Inter', -apple-system, "Segoe UI", sans-serif;
+
+    --space-tight: 8px;
+    --space-group: 16px;
+    --space-card-pad: 24px;
+    --space-section: 64px;
+
+    --text: #4a4741; --text-muted: #838280; --bg-page: #fffdf9; --bg-card: #f7f1e8; --border-soft: rgba(74,71,65,0.25);
+    --r-large: 32px; --r-media: 12px; --r-pill: 999px; --ease: cubic-bezier(.4,0,.2,1);
+    --radius-control: 999px;
+    --radius-card-sm: 8px;
+    --radius-card: 12px;
+    --shadow-modal: 0 25px 50px -12px rgba(0,0,0,0.25);
+    --ease-default: cubic-bezier(.4,0,.2,1);
+    --duration-fast: 0.15s;
+    --duration-mid: 0.3s;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--color-bg-primary); color: var(--color-text-primary);
+    font-family: var(--font-body); font-weight: 400; line-height: 1.5; -webkit-font-smoothing: antialiased;
+    padding-bottom: 76px; /* space for the sticky mobile filter/sort bar */
+  }
+  img { max-width: 100%; display: block; }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 3px; border-radius: 4px; }
+
+
+  /* ---------- Desktop nav: the same 1440px component as the homepage / PDP ---------- */
+  .nav-page { position: relative; width: 1440px; margin: 0 auto; padding-top: 109px; zoom: var(--fit, 1); display: none; z-index: 45; }
+  .abs { position: absolute; }
+  .cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .nav-page button { background: none; border: none; padding: 0; color: inherit; font: inherit; }
+  .nav-page :where(a, button, p, div, span) { margin: 0; }
+  .nav-page .nav-link, .nav-page .cart-btn { font-family: var(--font-body); }
+  @media (max-width: 1023.98px) { .nav-page { display: none; } }
+  @media (min-width: 1024px) {
+    body > .site-header { display: none; }
+    /* Nav stays locked at the top; the cards slide underneath it. */
+    .nav-page { display: block; position: sticky; top: 0; background: var(--bg-page); box-shadow: 0 1px 0 var(--border-soft); }
+    html { overflow-x: clip; }
+  }
+  /* ===== Nav (22:641) — same component as the homepage ===== */
+  .nav { left: 0; top: 0; width: 1440px; height: 109px; padding: 10px; display: flex; align-items: center; justify-content: center; z-index: 20; }
+  .nav-inner { width: 100%; display: flex; gap: 144px; align-items: center; justify-content: center; padding: 0 37px; }
+  .nav-logo { position: relative; width: 222px; height: 101px; flex-shrink: 0; }
+  .nav-right { display: flex; gap: 104px; align-items: center; }
+  .nav-links { display: flex; gap: 32px; align-items: center; }
+  .nav-link { display: flex; gap: 6px; align-items: center; font-weight: 500; font-size: 16px; line-height: 1.5; text-transform: uppercase; white-space: nowrap; transition: background-color .15s var(--ease), color .15s var(--ease); }
+  .nav-link img { width: 16px; height: 16px; display: block; }
+  .nav-tools { display: flex; gap: 18px; align-items: center; }
+  .nav-icons { display: flex; gap: 20px; align-items: center; width: 58px; }
+  .ico20 { position: relative; width: 20px; height: 20px; flex-shrink: 0; overflow: clip; }
+  .ico20 img { position: absolute; display: block; }
+  /* Nav search / account icons: soft circle on hover, same cue as the cart pill */
+  .nav-icons .ico20 { overflow: visible; cursor: pointer; }
+  .nav-icons .ico20::before { content: ""; position: absolute; inset: -8px; border-radius: 50%; background: #f1e9dc; opacity: 0; transform: scale(.7); transition: opacity .15s cubic-bezier(.4,0,.2,1), transform .2s cubic-bezier(.4,0,.2,1); }
+  .nav-icons .ico20:hover::before, .nav-icons .ico20:focus-visible::before { opacity: 1; transform: scale(1); }
+  .nav-icons .ico20 img { z-index: 1; }
+  .nav-icons a.ico20 { display: block; }
+  .cart-btn { display: flex; gap: 10px; align-items: center; justify-content: center; height: 40px; padding: 10px 18px; border: 1px solid var(--text); border-radius: var(--r-pill); font-weight: 500; font-size: 16px; line-height: 1.5; text-transform: uppercase; white-space: nowrap; transition: background-color .15s var(--ease); }
+  .cart-btn:hover { background: var(--bg-card); }
+  .nav-item { position: relative; }
+  .nav-chev { transition: transform 220ms var(--ease); }
+  .nav-item.open .nav-chev { transform: rotate(180deg); }
+  .nav-menu-wrap { position: absolute; top: 99px; z-index: 10; background: var(--bg-page); box-shadow: 0 28px 56px rgba(28,27,26,0.12); opacity: 0; visibility: hidden; transform: translateY(-10px); transition: opacity 260ms var(--ease), transform 260ms var(--ease), visibility 0s linear 260ms, left 260ms var(--ease); pointer-events: none; overflow: hidden; }
+  .nav-menu-wrap.mega { left: 0; width: 1440px; border-radius: 0 0 var(--r-large) var(--r-large); }
+  .nav-menu-wrap.light { width: auto; border-radius: var(--r-large); }
+  .nav-menu-wrap.open { opacity: 1; visibility: visible; transform: translateY(0); transition: opacity 260ms var(--ease), transform 260ms var(--ease), height 320ms var(--ease), left 320ms var(--ease); pointer-events: auto; }
+  .nav-panel { display: none; padding: 48px 64px 56px; }
+  .nav-menu-wrap.light .nav-panel { padding: 20px; }
+  .nav-panel.active { display: block; animation: navPanelIn 240ms var(--ease); }
+  @keyframes navPanelIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .nav-menu-wrap.mega .nav-panel { padding: 0; }
+  .dd-panel { position: relative; width: 1440px; height: 360px; }
+  .dd-card { position: absolute; left: 82px; top: 56px; width: 332px; height: 248px; border-radius: var(--r-media); overflow: hidden; }
+  .dd-card .cover { border-radius: var(--r-media); transition: transform .4s var(--ease); }
+  .dd-card:hover .cover { transform: scale(1.05); }
+  .dd-card-fade { position: absolute; left: 50%; bottom: -14px; width: 604px; height: 83px; transform: translateX(-50%); pointer-events: none; }
+  .dd-card-fade i { position: absolute; inset: 0; filter: blur(52px); font-style: normal; }
+  .dd-card-fade i:first-child { background: rgba(40,40,40,0.53); }
+  .dd-card-fade i:last-child { background: rgba(40,40,40,0.88); mix-blend-mode: multiply; }
+  .dd-card-label { position: absolute; left: 14px; right: 14px; bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #fff; }
+  .dd-card-label:not(.two-line) > span:first-child { font-size: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dd-card-label img { width: 24px; height: 24px; flex-shrink: 0; }
+  .dd-card-label.two-line { flex-direction: column; align-items: flex-start; gap: 0; }
+  .dd-card-eyebrow { font-weight: 500; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; color: #d3d1ce; }
+  .dd-card-title { font-size: 16px; font-weight: 400; }
+  .dd-divider { position: absolute; left: 831px; top: 29px; width: 1px; height: 301.5px; }
+  .dd-list { position: absolute; left: 853px; top: 56px; width: 268px; display: flex; flex-direction: column; gap: 20px; }
+  .dd-list-group { display: flex; flex-direction: column; gap: 16px; }
+  .dd-list-coll { gap: 16px; }
+  .dd-row { display: flex; align-items: center; gap: 12px; color: var(--text); border-radius: var(--r-media); padding: 6px; margin: -6px; }
+  .dd-row:hover { background: var(--bg-card); }
+  .dd-row-thumb { position: relative; width: 48px; height: 48px; border-radius: 999px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-soft); }
+  .dd-row-thumb .cover { border-radius: 999px; }
+  .dd-row-thumb.icon { border: none; }
+  .dd-row-title { font-size: 18px; white-space: nowrap; }
+  .nm-simple-list { display: flex; flex-direction: column; gap: 2px; width: 280px; }
+  .nm-simple { padding: 12px 16px; border-radius: var(--r-media); font-size: 16px; color: var(--text); }
+  .nm-simple:hover { background: var(--bg-card); }
+
+  /* ---------- Header (mobile / tablet) ---------- */
+  .site-header {
+    position: sticky; top: 0; z-index: 40;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: var(--space-group) 20px; background: rgba(255,253,249,0.92); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .icon-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px; background: transparent; border: none;
+    color: var(--color-text-primary); border-radius: var(--radius-control);
+    transition: background var(--duration-fast) var(--ease-default);
+  }
+  .icon-btn:hover { background: var(--color-bg-secondary); }
+  .logo-mark { font-family: var(--font-display); font-weight: 400; font-size: 1.2rem; letter-spacing: 0.08em; }
+  .breadcrumb { max-width: 1312px; margin: 0 auto; font-size: 0.78rem; color: var(--color-text-muted); padding: var(--space-group) 20px 0; }
+  .breadcrumb a { color: var(--color-text-muted); }
+  .breadcrumb a:hover { color: var(--color-text-primary); }
+
+  main { max-width: 1312px; margin: 0 auto; }
+  /* Phones/tablets: the two columns dissolve into one stack (breadcrumb, title, filter row, chips, grid). */
+  .plp-layout, .plp-left, .plp-right { display: contents; }
+  .plp-right .grid-wrap { padding: 0 20px var(--space-section); }
+
+  /* ---------- Listing header: title + count (primary label) + sort ---------- */
+  .plp-head { padding: var(--space-group) 20px 0; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+  .plp-head h1 { font-family: var(--font-display); font-weight: 300; letter-spacing: -0.02em; font-size: clamp(1.8rem, 7vw, 2.75rem); margin: 0; }
+  .result-count { font-size: 0.85rem; color: var(--color-text-muted); margin-top: 4px; }
+  .sort-select-wrap { display: none; }
+
+  /* ---------- Filter/sort trigger row (mobile) ---------- */
+  .filter-sort-row { display: flex; gap: 8px; padding: var(--space-group) 20px; }
+  .fs-btn {
+    flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    min-height: 44px; border-radius: var(--radius-control); border: 1px solid var(--color-border-strong);
+    background: transparent; color: var(--color-text-primary); font-size: 0.88rem;
+  }
+  .fs-btn .count { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 999px; background: var(--color-text-primary); color: var(--color-bg-primary); font-size: 0.68rem; }
+  .active-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 20px var(--space-group); align-items: center; }
+  .active-chips:empty { display: none; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--radius-control); background: var(--color-bg-secondary); font-size: 0.8rem; }
+  .chip button { background: none; border: none; color: var(--color-text-muted); font-size: 0.9rem; line-height: 1; padding: 0; }
+  .clear-all { font-size: 0.8rem; color: var(--color-accent); background: none; border: none; padding: 0; }
+
+  /* ---------- Layout: sidebar (desktop) + grid ---------- */
+  .plp-body { padding: 0 20px var(--space-section); display: flex; gap: var(--space-section); align-items: flex-start; }
+  .filters-sidebar { display: none; }
+  .filter-group { border-bottom: 1px solid var(--color-border); }
+  .filter-group summary { display: flex; align-items: center; justify-content: space-between; padding: var(--space-group) 0; font-weight: 500; font-size: 0.92rem; cursor: pointer; list-style: none; }
+  .filter-group summary::-webkit-details-marker { display: none; }
+  .filter-group summary::after { content: "+"; color: var(--color-text-muted); font-size: 1.1rem; }
+  .filter-group[open] summary::after { content: "–"; }
+  .filter-group .body { padding: 0 0 var(--space-group); display: flex; flex-direction: column; gap: 10px; }
+  .filter-check { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--color-text-primary); cursor: pointer; }
+  /* Custom checkbox matching the designer's Figma checkbox component exactly
+     (node 127:1823 unchecked / 127:1859 checked): a 15px box, 3px radius,
+     1px border when empty; when checked, the designer's own checkmark SVG
+     (filled dark square + cream tick) replaces the native browser tick. */
+  .filter-check input[type="checkbox"] {
+    -webkit-appearance: none; appearance: none; margin: 0; flex-shrink: 0;
+    width: 15px; height: 15px; border-radius: 3px; border: 1px solid var(--color-text-primary);
+    background: transparent; cursor: pointer;
+  }
+  .filter-check input[type="checkbox"]:checked {
+    border: none; background: url('assets/check-box-checked.svg') center / 15px 15px no-repeat;
+  }
+  .filter-check input[type="checkbox"]:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
+  .filter-check .n { color: var(--color-text-faint); margin-left: auto; font-size: 0.8rem; }
+  .colour-list { display: flex; flex-direction: column; gap: 4px; padding: 4px 0; }
+  .colour-opt { width: 100%; background: none; border: 0; border-radius: 0; display: flex; align-items: center; gap: 10px; font-size: 0.88rem; color: var(--color-text-primary); text-align: left; padding: 3px 0 3px 6px; cursor: pointer; }
+  .colour-opt .dot { position: relative; width: 20px; height: 20px; border-radius: 999px; background: var(--c); box-shadow: inset 0 0 0 1px rgba(74,71,65,.25); flex-shrink: 0; transition: transform .15s ease; }
+  .colour-opt:hover .dot { transform: scale(1.1); }
+  .colour-opt[aria-checked="true"] .dot { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--color-accent); }
+  .colour-opt[aria-checked="true"] { font-weight: 500; }
+  .colour-opt .n { color: var(--color-text-faint); margin-left: auto; font-size: 0.8rem; }
+  .colour-opt:focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 3px; border-radius: 6px; }
+  .filter-check .note { color: var(--color-text-faint); font-size: 0.76rem; }
+  .filter-note { font-size: 0.76rem; color: var(--color-text-faint); font-style: italic; padding: 2px 0 4px; }
+
+  /* Dual-handle price slider (see earlier build note: rebuilt at a legible
+     scale rather than the Figma component's literal 8px/12px sizing). Now
+     wired for real — it filters the visible grid by each product's price. */
+  .price-slider { display: flex; flex-direction: column; gap: 18px; padding: 4px 2px 8px; }
+  .price-slider-labels { display: flex; justify-content: space-between; align-items: flex-end; }
+  .price-slider-label-block { display: flex; flex-direction: column; gap: 3px; }
+  .price-slider-label-block.right { align-items: flex-end; text-align: right; }
+  .price-slider-label-block .micro { font-size: 0.72rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .price-slider-label-block .micro-value { font-size: 0.95rem; font-weight: 500; color: var(--color-text-primary); }
+  .price-slider-track-wrap { position: relative; height: 20px; margin-top: 4px; }
+  .price-slider-track { position: absolute; top: 9px; left: 9px; right: 9px; height: 2px; border-radius: 999px; background: var(--color-border); }
+  .price-slider-active { position: absolute; top: 8px; height: 4px; border-radius: 999px; background: var(--color-text-primary); }
+  .price-slider-input { position: absolute; top: -4px; left: 0; width: 100%; margin: 0; height: 28px; -webkit-appearance: none; appearance: none; background: transparent; pointer-events: none; }
+  .price-slider-input::-webkit-slider-runnable-track { -webkit-appearance: none; background: transparent; height: 28px; }
+  .price-slider-input::-moz-range-track { background: transparent; height: 28px; border: none; }
+  .price-slider-input::-webkit-slider-thumb {
+    -webkit-appearance: none; pointer-events: auto; width: 20px; height: 20px; margin-top: 0; border-radius: 999px; cursor: pointer;
+    background: var(--color-text-primary); border: 4px solid var(--color-bg-primary);
+    box-shadow: 0 0 0 1px var(--color-border-strong);
+  }
+  .price-slider-input::-moz-range-thumb {
+    pointer-events: auto; width: 20px; height: 20px; border-radius: 999px; cursor: pointer;
+    background: var(--color-text-primary); border: 4px solid var(--color-bg-primary);
+    box-shadow: 0 0 0 1px var(--color-border-strong);
+  }
+  .price-slider-input:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
+
+  .swatch-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .filter-swatch { width: 28px; height: 28px; border-radius: 999px; border: 2px solid transparent; padding: 0; position: relative; }
+  .filter-swatch::after { content: ""; position: absolute; inset: 2px; border-radius: 999px; }
+  .filter-swatch[aria-checked="true"] { border-color: var(--color-accent); }
+  .filter-swatch.s-tan::after { background: #8a5a34; }
+  .filter-swatch.s-black::after { background: #232019; }
+  .filter-swatch.s-ivory::after { background: #d9cdb8; }
+  .filter-swatch.s-olive::after { background: #6b6a4f; }
+  .size-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .size-chip { min-height: 36px; padding: 0 12px; border-radius: var(--radius-control); border: 1px solid var(--color-border-strong); background: transparent; font-size: 0.82rem; }
+  .size-chip[aria-pressed="true"] { border-color: var(--color-accent); background: rgba(42,114,222,0.12); color: var(--color-accent-hover); }
+  .availability-toggle { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; }
+
+  /* ---------- Product grid — primary. Pixel-matched to Figma's card. ---------- */
+  .grid-wrap { flex: 1; min-width: 0; }
+  .product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 12px; }
+  .p-card { display: block; }
+  .p-media { position: relative; aspect-ratio: 244/340; border-radius: var(--radius-card); overflow: hidden; background: var(--color-bg-secondary); }
+  .p-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .p-badge { z-index: 1; }
+  .p-badge { position: absolute; left: 12px; top: 12px; padding: 6px 12px; border-radius: 999px; font-size: 11px; font-weight: 500; line-height: normal; }
+  .p-badge.best { background: rgba(255,255,255,0.92); color: var(--color-text-primary); }
+  .p-badge.new { background: var(--color-text-primary); color: var(--color-page); }
+  .p-badge.off { background: rgba(255,255,255,0.9); color: var(--color-accent); border: 1px solid var(--color-accent); }
+  /* ---- Quick view drawer: slides in from the right when a card's Add to Bag is pressed ---- */
+  :where(.qv) :where(button) { margin: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
+  .qv { position: fixed; inset: 0; z-index: 100; visibility: hidden; transition: visibility 0s linear .45s; }
+  .qv.open { visibility: visible; transition: none; }
+  .qv-backdrop { position: absolute; inset: 0; background: rgba(28,27,26,0.42); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); opacity: 0; transition: opacity .35s var(--ease-default); }
+  .qv.open .qv-backdrop { opacity: 1; }
+  .qv-panel { position: absolute; top: 0; right: 0; bottom: 0; width: min(480px, 100vw); display: flex; flex-direction: column; gap: 20px; padding: 56px 24px 24px; overflow-y: auto; background: var(--color-bg-primary); box-shadow: -20px 0 50px rgba(0,0,0,0.12); transform: translateX(100%); transition: transform .45s cubic-bezier(.22,.8,.3,1); outline: none; }
+  .qv.open .qv-panel { transform: none; }
+  .qv-x { position: absolute; top: 12px; right: 12px; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 999px; color: var(--color-text-primary); transition: background-color .15s var(--ease-default); }
+  .qv-x:hover { background: var(--color-bg-secondary); }
+  .qv-x svg { width: 18px; height: 18px; }
+  .qv-strip-wrap { position: relative; }
+  .qv-strip { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .qv-strip::-webkit-scrollbar { display: none; }
+  .qv-strip img { flex: 0 0 calc((100% - 24px) / 3); min-width: 0; aspect-ratio: 4/5; object-fit: cover; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-bg-secondary); scroll-snap-align: start; }
+  .qv-strip[data-count="1"] { justify-content: center; }
+  .qv-strip[data-count="1"] img { flex-basis: 56%; }
+  .qv-arrow { position: absolute; top: 50%; z-index: 1; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin-top: -16px; padding: 0; border: 1px solid var(--color-border); border-radius: 999px; background: rgba(255,253,249,0.94); color: var(--color-text-primary); transition: opacity .2s var(--ease-default), background-color .15s var(--ease-default); }
+  .qv-arrow:hover { background: var(--color-bg-primary); }
+  .qv-arrow.prev { left: 6px; }
+  .qv-arrow.next { right: 6px; }
+  .qv-arrow svg { width: 16px; height: 16px; }
+  .qv-strip-wrap[data-start="1"] .qv-arrow.prev, .qv-strip-wrap[data-end="1"] .qv-arrow.next { opacity: 0; visibility: hidden; pointer-events: none; }
+  .qv-info { display: flex; flex-direction: column; gap: 16px; }
+  .qv-eyebrow { font-size: 12px; font-weight: 700; line-height: 1.5; text-transform: uppercase; color: var(--color-text-muted); }
+  .qv-name { margin: 2px 0 6px; font-family: var(--font-display); font-weight: 400; font-size: 24px; line-height: 1.1; letter-spacing: -0.72px; color: var(--color-text-primary); }
+  .qv-price { display: flex; align-items: baseline; gap: 8px; font-size: 16px; font-weight: 500; }
+  .qv-price s { font-size: 14px; font-weight: 400; color: var(--color-text-faint); }
+  .qv-label { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; line-height: 1.5; }
+  .qv-label span:last-child { color: var(--color-text-muted); }
+  .qv-tiles { display: flex; gap: 8px; }
+  .qv-tile { position: relative; width: 64px; height: 80px; padding: 0; border-radius: 8px; overflow: hidden; background: var(--color-bg-secondary); }
+  .qv-tile img { width: 100%; height: 100%; object-fit: cover; }
+  .qv-tile::after { content: ""; position: absolute; inset: 0; border: 1px solid var(--color-border); border-radius: inherit; transition: border-color .15s var(--ease-default); }
+  .qv-tile[aria-checked="true"]::after { border: 2px solid var(--color-accent); }
+  .qv-tile:not([aria-checked="true"]):hover::after { border-color: var(--color-text-primary); }
+  .qv-details { align-self: flex-start; font-size: 14px; line-height: 1.5; color: var(--color-accent); }
+  .qv-details:hover { text-decoration: underline; }
+  .qv-add { height: 50px; border-radius: 999px; background: var(--color-text-primary); color: var(--color-bg-primary); font-size: 15px; font-weight: 500; line-height: 1; transition: background-color .15s var(--ease-default); }
+  .qv-add:hover { background: #3a3733; }
+  .qv-add:disabled { cursor: default; }
+  .qv-close { align-self: center; font-size: 14px; line-height: 1.5; color: var(--color-text-muted); text-decoration: underline; }
+  .qv-close:hover { color: var(--color-text-primary); }
+  @media (prefers-reduced-motion: reduce) { .qv, .qv-backdrop, .qv-panel { transition: none; } }
+
+  /* "Item added to bag" pop-up: centred card over a dimmed page, shown after Add to Bag in the drawer. */
+  .ab { position: fixed; inset: 0; z-index: 110; display: flex; align-items: center; justify-content: center; padding: 20px; visibility: hidden; transition: visibility 0s linear .3s; }
+  .ab.open { visibility: visible; transition: none; }
+  .ab-backdrop { position: absolute; inset: 0; background: rgba(28,27,26,0.42); opacity: 0; transition: opacity .3s var(--ease-default); }
+  .ab.open .ab-backdrop { opacity: 1; }
+  .ab-card { position: relative; width: min(440px, 100%); display: flex; flex-direction: column; gap: 20px; padding: 28px 24px 24px; background: var(--color-bg-primary); border-radius: 12px; box-shadow: 0 24px 60px rgba(0,0,0,0.18); opacity: 0; transform: translateY(12px) scale(.98); transition: opacity .3s var(--ease-default), transform .35s cubic-bezier(.22,.8,.3,1); outline: none; }
+  .ab.open .ab-card { opacity: 1; transform: none; }
+  .ab :where(button) { border: 0; background: none; padding: 0; font: inherit; color: inherit; cursor: pointer; }
+  .ab-x { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; display: grid; place-items: center; color: var(--color-text-primary); }
+  .ab-x svg { width: 18px; height: 18px; }
+  .ab-title { font-size: 13px; font-weight: 500; line-height: 1.2; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-primary); }
+  .ab-item { display: flex; gap: 16px; align-items: flex-start; }
+  .ab-item img { width: 96px; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 8px; background: #F8F4EF; flex: none; }
+  .ab-meta { display: flex; flex-direction: column; gap: 4px; min-width: 0; font-size: 14px; line-height: 1.5; color: var(--color-text-muted); }
+  .ab-name { font-size: 16px; font-weight: 500; color: var(--color-text-primary); }
+  .ab-price { color: var(--color-text-primary); }
+  .ab-actions { display: flex; flex-direction: column; gap: 10px; }
+  .ab-btn { display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 999px; font-size: 15px; font-weight: 500; line-height: 1; transition: background-color .15s var(--ease-default), color .15s var(--ease-default); }
+  .ab-btn.primary { background: var(--color-text-primary); color: var(--color-bg-primary); }
+  .ab-btn.primary:hover { background: #3a3733; }
+  .ab .ab-btn.secondary { border: 1px solid var(--color-text-primary); color: var(--color-text-primary); }
+  .ab-btn.secondary:hover { background: var(--color-text-primary); color: var(--color-bg-primary); }
+  @media (prefers-reduced-motion: reduce) { .ab, .ab-backdrop, .ab-card { transition: none; } }
+
+  /* Flat strip flush with the bottom edge of the photo (the photo's rounded corners clip it). */
+  .p-add {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; isolation: isolate; overflow: hidden;
+    height: 40px; padding: 0 16px; border: 0; border-top: 1px solid var(--color-border); border-radius: 0;
+    background: rgba(255,253,249,0.94);
+    color: var(--color-text-primary); font-size: 0.75rem; font-weight: 500; line-height: 1; letter-spacing: 0.08em; text-transform: uppercase;
+    opacity: 0; transform: translateY(100%);
+    transition: opacity var(--duration-fast) var(--ease-default), transform .3s cubic-bezier(.22,.8,.3,1), color .45s var(--ease-default);
+  }
+  /* Hovering the strip sweeps the dark fill in from the left. */
+  .p-add::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--color-text-primary); transform: scaleX(0); transform-origin: left center; transition: transform .5s cubic-bezier(.22,.8,.3,1); }
+  .p-add:hover, .p-add:focus-visible, .p-add.is-added { color: var(--color-page); }
+  .p-add:hover::before, .p-add:focus-visible::before, .p-add.is-added::before { transform: scaleX(1); }
+  .p-media:hover .p-add, .p-media:focus-within .p-add { opacity: 1; transform: translateY(0); }
+  @media (hover: none) { .p-add { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .p-add, .p-add::before { transition: none; } }
+  /* Rating pill, bottom right of the photo; gives way to the Add to Bag strip on hover. */
+  .p-rate svg { width: 13px; height: 13px; fill: #D49A1E; flex-shrink: 0; }
+  .p-rate { display: inline-flex; align-items: center; gap: 4px; position: absolute; right: 10px; bottom: 10px; z-index: 1; padding: 4px 9px; border: 1px solid rgba(74,71,65,0.14); border-radius: 999px; background: rgba(255,253,249,0.5); color: var(--color-text-primary); font-size: 13px; font-weight: 500; line-height: 1; pointer-events: none; transition: opacity var(--duration-fast) var(--ease-default), transform .3s cubic-bezier(.22,.8,.3,1); }
+  .p-media:hover .p-rate, .p-media:focus-within .p-rate { opacity: 0; transform: translateY(8px); }
+  @media (hover: none) { .p-rate { bottom: 50px; } .p-media:hover .p-rate { opacity: 1; transform: none; } }
+  .p-media:has(.p-track) { touch-action: pan-y; }
+  .p-track { position: absolute; inset: 0; display: flex; transform: translateX(calc(var(--i, 0) * -100% + var(--peek, 0%))); transition: transform .5s cubic-bezier(.22,.8,.3,1); will-change: transform; }
+  .p-track.peeking { transition-duration: .8s; transition-timing-function: ease-in-out; }
+  .p-media .p-track .p-slide { position: static; flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; }
+  .p-arrow { position: absolute; top: 50%; z-index: 2; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin-top: -16px; padding: 0; border: 1px solid var(--color-border); border-radius: 999px; background: rgba(255,253,249,0.92); color: var(--color-text-primary); opacity: 0; transition: opacity .2s var(--ease-default), background-color .15s var(--ease-default); }
+  .p-arrow:hover { background: var(--color-page); }
+  .p-arrow.prev { left: 8px; }
+  .p-arrow.next { right: 8px; }
+  .p-arrow svg { width: 16px; height: 16px; }
+  .p-media:hover .p-arrow, .p-media:focus-within .p-arrow { opacity: 1; }
+  .p-media[data-at="start"] .p-arrow.prev, .p-media[data-at="end"] .p-arrow.next { opacity: 0; visibility: hidden; pointer-events: none; }
+  @media (hover: none) { .p-arrow { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .p-track, .p-track.peeking { transition: none; } }
+  .p-name { font-family: var(--font-display); font-weight: 300; font-size: 1.15rem; margin: 10px 0 4px; color: #000; }
+  .p-price-row { display: flex; align-items: baseline; gap: 8px; font-size: 0.95rem; }
+  .p-price-row .price { font-weight: 500; }
+  .p-price-row .was { color: var(--color-text-faint); text-decoration: line-through; font-size: 0.85rem; }
+  .p-dots { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
+  .p-dot { position: relative; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%; background: none; }
+  .p-dot::before { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--c); }
+  .p-dot[aria-checked="true"]::after, .p-dot.is-on::after { content: ""; position: absolute; inset: 0; border: 1px solid var(--color-text-primary); border-radius: 50%; }
+  button.p-dot { cursor: pointer; }
+
+  /* ---------- Empty state — shown for real when a filter matches nothing ---------- */
+  .empty-state { display: none; text-align: center; padding: var(--space-section) 20px; grid-column: 1 / -1; }
+  .empty-state.show { display: block; }
+  .empty-state .mark { font-size: 2rem; margin-bottom: var(--space-group); }
+  .empty-state h2 { font-family: var(--font-display); font-weight: 400; font-size: 1.4rem; margin: 0 0 8px; }
+  .empty-state p { color: var(--color-text-muted); font-size: 0.9rem; margin: 0 0 var(--space-group); }
+  .empty-suggest { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .empty-suggest button { padding: 8px 16px; border-radius: var(--radius-control); border: 1px solid var(--color-border-strong); font-size: 0.85rem; background: none; color: inherit; }
+
+  /* ---------- Sticky mobile filter/sort bar ---------- */
+  .sticky-fs-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: flex; gap: 10px; padding: 12px 16px; background: rgba(255,253,249,0.96); border-top: 1px solid var(--color-border); box-shadow: var(--shadow-modal); }
+  .sticky-fs-bar button { flex: 1; min-height: 46px; border-radius: var(--radius-control); border: 1px solid var(--color-border-strong); background: transparent; font-size: 0.88rem; display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: var(--color-text-primary); }
+
+  /* ---------- Filter drawer (mobile) ---------- */
+  .drawer-backdrop { position: fixed; inset: 0; background: rgba(28,27,26,0.4); z-index: 49; opacity: 0; pointer-events: none; transition: opacity var(--duration-mid) var(--ease-default); }
+  .drawer { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; max-height: 82vh; overflow-y: auto; background: var(--color-bg-primary); border-radius: 20px 20px 0 0; box-shadow: var(--shadow-modal); padding: var(--space-group) 20px calc(var(--space-group) + 76px); transform: translateY(100%); transition: transform var(--duration-mid) var(--ease-default); }
+  body.drawer-open .drawer-backdrop { opacity: 1; pointer-events: auto; }
+  body.drawer-open .drawer { transform: translateY(0); }
+  .drawer-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: var(--space-group); border-bottom: 1px solid var(--color-border); margin-bottom: 4px; }
+  .drawer-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 1.15rem; margin: 0; }
+  .drawer-apply-row { position: sticky; bottom: 0; display: flex; gap: 10px; padding-top: var(--space-group); background: var(--color-bg-primary); }
+  .drawer-apply-row .btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 28px; border-radius: var(--radius-control); font-size: 0.9rem; font-weight: 500; border: 1px solid var(--color-border-strong); background: transparent; color: var(--color-text-primary); }
+  .drawer-apply-row .btn.btn-primary { background: var(--color-text-primary); color: var(--color-bg-primary); border-color: transparent; }
+
+  @media (min-width: 768px) {
+    .p-media { aspect-ratio: 4/5; }
+  }
+
+  @media (min-width: 1024px) {
+    .site-header, .breadcrumb, .plp-head { padding-left: 64px; padding-right: 64px; }
+    .filter-sort-row { display: none; }
+    .sort-select { padding: 10px 36px 10px 14px; border-radius: var(--radius-control); border: 1px solid var(--color-border-strong); background: transparent; font-family: inherit; font-size: 0.85rem; color: var(--color-text-primary); appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234A4741' stroke-width='1.4' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; }
+    .filters-sidebar { display: block; }
+
+    /* Locked left column (breadcrumb, title, filters) + scrolling card column. */
+    :root { --nav-h: calc(109px * var(--fit, 1)); }
+    .plp-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); column-gap: var(--space-section); align-items: start; padding: 0 64px; }
+    .plp-left { display: block; position: sticky; top: var(--nav-h); align-self: start; max-height: calc(100vh - var(--nav-h)); overflow-y: auto; scrollbar-width: none; padding-bottom: 24px; }
+    .plp-left::-webkit-scrollbar { display: none; }
+    .plp-left .breadcrumb { max-width: none; margin: 0; padding-left: 0; padding-right: 0; }
+    .plp-left .plp-head { padding-left: 0; padding-right: 0; }
+    .plp-right { display: block; min-width: 0; padding-top: 24px; }
+    .plp-right .sort-select-wrap { display: flex; justify-content: flex-end; margin-bottom: 24px; }
+    .plp-right .active-chips { padding-left: 0; padding-right: 0; }
+    .plp-right .grid-wrap { padding: 0 0 var(--space-section); }
+    .filters-sidebar { position: static; width: auto; }
+    .product-grid { grid-template-columns: repeat(4, 1fr); gap: 32px 24px; }
+    .p-name { font-size: 1.4rem; }
+    .sticky-fs-bar, .drawer, .drawer-backdrop { display: none; }
+    body { padding-bottom: 0; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="nav-page">
+  <header class="abs nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo" aria-label="ELARA home"><img class="cover" src="assets/home/logo.webp" alt="ELARA"></a>
+      <div class="nav-right">
+        <nav class="nav-links" aria-label="Primary">
+          <div class="nav-item" data-menu="new-arrivals"><a href="#" class="nav-link">New Arrivals <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="bags"><a href="#" class="nav-link">Bags <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="collections"><a href="#" class="nav-link">Collections <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="best-sellers"><a href="#" class="nav-link">Best Sellers <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <a href="my-contact-screen.html" class="nav-link">Contact Us</a>
+        </nav>
+        <div class="nav-tools">
+          <div class="nav-icons">
+            <button class="ico20" aria-label="Search"><img src="assets/home/icon-search.svg" alt="" style="inset:0;width:20px;height:20px;"></button>
+            <a href="my-account.html" class="ico20" aria-label="Account"><img src="assets/home/icon-account.svg" alt="" style="left:22.27%;top:8.33%;width:57.44%;height:82.55%;"></a>
+          </div>
+          <a href="my-cart-screen.html" class="cart-btn">My cart
+            <span class="ico20"><img src="assets/home/icon-cart.svg" alt="" style="left:5.21%;top:5.21%;width:87.63%;height:89.58%;"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-menu-wrap" id="navMenuWrap">
+      <div class="nav-panel" data-panel="new-arrivals">
+        <div class="dd-panel">
+          <a href="my-product-detail-screen.html?p=leather-tote-bag" class="dd-card">
+            <img class="cover" src="assets/home/dd-na-card-1.webp" alt="Leather Tote Bag">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Leather Tote Bag</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <a href="my-product-detail-screen.html?p=aveline-convertible-tote" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-na-card-2.webp" alt="Aveline Convertible Tote">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Aveline Convertible Tote</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
+          <div class="dd-list">
+            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-1.webp" alt=""></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
+            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-2.webp" alt=""></span><span class="dd-row-title">Sienna Structured Purse</span></a>
+            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-3.webp" alt=""></span><span class="dd-row-title">Isla Bags</span></a>
+            <a href="my-plp-screen.html?collection=new" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All New Arrivals</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="bags">
+        <div class="dd-panel">
+          <a href="my-product-detail-screen.html?p=suede-crossbody" class="dd-card">
+            <img class="cover" src="assets/home/dd-bags-card-1.webp" alt="Cross Body Bags">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Cross Body Bags</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <a href="my-product-detail-screen.html?p=structured-work-satchel" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-bags-card-2.webp" alt="Work &amp; Travel">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Work &amp; Travel</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
+          <div class="dd-list">
+            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-1.webp" alt=""></span><span class="dd-row-title">Tote</span></a>
+            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-2.webp" alt=""></span><span class="dd-row-title">Shoulder</span></a>
+            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-3.webp" alt=""></span><span class="dd-row-title">Mini</span></a>
+            <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All Category Bags</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="collections">
+        <div class="dd-panel">
+          <a href="#coming-soon" data-soon="Our Signature Pieces" class="dd-card">
+            <img class="cover" src="assets/home/dd-coll-card-1.webp" alt="Our Signature Pieces">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label two-line"><span class="dd-card-eyebrow">Signature</span><span class="dd-card-title">Our Signature Pieces</span></div>
+          </a>
+          <a href="#coming-soon" data-soon="Everyday Essentials" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-coll-card-2.webp" alt="Everyday Essentials">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label two-line"><span class="dd-card-eyebrow">Everyday</span><span class="dd-card-title">Everyday Essentials</span></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="" style="left:826px;">
+          <div class="dd-list dd-list-coll" style="left:850px; top:92px;">
+            <div class="dd-list-group">
+              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-1.webp" alt=""></span><span class="dd-row-title">The Evening Edit</span></a>
+              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-2.webp" alt=""></span><span class="dd-row-title">Designed for Work</span></a>
+            </div>
+            <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-see-all.svg" alt=""></span><span class="dd-row-title">See All Collections</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="best-sellers">
+        <div class="nm-simple-list">
+          <a href="my-plp-screen.html" class="nm-simple">All Best Sellers</a>
+          <a href="my-plp-screen.html" class="nm-simple">Customer Favorites</a>
+          <a href="my-plp-screen.html" class="nm-simple">Most Loved</a>
+          <a href="my-plp-screen.html" class="nm-simple">Trending Now</a>
+        </div>
+      </div>
+    </div>
+  </header>
+  </div>
+
+  <header class="site-header">
+    <a href="index.html" class="logo-mark" aria-label="ELARA home">ELARA</a>
+    <div style="display:flex; gap:2px;">
+      <button class="icon-btn" aria-label="Search"><svg width="18" height="18" viewBox="0 0 19 19" fill="none"><circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+      <button class="icon-btn" aria-label="Wishlist"><svg width="18" height="18" viewBox="0 0 19 19" fill="none"><path d="M9.5 16s-6.5-4.1-6.5-8.9C3 4.3 5.1 2.5 7.4 2.5c1 0 2 .4 2.6 1.2.6-.8 1.6-1.2 2.6-1.2 2.3 0 4.4 1.8 4.4 4.6 0 4.8-6.5 8.9-6.5 8.9z" stroke="currentColor" stroke-width="1.3"/></svg></button>
+      <a href="my-cart-screen.html" class="icon-btn" aria-label="Bag"><img src="assets/home/icon-cart.svg" alt="" width="20" height="20"></a>
+    </div>
+  </header>
+
+  <main class="plp-layout">
+    <div class="plp-left" id="plpLeft">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="index.html">Home</a> / <a href="my-plp-screen.html">Bags</a> / <span id="crumbCategory">Tote</span>
+      </nav>
+
+      <div class="plp-head">
+        <div>
+          <h1 id="pageTitle">Tote Bags</h1>
+          <p class="result-count" id="resultCount">18 products</p>
+        </div>
+      </div>
+
+      <aside class="filters-sidebar" aria-label="Filters" id="sidebarFilters"></aside>
+    </div>
+
+    <div class="plp-right">
+      <div class="sort-select-wrap">
+        <select class="sort-select" id="sortSelect" aria-label="Sort by">
+          <option value="featured">Featured</option>
+          <option value="newest">Newest</option>
+          <option value="price-asc">Price: low to high</option>
+          <option value="price-desc">Price: high to low</option>
+        </select>
+      </div>
+
+      <div class="filter-sort-row">
+        <button class="fs-btn" onclick="openDrawer()">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          Filter <span class="count" id="mobileFilterCount">1</span>
+        </button>
+        <button class="fs-btn" onclick="openDrawer()">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 5h10M5 8h6M7 11h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          Sort: Featured
+        </button>
+      </div>
+
+      <div class="active-chips" id="activeChips"></div>
+
+      <div class="grid-wrap">
+        <div class="product-grid" id="productGrid"></div>
+        <div class="empty-state" id="emptyState">
+          <div class="mark" aria-hidden="true">🔍</div>
+          <h2>No products match these filters</h2>
+          <p>Try widening the price range, or browse another category.</p>
+          <div class="empty-suggest">
+            <button onclick="resetPriceFilter()">Reset price</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="sticky-fs-bar">
+    <button onclick="openDrawer()">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      Filter (<span id="mobileFilterCount2">1</span>)
+    </button>
+    <button onclick="openDrawer()">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 5h10M5 8h6M7 11h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      Sort
+    </button>
+  </div>
+
+  <div class="drawer-backdrop" onclick="closeDrawer()"></div>
+  <div class="drawer" role="dialog" aria-modal="true" aria-label="Filter products">
+    <div class="drawer-head">
+      <h2>Filter</h2>
+      <button class="icon-btn" aria-label="Close" onclick="closeDrawer()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2 2 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div id="drawerFilters"></div>
+    <div class="drawer-apply-row">
+      <button class="btn" onclick="resetAllFilters(); closeDrawer();">Clear all</button>
+      <button class="btn btn-primary" id="drawerShowBtn" onclick="closeDrawer()">Show 18 results</button>
+    </div>
+  </div>
+
+<script src="assets/products.js"></script>
+<script>
+  // ===================================================================
+  // Real product data — five categories, from Figma node 1:16's category
+  // screens (see get_design_context on each category's "Product Grid").
+  // Repeats within a category mirror the client's own placeholder choice
+  // (same photo used more than once while more product photography is
+  // still coming) — not a bug, kept on the designer's explicit instruction.
+  // ===================================================================
+  const CATEGORIES = [
+    { id: 'tote', label: 'Tote' },
+    { id: 'shoulder', label: 'Shoulder' },
+    { id: 'crossbody', label: 'Crossbody' },
+    { id: 'mini', label: 'Mini' },
+    { id: 'travel-work', label: 'Travel & Work' },
+  ];
+
+  // Same three colours as the PDP (Camel, Black, Ivory). Picking one on the card swaps its photo.
+  const NAFISA_COLOURS = [
+    { id: 'camel', label: 'Camel', hex: '#c77a52', img: 'assets/plp/tote/70c84.jpg' },
+    { id: 'black', label: 'Black', hex: '#232019', img: 'assets/plp/tote/nafisa-black.jpg' },
+    { id: 'ivory', label: 'Ivory', hex: '#d9cdb8', img: 'assets/plp/tote/nafisa-ivory.jpg' },
+  ];
+
+  const PRODUCTS = [
+    // ---- Tote (12 photos) ----
+    { cat: 'tote', key: 'nafisa-tote', colours: NAFISA_COLOURS, name: 'Nafisa Tote', price: 4500, badge: 'best', img: 'assets/plp/tote/70c84.jpg' },
+    { cat: 'tote', name: 'Elara Verona Tote', price: 4200, badge: 'new', img: 'assets/plp/tote/e85b2.jpg', dots: ['#b57351', '#997245'] },
+    { cat: 'tote', name: 'Verona Luxe Tote', price: 3200, was: 4000, badge: 'off', img: 'assets/plp/tote/39d9c.jpg', dots: ['#f3c49f', '#1f1e1e', '#e3deda'] },
+    { cat: 'tote', name: 'Bellora Tote', price: 4600, img: 'assets/plp/tote/5fb37.jpg', dots: ['#d9cdb8', '#8a5a34', '#232019'] },
+    { cat: 'tote', name: 'Novella Tote', price: 4200, img: 'assets/plp/tote/94bd7.jpg', dots: ['#da6751', '#edae7c', '#e8dfd2'] },
+    { cat: 'tote', name: 'Satchel Tote', price: 3500, badge: 'best', img: 'assets/plp/tote/4ea54.jpg', dots: ['#d9cdb8'] },
+    { cat: 'tote', name: 'Bayswater Belted Tote', price: 4000, img: 'assets/plp/tote/78587.jpg', dots: ['#f3c49f', '#e3deda'] },
+    { cat: 'tote', name: 'Polène Cyme Tote with Pouch', price: 2900, badge: 'new', img: 'assets/plp/tote/326f2.jpg', dots: ['#967c62', '#743300'] },
+    { cat: 'tote', name: 'Vuitton Lockit Tote', price: 3800, img: 'assets/plp/tote/789a5.jpg', dots: ['#894b32', '#d9cdb8'] },
+    { cat: 'tote', name: 'Polène Cyme Tote', price: 4500, badge: 'best', img: 'assets/plp/tote/a1429.jpg', dots: ['#8a5a34', '#d9cdb8'] },
+    { cat: 'tote', name: 'Roseau Leather Tote', price: 5200, img: 'assets/plp/tote/ead8d.jpg', dots: ['#6b6a4f'] },
+    { cat: 'tote', name: 'Isla Bags', price: 3900, badge: 'new', img: 'assets/plp/tote/c3c80.jpg', dots: ['#481f10', '#ebd7c6'] },
+    { cat: 'tote', name: 'Polène Cyme Tote with Pouch', price: 2900, badge: 'new', img: 'assets/plp/tote/326f2.jpg', dots: ['#967c62', '#743300'] },
+    { cat: 'tote', name: 'Bellora Tote', price: 4600, img: 'assets/plp/tote/5fb37.jpg', dots: ['#d9cdb8', '#8a5a34', '#232019'] },
+    { cat: 'tote', name: 'Bayswater Belted Tote', price: 4000, img: 'assets/plp/tote/78587.jpg', dots: ['#f3c49f', '#e3deda'] },
+    { cat: 'tote', name: 'Novella Tote', price: 4200, img: 'assets/plp/tote/94bd7.jpg', dots: ['#da6751', '#edae7c', '#e8dfd2'] },
+    { cat: 'tote', name: 'Roseau Leather Tote', price: 5200, img: 'assets/plp/tote/ead8d.jpg', dots: ['#6b6a4f'] },
+    { cat: 'tote', name: 'Vuitton Lockit Tote', price: 3800, img: 'assets/plp/tote/789a5.jpg', dots: ['#894b32', '#d9cdb8'] },
+    { cat: 'tote', name: 'Bayswater Belted Tote', price: 4000, img: 'assets/plp/tote/78587.jpg', dots: ['#f3c49f', '#e3deda'] },
+    { cat: 'tote', name: 'Elara Verona Tote', price: 4200, badge: 'new', img: 'assets/plp/tote/e85b2.jpg', dots: ['#b57351', '#997245'] },
+
+    // ---- Shoulder (10 photos, 17 cards) ----
+    { cat: 'shoulder', name: 'Kors Gilly Shoulder', price: 7000, badge: 'best', img: 'assets/plp/shoulder/06b7c.jpg', dots: ['#e2a46e', '#d3dfef', '#826042'] },
+    { cat: 'shoulder', name: 'Jet Set Shoulder', price: 4200, badge: 'new', img: 'assets/plp/shoulder/83c52.jpg', dots: ['#b57351', '#997245'] },
+    { cat: 'shoulder', name: 'Woven Shoulder Bag', price: 3200, was: 4000, badge: 'off', img: 'assets/plp/shoulder/01a72.jpg', dots: ['#f3c49f', '#1f1e1e', '#e3deda'] },
+    { cat: 'shoulder', name: 'Michael Kors Shoulder', price: 4600, img: 'assets/plp/shoulder/c4910.jpg', dots: ['#d9cdb8', '#8a5a34', '#232019'] },
+    { cat: 'shoulder', name: 'Woven Bucket Shoulder Bag', price: 4200, img: 'assets/plp/shoulder/830ff.jpg', dots: ['#da6751', '#edae7c', '#e8dfd2'] },
+    { cat: 'shoulder', name: 'Charm Hobo Shoulder', price: 3500, badge: 'best', img: 'assets/plp/shoulder/06403.jpg', dots: ['#db8242'] },
+    { cat: 'shoulder', name: 'Cassette Hobo Shoulder', price: 4000, img: 'assets/plp/shoulder/f69c6.jpg', dots: ['#f3c49f', '#e3deda'] },
+    { cat: 'shoulder', name: 'Charm Shoulder', price: 2900, badge: 'new', img: 'assets/plp/shoulder/4936b.jpg', dots: ['#967c62', '#743300'] },
+    { cat: 'shoulder', name: 'Vuitton Shoulder', price: 3800, img: 'assets/plp/shoulder/d22fd.jpg', dots: ['#894b32', '#d9cdb8'] },
+    { cat: 'shoulder', name: 'Cyme Shoulder', price: 4500, img: 'assets/plp/shoulder/0f081.jpg', dots: ['#8a5a34', '#d9cdb8'] },
+    { cat: 'shoulder', name: 'Michael Kors Shoulder', price: 4600, img: 'assets/plp/shoulder/c4910.jpg', dots: ['#d9cdb8', '#8a5a34', '#232019'] },
+    { cat: 'shoulder', name: 'Jet Set Shoulder', price: 4200, badge: 'new', img: 'assets/plp/shoulder/83c52.jpg', dots: ['#b57351', '#997245'] },
+    { cat: 'shoulder', name: 'Charm Hobo Shoulder', price: 3500, img: 'assets/plp/shoulder/06403.jpg', dots: ['#db8242'] },
+
+    // ---- Crossbody (9 photos) ----
+    { cat: 'crossbody', name: 'Coach Crossbody', price: 7000, badge: 'best', img: 'assets/plp/crossbody/a25ac.jpg', dots: ['#e2a46e', '#d3dfef', '#826042'] },
+    { cat: 'crossbody', name: 'Playful Greenish', price: 4200, badge: 'new', img: 'assets/plp/crossbody/a68f2.jpg', dots: ['#b57351', '#997245'] },
+    { cat: 'crossbody', name: 'Woven White', price: 3200, was: 4000, badge: 'off', img: 'assets/plp/crossbody/62d57.jpg', dots: ['#f3c49f', '#1f1e1e', '#e3deda'] },
+    { cat: 'crossbody', name: 'Toauf Sky', price: 4600, img: 'assets/plp/crossbody/5d3de.jpg', dots: ['#d9cdb8', '#8a5a34', '#232019'] },
+    { cat: 'crossbody', name: 'St Gtau Mint', price: 4200, img: 'assets/plp/crossbody/ceada.jpg', dots: ['#da6751', '#edae7c', '#e8dfd2'] },
+    { cat: 'crossbody', name: 'Charm Hobo Pink', price: 3500, badge: 'best', img: 'assets/plp/crossbody/ba81a.jpg', dots: ['#db8242'] },
+    { cat: 'crossbody', name: 'Cassette Purple', price: 4000, img: 'assets/plp/crossbody/bf2b2.jpg', dots: ['#f3c49f', '#e3deda'] },
+    { cat: 'crossbody', name: 'Coause Cream', price: 2900, badge: 'new', img: 'assets/plp/crossbody/33de9.jpg', dots: ['#967c62', '#743300'] },
+    { cat: 'crossbody', name: 'Vuitton Black', price: 3800, img: 'assets/plp/crossbody/f204b.jpg', dots: ['#894b32', '#d9cdb8'] },
+
+    // ---- Mini (9 photos) ----
+    { cat: 'mini', name: 'Chermic Cream', price: 7000, badge: 'best', img: 'assets/plp/mini/6e99a.jpg', dots: ['#e2a46e', '#d3dfef', '#826042'] },
+    { cat: 'mini', name: 'Playful Greenish', price: 4200, badge: 'new', img: 'assets/plp/mini/42912.jpg', dots: ['#b57351', '#997245'] },
+    { cat: 'mini', name: 'Taimoc Mini', price: 3200, was: 4000, badge: 'off', img: 'assets/plp/mini/bd9b3.jpg', dots: ['#f3c49f', '#1f1e1e', '#e3deda'] },
+    { cat: 'mini', name: 'Reyov Mini', price: 4600, img: 'assets/plp/mini/bfd35.jpg', dots: ['#d9cdb8', '#8a5a34', '#232019'] },
+    { cat: 'mini', name: 'Sweet Mini', price: 4200, img: 'assets/plp/mini/591c0.jpg', dots: ['#da6751', '#edae7c', '#e8dfd2'] },
+    { cat: 'mini', name: 'Chatole Mini', price: 3500, badge: 'best', img: 'assets/plp/mini/85af8.jpg', dots: ['#db8242'] },
+    { cat: 'mini', name: 'Dark Brown Mini', price: 4000, img: 'assets/plp/mini/b34a9.jpg', dots: ['#f3c49f', '#e3deda'] },
+    { cat: 'mini', name: 'Coause Cream', price: 2900, badge: 'new', img: 'assets/plp/mini/33de9.jpg', dots: ['#967c62', '#743300'] },
+    { cat: 'mini', name: 'Vuitton Black', price: 3800, img: 'assets/plp/mini/f204b.jpg', dots: ['#894b32', '#d9cdb8'] },
+
+    // ---- Travel & Work (4 photos, 6 cards) ----
+    { cat: 'travel-work', name: 'Travello Cream', price: 7000, badge: 'best', img: 'assets/plp/travel-work/74e4e.jpg', dots: ['#e2a46e', '#d3dfef', '#826042'] },
+    { cat: 'travel-work', name: 'Astro Travel bag', price: 4200, badge: 'new', img: 'assets/plp/travel-work/0853f.jpg', dots: ['#b57351', '#997245'] },
+    { cat: 'travel-work', name: '2 Pocket Work', price: 3200, was: 4000, badge: 'off', img: 'assets/plp/travel-work/faeed.jpg', dots: ['#f3c49f', '#1f1e1e', '#e3deda'] },
+    { cat: 'travel-work', name: 'Softty Green', price: 4600, img: 'assets/plp/travel-work/59019.jpg', dots: ['#d9cdb8', '#8a5a34', '#232019'] },
+    { cat: 'travel-work', name: 'Astro Travel bag', price: 4200, badge: 'new', img: 'assets/plp/travel-work/0853f.jpg', dots: ['#b57351', '#997245'] },
+    { cat: 'travel-work', name: '2 Pocket Work', price: 3200, was: 4000, badge: 'off', img: 'assets/plp/travel-work/faeed.jpg', dots: ['#f3c49f', '#1f1e1e', '#e3deda'] },
+    // nav products
+    { cat: 'tote', key: 'leather-tote-bag', name: 'Leather Tote Bag', price: 4800, badge: 'new', img: 'assets/products/leather-tote-bag/tan-card.jpg' },
+    { cat: 'tote', key: 'aveline-convertible-tote', name: 'Aveline Convertible Tote', price: 5400, badge: 'new', img: 'assets/products/aveline-convertible-tote/stone-card.jpg' },
+    { cat: 'shoulder', key: 'vivienne-leather-bag', name: 'Vivienne Leather Bag', price: 6900, badge: 'new', img: 'assets/products/vivienne-leather-bag/black-card.jpg' },
+    { cat: 'travel-work', key: 'sienna-structured-purse', name: 'Sienna Structured Purse', price: 7500, badge: 'new', img: 'assets/products/sienna-structured-purse/forest-card.jpg' },
+    { cat: 'shoulder', key: 'isla-suede-hobo', name: 'Isla Suede Hobo', price: 5200, badge: 'new', img: 'assets/products/isla-suede-hobo/camel-card.jpg' },
+    { cat: 'crossbody', key: 'suede-crossbody', name: 'Suede Crossbody', price: 4200, img: 'assets/products/suede-crossbody/grey-card.jpg' },
+    { cat: 'travel-work', key: 'structured-work-satchel', name: 'Structured Work Satchel', price: 6500, img: 'assets/products/structured-work-satchel/taupe-card.jpg' },
+    { cat: 'tote', key: 'classic-leather-tote', name: 'Classic Leather Tote', price: 4500, img: 'assets/products/classic-leather-tote/cognac-card.jpg' },
+    { cat: 'shoulder', key: 'rose-shoulder-bag', name: 'Rose Shoulder Bag', price: 5000, img: 'assets/products/rose-shoulder-bag/blush-card.jpg' },
+    { cat: 'shoulder', key: 'bordeaux-hobo', name: 'Bordeaux Hobo', price: 5800, img: 'assets/products/bordeaux-hobo/burgundy-card.jpg' },
+    { cat: 'mini', key: 'evening-edit-flap-bag', name: 'Evening Edit Flap Bag', price: 5600, img: 'assets/products/evening-edit-flap-bag/teal-card.jpg' },
+    { cat: 'tote', key: 'plum-work-tote', name: 'Everyday Work Tote', price: 4600, img: 'assets/products/plum-work-tote/plum-card.jpg' },
+    // spotlight products
+    { cat: 'tote', key: 'aurelia-structured', name: 'Aurelia Structured', price: 4500, was: 5625, badge: 'off', img: 'assets/products/aurelia-structured/brown-card.jpg' },
+    { cat: 'tote', key: 'selene-bow-tote', name: 'Selene Bow Tote', price: 3900, img: 'assets/products/selene-bow-tote/cream-card.jpg' },
+    { cat: 'shoulder', key: 'marlowe-satchel', name: 'Marlowe Satchel', price: 4800, img: 'assets/products/marlowe-satchel/taupe-card.jpg' },
+    { cat: 'tote', key: 'rosalind-pocket-tote', name: 'Rosalind Pocket Tote', price: 5200, img: 'assets/products/rosalind-pocket-tote/blush-card.jpg' },
+    { cat: 'tote', key: 'cognac-everyday-tote', name: 'Cognac Everyday Tote', price: 4200, img: 'assets/products/cognac-everyday-tote/cognac-card.jpg' },
+  ];
+
+  // Figma node 174:498 "No Category Selected": its own curated 28-card order, not the 57 category cards stacked.
+  const ALL_PRODUCTS = [
+    // row 1
+    { cat: 'tote', key: 'nafisa-tote', colours: NAFISA_COLOURS, name: 'Nafisa Tote', price: 4500, badge: 'best', img: 'assets/plp/tote/70c84.jpg' },
+    { cat: 'shoulder', name: 'Kors Gilly Shoulder', price: 7000, badge: 'best', img: 'assets/plp/shoulder/06b7c.jpg', dots: ['#e2a46e', '#d3dfef', '#826042'] },
+    { cat: 'crossbody', name: 'Coach Crossbody', price: 7000, badge: 'best', img: 'assets/plp/crossbody/a25ac.jpg', dots: ['#e2a46e', '#d3dfef', '#826042'] },
+    { cat: 'mini', name: 'Chermic Cream', price: 7000, badge: 'best', img: 'assets/plp/mini/6e99a.jpg', dots: ['#e2a46e', '#d3dfef', '#826042'] },
+    // row 2
+    { cat: 'travel-work', name: 'Travello Cream', price: 7000, badge: 'best', img: 'assets/plp/travel-work/74e4e.jpg', dots: ['#e2a46e', '#d3dfef', '#826042'] },
+    { cat: 'tote', name: 'Elara Verona Tote', price: 4200, badge: 'new', img: 'assets/plp/tote/e85b2.jpg', dots: ['#b57351', '#997245'] },
+    { cat: 'crossbody', name: 'Playful Greenish', price: 4200, badge: 'new', img: 'assets/plp/crossbody/a68f2.jpg', dots: ['#b57351', '#997245'] },
+    { cat: 'mini', name: 'Playful Greenish', price: 4200, badge: 'new', img: 'assets/plp/mini/42912.jpg', dots: ['#b57351', '#997245'] },
+    // row 3
+    { cat: 'travel-work', name: 'Travello Cream', price: 7000, badge: 'best', img: 'assets/plp/travel-work/74e4e.jpg', dots: ['#e2a46e', '#d3dfef', '#826042'] },
+    { cat: 'shoulder', name: 'Woven Bucket Shoulder Bag', price: 4200, img: 'assets/plp/shoulder/830ff.jpg', dots: ['#da6751', '#edae7c', '#e8dfd2'] },
+    { cat: 'tote', name: 'Polène Cyme Tote with Pouch', price: 2900, badge: 'new', img: 'assets/plp/tote/326f2.jpg', dots: ['#967c62', '#743300'] },
+    { cat: 'crossbody', name: 'Charm Hobo Pink', price: 3500, badge: 'best', img: 'assets/plp/crossbody/ba81a.jpg', dots: ['#db8242'] },
+    // row 4
+    { cat: 'crossbody', name: 'St Gtau Mint', price: 4200, img: 'assets/plp/crossbody/ceada.jpg', dots: ['#da6751', '#edae7c', '#e8dfd2'] },
+    { cat: 'shoulder', name: 'Charm Hobo Shoulder', price: 3500, badge: 'best', img: 'assets/plp/shoulder/06403.jpg', dots: ['#db8242'] },
+    { cat: 'travel-work', name: 'Astro Travel bag', price: 4200, badge: 'new', img: 'assets/plp/travel-work/0853f.jpg', dots: ['#b57351', '#997245'] },
+    { cat: 'tote', name: 'Vuitton Lockit Tote', price: 3800, img: 'assets/plp/tote/789a5.jpg', dots: ['#894b32', '#d9cdb8'] },
+    // row 5
+    { cat: 'tote', name: 'Bayswater Belted Tote', price: 4000, img: 'assets/plp/tote/78587.jpg', dots: ['#f3c49f', '#e3deda'] },
+    { cat: 'shoulder', name: 'Charm Shoulder', price: 2900, badge: 'new', img: 'assets/plp/shoulder/4936b.jpg', dots: ['#967c62', '#743300'] },
+    { cat: 'shoulder', name: 'Vuitton Shoulder', price: 3800, img: 'assets/plp/shoulder/d22fd.jpg', dots: ['#894b32', '#d9cdb8'] },
+    { cat: 'tote', name: 'Elara Verona Tote', price: 4200, badge: 'new', img: 'assets/plp/tote/e85b2.jpg', dots: ['#b57351', '#997245'] },
+    // row 6
+    { cat: 'shoulder', name: 'Michael Kors Shoulder', price: 4600, img: 'assets/plp/shoulder/c4910.jpg', dots: ['#d9cdb8', '#8a5a34', '#232019'] },
+    { cat: 'mini', name: 'Dark Brown Mini', price: 4000, img: 'assets/plp/mini/b34a9.jpg', dots: ['#f3c49f', '#e3deda'] },
+    { cat: 'tote', name: 'Roseau Leather Tote', price: 5200, img: 'assets/plp/tote/ead8d.jpg', dots: ['#6b6a4f'] },
+    { cat: 'mini', name: 'Coause Cream', price: 2900, badge: 'new', img: 'assets/plp/mini/33de9.jpg', dots: ['#967c62', '#743300'] },
+    // row 7
+    { cat: 'mini', name: 'Sweet Mini', price: 4200, img: 'assets/plp/mini/591c0.jpg', dots: ['#da6751', '#edae7c', '#e8dfd2'] },
+    { cat: 'mini', name: 'Chatole Mini', price: 3500, badge: 'best', img: 'assets/plp/mini/85af8.jpg', dots: ['#db8242'] },
+    { cat: 'tote', name: 'Bayswater Belted Tote', price: 4000, img: 'assets/plp/tote/78587.jpg', dots: ['#f3c49f', '#e3deda'] },
+    { cat: 'tote', name: 'Novella Tote', price: 4200, img: 'assets/plp/tote/94bd7.jpg', dots: ['#da6751', '#edae7c', '#e8dfd2'] },
+    // nav products
+    { cat: 'tote', key: 'leather-tote-bag', name: 'Leather Tote Bag', price: 4800, badge: 'new', img: 'assets/products/leather-tote-bag/tan-card.jpg' },
+    { cat: 'tote', key: 'aveline-convertible-tote', name: 'Aveline Convertible Tote', price: 5400, badge: 'new', img: 'assets/products/aveline-convertible-tote/stone-card.jpg' },
+    { cat: 'shoulder', key: 'vivienne-leather-bag', name: 'Vivienne Leather Bag', price: 6900, badge: 'new', img: 'assets/products/vivienne-leather-bag/black-card.jpg' },
+    { cat: 'travel-work', key: 'sienna-structured-purse', name: 'Sienna Structured Purse', price: 7500, badge: 'new', img: 'assets/products/sienna-structured-purse/forest-card.jpg' },
+    { cat: 'shoulder', key: 'isla-suede-hobo', name: 'Isla Suede Hobo', price: 5200, badge: 'new', img: 'assets/products/isla-suede-hobo/camel-card.jpg' },
+    { cat: 'crossbody', key: 'suede-crossbody', name: 'Suede Crossbody', price: 4200, img: 'assets/products/suede-crossbody/grey-card.jpg' },
+    { cat: 'travel-work', key: 'structured-work-satchel', name: 'Structured Work Satchel', price: 6500, img: 'assets/products/structured-work-satchel/taupe-card.jpg' },
+    { cat: 'tote', key: 'classic-leather-tote', name: 'Classic Leather Tote', price: 4500, img: 'assets/products/classic-leather-tote/cognac-card.jpg' },
+    { cat: 'shoulder', key: 'rose-shoulder-bag', name: 'Rose Shoulder Bag', price: 5000, img: 'assets/products/rose-shoulder-bag/blush-card.jpg' },
+    { cat: 'shoulder', key: 'bordeaux-hobo', name: 'Bordeaux Hobo', price: 5800, img: 'assets/products/bordeaux-hobo/burgundy-card.jpg' },
+    { cat: 'mini', key: 'evening-edit-flap-bag', name: 'Evening Edit Flap Bag', price: 5600, img: 'assets/products/evening-edit-flap-bag/teal-card.jpg' },
+    { cat: 'tote', key: 'plum-work-tote', name: 'Everyday Work Tote', price: 4600, img: 'assets/products/plum-work-tote/plum-card.jpg' },
+    // spotlight products
+    { cat: 'tote', key: 'aurelia-structured', name: 'Aurelia Structured', price: 4500, was: 5625, badge: 'off', img: 'assets/products/aurelia-structured/brown-card.jpg' },
+    { cat: 'tote', key: 'selene-bow-tote', name: 'Selene Bow Tote', price: 3900, img: 'assets/products/selene-bow-tote/cream-card.jpg' },
+    { cat: 'shoulder', key: 'marlowe-satchel', name: 'Marlowe Satchel', price: 4800, img: 'assets/products/marlowe-satchel/taupe-card.jpg' },
+    { cat: 'tote', key: 'rosalind-pocket-tote', name: 'Rosalind Pocket Tote', price: 5200, img: 'assets/products/rosalind-pocket-tote/blush-card.jpg' },
+    { cat: 'tote', key: 'cognac-everyday-tote', name: 'Cognac Everyday Tote', price: 4200, img: 'assets/products/cognac-everyday-tote/cognac-card.jpg' },
+  ];
+
+  // Every card is driven by assets/products.js: photos, colours (each with its own photo set) and the PDP link all come from
+  // the product data, so the listing and the product page can never disagree.
+  (function () {
+    const data = window.ELARA_PRODUCTS || [], legacy = window.ELARA_LEGACY_IMG || {};
+    const byId = {}; data.forEach((d) => { byId[d.id] = d; });
+    [PRODUCTS, ALL_PRODUCTS].forEach((list) => list.forEach((p) => {
+      const d = byId[legacy[p.img]] || byId[p.key];
+      if (!d) return;
+      p.key = d.id; p.rating = d.rating; p.reviews = d.reviews;
+      p.colours = d.colours.map((c) => ({ id: c.id, label: c.label, hex: c.hex, img: c.card, urls: c.slides }));
+      p.img = p.colours[0].img;
+      delete p.dots;
+    }));
+  })();
+
+  const BADGE_LABEL = { best: 'Best Seller', new: 'New', off: '20% OFF' };
+  const PRICE_BOUND = { min: 0, max: 8000 }; // covers every real price above (max 7,000) with headroom
+
+  const state = {
+    categories: new Set(), // multi-select: any product in ANY checked category matches.
+    // Empty set = no filter = "All Products" (see getFiltered/render below), not zero results.
+    priceMin: PRICE_BOUND.min,
+    priceMax: PRICE_BOUND.max,
+    sort: 'featured',
+    pick: {}, // chosen colour per product key, kept when filters re-render the grid
+    colours: new Set(), materials: new Set(), sizes: new Set(), avail: new Set(),   // attribute filters: OR inside a group, AND between groups
+  };
+  // Deep link from the homepage "Shop by Category" cards: my-plp-screen.html?category=tote (comma-separate for several).
+  // "Shop All New Arrivals" in the navigation: my-plp-screen.html?collection=new shows only the bags marked New.
+  if (new URLSearchParams(location.search).get('collection') === 'new') state.avail.add('new-in');
+  (new URLSearchParams(location.search).get('category') || '').split(',').forEach((id) => {
+    if (CATEGORIES.some((c) => c.id === id.trim())) state.categories.add(id.trim());
+  });
+
+  function fmtPrice(v) { return 'Tk. ' + Number(v).toLocaleString('en-US') + '/-'; }
+
+  function categoryCount(catId) {
+    return PRODUCTS.filter((p) => p.cat === catId).length;
+  }
+
+  // ---- Attribute facets (Colour / Material / Size / Availability) ----
+  // Colour comes from each bag's real colours (assets/products.js). Size is read from the bag's measured width.
+  // Material and availability have no field in the product data yet, so they are set here by hand: edit the MATERIAL lists /
+  // the badge rules below when the client confirms the real values.
+  const COLOUR_FAMILIES = [
+    ['black', 'Black', '#232019', ['Black']],
+    ['brown', 'Brown', '#6b4535', ['Chocolate', 'Espresso', 'Mocha', 'Chestnut', 'Cognac', 'Caramel', 'Rust', 'Terracotta']],
+    ['tan', 'Tan & camel', '#c09a68', ['Tan', 'Camel', 'Honey', 'Sand', 'Khaki', 'Beige', 'Taupe', 'Stone']],
+    ['cream', 'Cream & white', '#ece4d4', ['Cream', 'Ivory', 'White']],
+    ['green', 'Green', '#3f5a45', ['Forest', 'Sage', 'Mint', 'Pistachio']],
+    ['blue', 'Blue', '#6f93c6', ['Sky Blue', 'Cornflower', 'Periwinkle', 'Teal']],
+    ['pink', 'Pink', '#e2a3b6', ['Pink', 'Rose', 'Blush', 'Coral']],
+    ['purple', 'Purple', '#9a7aa8', ['Plum', 'Lilac']],
+    ['red', 'Red & burgundy', '#8a2f3b', ['Burgundy']],
+    ['grey', 'Grey', '#9a9a9a', ['Grey']],
+  ];
+  const familyOf = (label) => { const base = label.replace(/ \d+$/, ''); const f = COLOUR_FAMILIES.find((x) => x[3].includes(base)); return f ? f[0] : null; };
+  const SUEDE = ['kors-gilly-shoulder', 'verona-luxe-tote', 'polene-cyme-tote-with-pouch'];
+  const WOVEN = ['woven-shoulder-bag', 'woven-bucket-shoulder-bag', 'coause-cream'];
+  const QUILTED = ['cassette-hobo-shoulder', 'st-gtau-mint', 'charm-hobo-pink', 'softty-green'];
+  const NYLON = ['astro-travel-bag', '2-pocket-work', 'travello-cream', 'taimoc-mini'];
+  const materialOf = (id) => SUEDE.includes(id) ? 'suede' : WOVEN.includes(id) ? 'woven' : QUILTED.includes(id) ? 'quilted' : NYLON.includes(id) ? 'nylon' : 'leather';
+  const MATERIALS = [['leather', 'Smooth leather'], ['suede', 'Suede'], ['woven', 'Woven'], ['quilted', 'Quilted & puffed'], ['nylon', 'Nylon & canvas']];
+  const SIZES = [['mini', 'Mini', 'under 22 cm wide'], ['small', 'Small', '22–29 cm wide'], ['medium', 'Medium', '30–35 cm wide'], ['large', 'Large', '36 cm and wider']];
+  const sizeOf = (w) => w < 22 ? 'mini' : w <= 29 ? 'small' : w <= 35 ? 'medium' : 'large';
+  const AVAIL = [['in-stock', 'In stock'], ['on-sale', 'On sale'], ['new-in', 'New in']];
+  const FACETS = {};   // product key -> { colours:Set, material, size, avail:Set }
+  (window.ELARA_PRODUCTS || []).forEach((d) => {
+    FACETS[d.id] = {
+      colours: new Set(d.colours.map((c) => familyOf(c.label)).filter(Boolean)),
+      material: materialOf(d.id), size: sizeOf(d.dims[0]),
+      avail: new Set(['in-stock'].concat(d.badge === 'off' ? ['on-sale'] : [], d.badge === 'new' ? ['new-in'] : [])),
+    };
+  });
+  const attrActive = () => state.colours.size + state.materials.size + state.sizes.size + state.avail.size > 0;
+  const hasAny = (set, wanted) => wanted.size === 0 || [...wanted].some((x) => set.has(x));
+  function matchesAttrs(p) {
+    const f = FACETS[p.key];
+    if (!f) return false;
+    return hasAny(f.colours, state.colours) && (state.materials.size === 0 || state.materials.has(f.material)) &&
+      (state.sizes.size === 0 || state.sizes.has(f.size)) && hasAny(f.avail, state.avail);
+  }
+  function facetCount(kind, id) {
+    const seen = new Set(); let n = 0;
+    PRODUCTS.forEach((p) => {
+      if (seen.has(p.key) || !FACETS[p.key]) return; seen.add(p.key);
+      const f = FACETS[p.key];
+      if (kind === 'colour' ? f.colours.has(id) : kind === 'material' ? f.material === id : kind === 'size' ? f.size === id : f.avail.has(id)) n++;
+    });
+    return n;
+  }
+  function toggleFacet(kind, id) {
+    const set = { colour: state.colours, material: state.materials, size: state.sizes, avail: state.avail }[kind];
+    if (set.has(id)) set.delete(id); else set.add(id);
+    if (kind === 'colour') {   // show each card in the colour that was asked for
+      PRODUCTS.concat(ALL_PRODUCTS).forEach((p) => {
+        if (!p.colours) return;
+        const hit = p.colours.find((c) => state.colours.has(familyOf(c.label)));
+        if (hit) state.pick[p.key] = hit.id; else if (state.colours.size === 0) delete state.pick[p.key];
+      });
+    }
+    render();
+  }
+
+  function getFiltered() {
+    let base = state.categories.size === 0 && !attrActive() ? ALL_PRODUCTS : PRODUCTS.filter((p) => state.categories.size === 0 || state.categories.has(p.cat));
+    if (attrActive()) {   // one card per bag, so a colour/material match is never listed twice
+      const seen = new Set();
+      base = base.filter((p) => !seen.has(p.key + '|' + p.cat) && seen.add(p.key + '|' + p.cat) && matchesAttrs(p));
+    }
+    let list = base.filter((p) => p.price >= state.priceMin && p.price <= state.priceMax);
+    if (state.sort === 'price-asc') list = [...list].sort((a, b) => a.price - b.price);
+    if (state.sort === 'price-desc') list = [...list].sort((a, b) => b.price - a.price);
+    if (state.sort === 'newest') list = [...list].filter((p) => p.badge === 'new').concat(list.filter((p) => p.badge !== 'new'));
+    return list;
+  }
+
+  // Nafisa Tote has real photos for six angles per colour; the card turns them into a small carousel.
+  const NAFISA_ANGLES = [['front', 'front view'], ['back', 'back view'], ['side', 'side view'], ['interior', 'interior'], ['detail', 'close-up detail'], ['on-model', 'on model']];
+  const nafisaUrls = (colour) => colour.urls && colour.urls.length ? colour.urls : [colour.img];
+  const photoLabel = (k) => 'photo ' + (k + 1);
+  const pdpHref = (p, colour) => 'my-product-detail-screen.html?p=' + p.key + (colour && p.colours && colour !== p.colours[0] ? '&colour=' + colour.id : '');
+  const ARROW_L = '<svg viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const ARROW_R = '<svg viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M7 3l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  const slugOf = (p) => p.key || p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+  // The cart line for a product, in the shape the cart page reads.
+  // Nafisa Tote uses the chosen colour (size Medium, the PDP default); other products carry no colour/size data yet.
+  function lineFor(product) {
+    if (product.colours) {
+      const colour = product.colours.find((c) => c.id === (state.pick[product.key] || product.colours[0].id));
+      return { id: product.key + '|' + colour.id + '|medium', name: product.name, price: product.price, img: colour.img, colour: colour.label, size: 'Medium', qty: 1 };
+    }
+    return { id: slugOf(product), name: product.name, price: product.price, img: product.img, colour: null, size: null, qty: 1 };
+  }
+  function addLineToCart(line) {
+    let cart = [];
+    try { cart = JSON.parse(localStorage.getItem('elara.cart.v1')) || []; } catch (err) {}
+    const same = cart.find((l) => l.id === line.id);
+    if (same) same.qty = Math.min(5, same.qty + 1); else cart.push(line);
+    try { localStorage.setItem('elara.cart.v1', JSON.stringify(cart)); } catch (err) {}
+  }
+
+  // ---- Quick view drawer ----
+  document.body.insertAdjacentHTML('beforeend', `
+    <div class="qv" id="qv" aria-hidden="true">
+      <div class="qv-backdrop" data-qv-close></div>
+      <aside class="qv-panel" id="qvPanel" role="dialog" aria-modal="true" aria-labelledby="qvName" tabindex="-1">
+        <button type="button" class="qv-x" aria-label="Close" data-qv-close><svg viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4 4l10 10M14 4 4 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+        <div class="qv-strip-wrap" id="qvStripWrap" data-start="1" data-end="1">
+          <button type="button" class="qv-arrow prev" id="qvPrev" aria-label="Previous photo">${ARROW_L}</button>
+          <div class="qv-strip" id="qvStrip"></div>
+          <button type="button" class="qv-arrow next" id="qvNext" aria-label="Next photo">${ARROW_R}</button>
+        </div>
+        <div class="qv-info">
+          <div>
+            <p class="qv-eyebrow" id="qvEyebrow"></p>
+            <h2 class="qv-name" id="qvName"></h2>
+            <p class="qv-price" id="qvPrice"></p>
+          </div>
+          <div id="qvColour"></div>
+          <a class="qv-details" id="qvDetails" href="my-product-detail-screen.html">View full details</a>
+        </div>
+        <button type="button" class="qv-add" id="qvAdd">Add to Bag</button>
+        <button type="button" class="qv-close" data-qv-close>Close</button>
+      </aside>
+    </div>`);
+  const qvEl = document.getElementById('qv');
+  const qvPanel = document.getElementById('qvPanel');
+  const qvStrip = document.getElementById('qvStrip');
+  const qvWrap = document.getElementById('qvStripWrap');
+  const qvAddBtn = document.getElementById('qvAdd');
+  let qvProduct = null, qvOpener = null, qvBusy = false;
+
+  const qvColour = () => qvProduct.colours ? qvProduct.colours.find((c) => c.id === (state.pick[qvProduct.key] || qvProduct.colours[0].id)) : null;
+  function categoryLabel(p) {
+    const c = CATEGORIES.find((x) => x.id === p.cat);
+    return c ? c.label + (c.id === 'travel-work' ? '' : ' Bags') : '';
+  }
+  function qvStripArrows() {
+    const max = qvStrip.scrollWidth - qvStrip.clientWidth;
+    qvWrap.dataset.start = qvStrip.scrollLeft <= 2 || max <= 2 ? '1' : '0';
+    qvWrap.dataset.end = qvStrip.scrollLeft >= max - 2 || max <= 2 ? '1' : '0';
+  }
+  function renderQv() {
+    const p = qvProduct, colour = qvColour();
+    document.getElementById('qvEyebrow').textContent = categoryLabel(p);
+    document.getElementById('qvName').textContent = p.name;
+    document.getElementById('qvPrice').innerHTML = p.was ? `<s>${fmtPrice(p.was)}</s><span>${fmtPrice(p.price)}</span>` : `<span>${fmtPrice(p.price)}</span>`;
+    const urls = colour ? nafisaUrls(colour) : [p.img];
+    qvStrip.dataset.count = urls.length;
+    qvStrip.innerHTML = urls.map((u, k) => `<img src="${u}" alt="${p.name}${colour ? ', ' + colour.label + ' — ' + photoLabel(k) : ''}" draggable="false">`).join('');
+    qvStrip.scrollLeft = 0;
+    requestAnimationFrame(qvStripArrows);
+    document.getElementById('qvColour').innerHTML = colour
+      ? `<div class="qv-label"><span>Colour</span><span>${colour.label}</span></div>
+         <div class="qv-tiles" role="radiogroup" aria-label="Colour">${p.colours.map((c) => `<button type="button" class="qv-tile" role="radio" aria-checked="${c === colour}" aria-label="${c.label}" data-colour="${c.id}"><img src="${c.img}" alt=""></button>`).join('')}</div>`
+      : `<div class="qv-label"><span>Colour</span></div><div class="p-dots" style="margin-top:0" aria-hidden="true">${p.dots.map((hex, k) => `<span class="p-dot${k === 0 ? ' is-on' : ''}" style="--c:${hex}"></span>`).join('')}</div>`;
+    document.getElementById('qvDetails').href = pdpHref(p, colour);
+  }
+  function openQuickView(e, key) {
+    e.preventDefault();
+    e.stopPropagation();
+    qvProduct = PRODUCTS.find((p) => slugOf(p) === key);
+    qvOpener = e.currentTarget;
+    qvBusy = false;
+    qvAddBtn.disabled = false;
+    qvAddBtn.textContent = 'Add to Bag';
+    renderQv();
+    const gap = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    if (gap > 0) document.body.style.paddingRight = gap + 'px';
+    qvEl.classList.add('open');
+    qvEl.setAttribute('aria-hidden', 'false');
+    setTimeout(() => qvPanel.focus({ preventScroll: true }), 60);
+  }
+  function closeQuickView() {
+    if (!qvEl.classList.contains('open')) return;
+    qvEl.classList.remove('open');
+    qvEl.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+    if (qvOpener && qvOpener.focus) qvOpener.focus({ preventScroll: true });
+  }
+  qvEl.addEventListener('click', (e) => {
+    if (e.target.closest('[data-qv-close]')) closeQuickView();
+    const tile = e.target.closest('.qv-tile');
+    if (tile) { applyColour(qvProduct.key, tile.dataset.colour); renderQv(); }
+  });
+  document.getElementById('qvPrev').addEventListener('click', () => qvStrip.scrollBy({ left: -(qvStrip.firstElementChild.getBoundingClientRect().width + 12), behavior: reduceMotion ? 'auto' : 'smooth' }));
+  document.getElementById('qvNext').addEventListener('click', () => qvStrip.scrollBy({ left: qvStrip.firstElementChild.getBoundingClientRect().width + 12, behavior: reduceMotion ? 'auto' : 'smooth' }));
+  qvStrip.addEventListener('scroll', qvStripArrows, { passive: true });
+  // ---- "Item added to bag" pop-up ----
+  document.body.insertAdjacentHTML('beforeend', `
+    <div class="ab" id="ab" aria-hidden="true">
+      <div class="ab-backdrop" data-ab-close></div>
+      <div class="ab-card" id="abCard" role="dialog" aria-modal="true" aria-labelledby="abTitle" tabindex="-1">
+        <button type="button" class="ab-x" aria-label="Close" data-ab-close><svg viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4 4l10 10M14 4 4 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+        <h2 class="ab-title" id="abTitle">Item added to bag</h2>
+        <div class="ab-item"><img id="abImg" alt=""><div class="ab-meta" id="abMeta"></div></div>
+        <div class="ab-actions">
+          <a class="ab-btn primary" href="my-cart-screen.html">View bag &amp; checkout</a>
+          <button type="button" class="ab-btn secondary" data-ab-close>Continue shopping</button>
+        </div>
+      </div>
+    </div>`);
+  const abEl = document.getElementById('ab');
+  const abCard = document.getElementById('abCard');
+  function openAdded(line) {
+    document.getElementById('abImg').src = line.img;
+    document.getElementById('abImg').alt = line.name;
+    document.getElementById('abMeta').innerHTML =
+      `<span class="ab-name">${line.name}</span>` +
+      (line.colour ? `<span>Colour: ${line.colour}</span>` : '') +
+      (line.size ? `<span>Size: ${line.size}</span>` : '') +
+      `<span>Qty: ${line.qty}</span><span class="ab-price">${fmtPrice(line.price)}</span>`;
+    document.body.style.overflow = 'hidden';
+    abEl.classList.add('open');
+    abEl.setAttribute('aria-hidden', 'false');
+    setTimeout(() => abCard.focus({ preventScroll: true }), 60);
+  }
+  function closeAdded() {
+    if (!abEl.classList.contains('open')) return;
+    abEl.classList.remove('open');
+    abEl.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+  abEl.addEventListener('click', (e) => { if (e.target.closest('[data-ab-close]')) closeAdded(); });
+
+  qvAddBtn.addEventListener('click', () => {
+    if (qvBusy) return;
+    qvBusy = true;
+    qvAddBtn.disabled = true;
+    const line = lineFor(qvProduct);
+    addLineToCart(line);
+    qvAddBtn.textContent = 'Adding…';
+    setTimeout(() => {
+      if (window.ElaraCart) ElaraCart.refreshBadge({ pop: true, force: true });
+      qvOpener = null;
+      closeQuickView();
+      openAdded(line);
+    }, 600);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (abEl.classList.contains('open')) {
+      if (e.key === 'Escape') { e.stopPropagation(); closeAdded(); }
+      else if (e.key === 'Tab') {
+        const f = [...abCard.querySelectorAll('button, a[href]')];
+        const first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && (document.activeElement === first || document.activeElement === abCard)) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+      return;
+    }
+    if (!qvEl.classList.contains('open')) return;
+    if (e.key === 'Escape') { e.stopPropagation(); closeQuickView(); return; }
+    if (e.key === 'Tab') {
+      const f = [...qvPanel.querySelectorAll('button:not([disabled]), a[href]')].filter((el) => el.getClientRects().length && getComputedStyle(el).visibility !== 'hidden');
+      if (!f.length) return;
+      const first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && (document.activeElement === first || document.activeElement === qvPanel)) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  }, true);
+
+  function cardHTML(p, i) {
+    const badge = p.badge ? `<span class="p-badge ${p.badge}">${BADGE_LABEL[p.badge]}</span>` : '';
+    const priceRow = p.was
+      ? `<span class="was">${fmtPrice(p.was)}</span><span class="price">${fmtPrice(p.price)}</span>`
+      : `<span class="price">${fmtPrice(p.price)}</span>`;
+    const colour = p.colours ? p.colours.find((c) => c.id === (state.pick[p.key] || p.colours[0].id)) : null;
+    const href = pdpHref(p, colour);
+    const swatches = colour
+      ? `<div class="p-dots" role="radiogroup" aria-label="Colour">${p.colours.map((c) => `<button type="button" class="p-dot" role="radio" aria-checked="${c === colour}" aria-label="${c.label}" style="--c:${c.hex}" onclick="pickColour(event,'${p.key}','${c.id}')"></button>`).join('')}</div>`
+      : `<div class="p-dots" aria-hidden="true">${p.dots.map((hex, k) => `<span class="p-dot${k === 0 ? ' is-on' : ''}" style="--c:${hex}"></span>`).join('')}</div>`;
+    return `
+      <a href="${href}" class="p-card"${p.key ? ` data-key="${p.key}"` : ''}>
+        <div class="p-media"${colour ? ' data-at="start"' : ''}>
+          ${badge}
+          ${colour ? carouselHTML(p, colour) : `<img src="${p.img}" alt="${p.name}" loading="lazy">`}
+          ${p.rating ? `<span class="p-rate" aria-label="Rated ${p.rating.toFixed(1)} out of 5 from ${p.reviews} reviews"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z"/></svg>${p.rating.toFixed(1)}</span>` : ''}
+          <button type="button" class="p-add" onclick="openQuickView(event,'${slugOf(p)}')">Add to Bag</button>
+        </div>
+        <p class="p-name">${p.name}</p>
+        <div class="p-price-row">${priceRow}</div>
+        ${swatches}
+      </a>`;
+  }
+
+  function carouselHTML(p, colour) {
+    const urls = nafisaUrls(colour);
+    const slides = urls.map((u, k) => `<img class="p-slide" ${k === 0 ? `src="${u}" loading="lazy"` : ''} data-src="${u}" alt="${p.name}, ${colour.label} — ${photoLabel(k)}" draggable="false">`).join('');
+    if (urls.length < 2) return `<div class="p-track" data-i="0">${slides}</div>`;
+    return `<div class="p-track" data-i="0">${slides}</div>
+          <button type="button" class="p-arrow prev" aria-label="Previous photo" onclick="slideCard(event,-1)">${ARROW_L}</button>
+          <button type="button" class="p-arrow next" aria-label="Next photo" onclick="slideCard(event,1)">${ARROW_R}</button>`;
+  }
+
+  // ---- card carousel ----
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function ensureSlides(track) { track.querySelectorAll('.p-slide').forEach((im) => { if (!im.getAttribute('src')) im.src = im.dataset.src; }); }
+  function goTo(track, i) {
+    const last = track.children.length - 1;
+    const next = Math.max(0, Math.min(last, i));    // no wrap-around: the first photo has no "previous", the last has no "next"
+    track.dataset.i = next;
+    track.style.setProperty('--i', next);
+    track.closest('.p-media').dataset.at = next === 0 ? 'start' : next === last ? 'end' : '';
+  }
+  function slideCard(e, dir) {
+    e.preventDefault();
+    e.stopPropagation();
+    const track = e.currentTarget.closest('.p-media').querySelector('.p-track');
+    cancelPeek();
+    ensureSlides(track);
+    const btn = e.currentTarget, media = btn.closest('.p-media');
+    goTo(track, Number(track.dataset.i) + dir);
+    // the arrow that was just used may have disappeared (end of the row): hand focus to the other one
+    if (getComputedStyle(btn).visibility === 'hidden' || media.dataset.at === (dir > 0 ? 'end' : 'start')) {
+      const other = media.querySelector(dir > 0 ? '.p-arrow.prev' : '.p-arrow.next');
+      if (other) other.focus({ preventScroll: true });
+    }
+  }
+
+  // One "you can swipe this" hint when the page opens: the first card's photo nudges toward the next one and back, twice.
+  let peekTimers = [];
+  let peekTrack = null;
+  let peeked = false;
+  function cancelPeek() {
+    peekTimers.forEach(clearTimeout);
+    peekTimers = [];
+    if (peekTrack) { peekTrack.classList.remove('peeking'); peekTrack.style.removeProperty('--peek'); peekTrack = null; }
+  }
+  function runPeek() {
+    if (peeked || reduceMotion) return;
+    const first = document.querySelector('#productGrid .p-card');
+    const track = first && first.querySelector('.p-track');
+    if (!track) return;
+    peeked = true;
+    peekTrack = track;
+    ensureSlides(track);
+    track.classList.add('peeking');
+    const at = (ms, fn) => peekTimers.push(setTimeout(fn, ms));
+    const nudge = () => track.style.setProperty('--peek', '-30%');
+    const rest = () => track.style.setProperty('--peek', '0%');
+    at(1300, nudge); at(2200, rest); at(3000, nudge); at(3900, rest);
+    at(4800, () => { track.classList.remove('peeking'); track.style.removeProperty('--peek'); peekTrack = null; });
+  }
+
+  // Colour dot on a card: swap that card's photo (and the PDP link) without re-rendering the grid.
+  function pickColour(e, key, colourId) {
+    e.preventDefault();
+    e.stopPropagation();
+    applyColour(key, colourId);
+  }
+  function applyColour(key, colourId) {
+    state.pick[key] = colourId;
+    const product = PRODUCTS.find((p) => p.key === key);
+    const colour = product.colours.find((c) => c.id === colourId);
+    const next = new Image();
+    next.src = colour.img;
+    document.querySelectorAll(`.p-card[data-key="${key}"]`).forEach((card) => {
+      const track = card.querySelector('.p-track');
+      const urls = nafisaUrls(colour);
+      const swap = () => {
+        cancelPeek();
+        track.style.transition = 'none';
+        goTo(track, 0);
+        [...track.children].forEach((im, k) => {
+          im.dataset.src = urls[k];
+          im.alt = product.name + ', ' + colour.label + ' — ' + photoLabel(k);
+          if (im.getAttribute('src')) im.src = urls[k];
+        });
+        void track.offsetWidth;
+        track.style.transition = '';
+      };
+      (next.decode ? next.decode().then(swap, swap) : swap());
+      card.href = pdpHref(product, colour);
+      card.querySelectorAll('.p-dot').forEach((d, i) => d.setAttribute('aria-checked', String(product.colours[i] === colour)));
+    });
+  }
+
+  function render() {
+    const selected = CATEGORIES.filter((c) => state.categories.has(c.id));
+    let titleText, crumbText;
+    if (selected.length === 0) {
+      titleText = 'All Products';
+      crumbText = 'All Products';
+    } else if (selected.length === 1) {
+      titleText = selected[0].label + (selected[0].id === 'travel-work' ? '' : ' Bags');
+      crumbText = selected[0].label;
+    } else {
+      titleText = selected.map((c) => c.label).join(' + ');
+      crumbText = selected.map((c) => c.label).join(', ');
+    }
+    if (selected.length === 0 && state.avail.size === 1 && state.avail.has('new-in') && !state.colours.size && !state.materials.size && !state.sizes.size) {
+      titleText = 'New Arrivals';
+      crumbText = 'New Arrivals';
+    }
+    document.getElementById('pageTitle').textContent = titleText;
+    document.getElementById('crumbCategory').textContent = crumbText;
+
+    const filtered = getFiltered();
+    const total = selected.length === 0 ? ALL_PRODUCTS.length : selected.reduce((sum, c) => sum + categoryCount(c.id), 0);
+    const countText = attrActive() ? `${filtered.length} product${filtered.length === 1 ? '' : 's'}` : filtered.length === total ? `${total} products` : `${filtered.length} of ${total} products`;
+    document.getElementById('resultCount').textContent = countText;
+    document.getElementById('drawerShowBtn').textContent = 'Show ' + filtered.length + ' results';
+
+    const grid = document.getElementById('productGrid');
+    const empty = document.getElementById('emptyState');
+    if (filtered.length === 0) {
+      grid.innerHTML = '';
+      empty.classList.add('show');
+    } else {
+      empty.classList.remove('show');
+      grid.innerHTML = filtered.map(cardHTML).join('');
+    }
+
+    renderChips();
+    syncSidebarInputs();
+  }
+
+  function renderChips() {
+    const box = document.getElementById('activeChips');
+    const chips = CATEGORIES.filter((c) => state.categories.has(c.id)).map((c) =>
+      `<span class="chip">${c.label} <button aria-label="Remove ${c.label} filter" onclick="toggleCategory('${c.id}')">×</button></span>`);
+    if (state.priceMin > PRICE_BOUND.min || state.priceMax < PRICE_BOUND.max) {
+      chips.push(`<span class="chip">${fmtPrice(state.priceMin)} – ${fmtPrice(state.priceMax)} <button aria-label="Reset price filter" onclick="resetPriceFilter()">×</button></span>`);
+    }
+    const facetChip = (kind, id, label) => `<span class="chip">${label} <button aria-label="Remove ${label} filter" onclick="toggleFacet('${kind}','${id}')">×</button></span>`;
+    state.colours.forEach((id) => chips.push(facetChip('colour', id, COLOUR_FAMILIES.find((x) => x[0] === id)[1])));
+    state.materials.forEach((id) => chips.push(facetChip('material', id, MATERIALS.find((x) => x[0] === id)[1])));
+    state.sizes.forEach((id) => chips.push(facetChip('size', id, SIZES.find((x) => x[0] === id)[1])));
+    state.avail.forEach((id) => chips.push(facetChip('avail', id, AVAIL.find((x) => x[0] === id)[1])));
+    chips.push(`<button class="clear-all" onclick="resetAllFilters()">Clear all</button>`);
+    box.innerHTML = chips.join('');
+  }
+
+  function toggleCategory(id) {
+    // Freely togglable, including down to zero checked — zero means "All Products".
+    if (state.categories.has(id)) {
+      state.categories.delete(id);
+    } else {
+      state.categories.add(id);
+    }
+    render();
+  }
+
+  function resetPriceFilter() {
+    state.priceMin = PRICE_BOUND.min;
+    state.priceMax = PRICE_BOUND.max;
+    render();
+  }
+
+  function resetAllFilters() {
+    state.categories = new Set();
+    state.colours = new Set(); state.materials = new Set(); state.sizes = new Set(); state.avail = new Set();
+    state.pick = {};
+    state.priceMin = PRICE_BOUND.min;
+    state.priceMax = PRICE_BOUND.max;
+    render();
+  }
+
+  // ---- Filter panel markup (shared builder — one copy for the desktop
+  // sidebar, one for the mobile drawer, kept in sync via the same state) ----
+  function filterPanelHTML(idPrefix) {
+    const catRows = CATEGORIES.map((c) => `
+      <label class="filter-check">
+        <input type="checkbox" value="${c.id}" ${state.categories.has(c.id) ? 'checked' : ''} onchange="toggleCategory('${c.id}')">
+        ${c.label} <span class="n">${categoryCount(c.id)}</span>
+      </label>`).join('');
+
+    return `
+      <details class="filter-group" open>
+        <summary>Category</summary>
+        <div class="body">${catRows}</div>
+      </details>
+      <details class="filter-group" open>
+        <summary>Price</summary>
+        <div class="body">
+          <div class="price-slider" data-prefix="${idPrefix}">
+            <div class="price-slider-labels">
+              <div class="price-slider-label-block"><span class="micro">Min Price</span><span class="micro-value price-min-label">${fmtPrice(state.priceMin)}</span></div>
+              <div class="price-slider-label-block right"><span class="micro">Max Price</span><span class="micro-value price-max-label">${fmtPrice(state.priceMax)}</span></div>
+            </div>
+            <div class="price-slider-track-wrap">
+              <div class="price-slider-track"></div>
+              <div class="price-slider-active"></div>
+              <input type="range" class="price-slider-input price-slider-min" min="${PRICE_BOUND.min}" max="${PRICE_BOUND.max}" step="100" value="${state.priceMin}" aria-label="Minimum price">
+              <input type="range" class="price-slider-input price-slider-max" min="${PRICE_BOUND.min}" max="${PRICE_BOUND.max}" step="100" value="${state.priceMax}" aria-label="Maximum price">
+            </div>
+          </div>
+        </div>
+      </details>
+      <details class="filter-group"${state.colours.size ? ' open' : ''}>
+        <summary>Colour</summary>
+        <div class="body">
+          <div class="colour-list">${COLOUR_FAMILIES.map(([id, label, hex]) => `
+            <button type="button" class="colour-opt" role="checkbox" aria-checked="${state.colours.has(id)}" onclick="toggleFacet('colour','${id}')">
+              <span class="dot" style="--c:${hex}"></span>${label} <span class="n">${facetCount('colour', id)}</span>
+            </button>`).join('')}</div>
+        </div>
+      </details>
+      <details class="filter-group"${state.materials.size ? ' open' : ''}>
+        <summary>Material</summary>
+        <div class="body">${MATERIALS.map(([id, label]) => `
+          <label class="filter-check"><input type="checkbox" ${state.materials.has(id) ? 'checked' : ''} onchange="toggleFacet('material','${id}')">${label} <span class="n">${facetCount('material', id)}</span></label>`).join('')}
+        </div>
+      </details>
+      <details class="filter-group"${state.sizes.size ? ' open' : ''}>
+        <summary>Size</summary>
+        <div class="body">${SIZES.map(([id, label, note]) => `
+          <label class="filter-check"><input type="checkbox" ${state.sizes.has(id) ? 'checked' : ''} onchange="toggleFacet('size','${id}')">${label} <span class="note">${note}</span> <span class="n">${facetCount('size', id)}</span></label>`).join('')}
+        </div>
+      </details>
+      <details class="filter-group"${state.avail.size ? ' open' : ''}>
+        <summary>Availability</summary>
+        <div class="body">${AVAIL.map(([id, label]) => `
+          <label class="filter-check"><input type="checkbox" ${state.avail.has(id) ? 'checked' : ''} onchange="toggleFacet('avail','${id}')">${label} <span class="n">${facetCount('avail', id)}</span></label>`).join('')}
+        </div>
+      </details>`;
+  }
+
+  function initPriceSlider(root) {
+    const minInput = root.querySelector('.price-slider-min');
+    const maxInput = root.querySelector('.price-slider-max');
+    const active = root.querySelector('.price-slider-active');
+    const minLabel = root.querySelector('.price-min-label');
+    const maxLabel = root.querySelector('.price-max-label');
+    const bound = PRICE_BOUND.max;
+    const gap = Number(minInput.step || 100);
+
+    function paint() {
+      const minPct = (Number(minInput.value) / bound) * 100;
+      const maxPct = (Number(maxInput.value) / bound) * 100;
+      active.style.left = minPct + '%';
+      active.style.width = (maxPct - minPct) + '%';
+      minLabel.textContent = fmtPrice(minInput.value);
+      maxLabel.textContent = fmtPrice(maxInput.value);
+    }
+
+    function commit() {
+      let minV = Number(minInput.value);
+      let maxV = Number(maxInput.value);
+      if (minV > maxV - gap) { minV = maxV - gap; minInput.value = minV; }
+      state.priceMin = minV;
+      state.priceMax = maxV;
+      paint();
+      render();
+    }
+
+    minInput.addEventListener('input', () => { paint(); });
+    maxInput.addEventListener('input', () => { paint(); });
+    minInput.addEventListener('change', commit);
+    maxInput.addEventListener('change', commit);
+    paint();
+  }
+
+  function syncSidebarInputs() {
+    document.getElementById('sidebarFilters').innerHTML = filterPanelHTML('sb');
+    document.getElementById('drawerFilters').innerHTML = filterPanelHTML('dw');
+    document.querySelectorAll('.price-slider').forEach(initPriceSlider);
+    const activeCount = state.categories.size + state.colours.size + state.materials.size + state.sizes.size + state.avail.size + ((state.priceMin > PRICE_BOUND.min || state.priceMax < PRICE_BOUND.max) ? 1 : 0);
+    document.getElementById('mobileFilterCount').textContent = activeCount;
+    document.getElementById('mobileFilterCount2').textContent = activeCount;
+  }
+
+  document.getElementById('sortSelect').addEventListener('change', (e) => { state.sort = e.target.value; render(); });
+
+  function openDrawer() { document.body.classList.add('drawer-open'); }
+  function closeDrawer() { document.body.classList.remove('drawer-open'); }
+
+  render();
+
+  const gridEl = document.getElementById('productGrid');
+  function warm(e) {
+    const media = e.target.closest && e.target.closest('.p-media');
+    const track = media && media.querySelector('.p-track');
+    if (track) { cancelPeek(); ensureSlides(track); }
+  }
+  gridEl.addEventListener('mouseover', warm);
+  gridEl.addEventListener('focusin', warm);
+  let swipe = null, swiped = false;
+  gridEl.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse') return;
+    const media = e.target.closest('.p-media');
+    const track = media && media.querySelector('.p-track');
+    swipe = track ? { track, x: e.clientX, y: e.clientY } : null;
+  });
+  gridEl.addEventListener('pointerup', (e) => {
+    if (!swipe) return;
+    const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      cancelPeek();
+      ensureSlides(swipe.track);
+      goTo(swipe.track, Number(swipe.track.dataset.i) + (dx < 0 ? 1 : -1));
+      swiped = true;
+      setTimeout(() => { swiped = false; }, 350);
+    }
+    swipe = null;
+  });
+  gridEl.addEventListener('click', (e) => { if (swiped) { e.preventDefault(); swiped = false; } }, true);
+
+  if (document.readyState === 'complete') runPeek(); else window.addEventListener('load', runPeek);
+
+  // Desktop nav: shrink the 1440 artboard to the viewport (never scales up), then the dropdown behaviour.
+  function fitNav() { document.documentElement.style.setProperty('--fit', Math.min(1, document.documentElement.clientWidth / 1440)); }
+  fitNav();
+  new ResizeObserver(fitNav).observe(document.documentElement);
+
+  // Nav dropdowns — identical behaviour to the homepage.
+  document.querySelectorAll('.nav-menu-wrap img').forEach((img) => { if (img.decode) img.decode().catch(() => {}); });
+  (function () {
+    const wrap = document.getElementById('navMenuWrap');
+    if (!wrap) return;
+    const items = document.querySelectorAll('.nav-item[data-menu]');
+    const panels = wrap.querySelectorAll('.nav-panel');
+    let closeTimer = null;
+    let openKey = null;
+
+    function showPanel(key, item) {
+      panels.forEach((p) => p.classList.toggle('active', p.dataset.panel === key));
+      const isMega = key !== 'best-sellers';
+      wrap.classList.toggle('mega', isMega);
+      wrap.classList.toggle('light', !isMega);
+      if (isMega) {
+        wrap.style.left = '0px';
+      } else {
+        const itemRect = item.getBoundingClientRect();
+        const navRect = document.querySelector('.nav').getBoundingClientRect();
+        wrap.style.left = Math.round(itemRect.left - navRect.left) + 'px';
+      }
+      const activeEl = wrap.querySelector('.nav-panel.active');
+      wrap.style.height = activeEl ? activeEl.offsetHeight + 'px' : 'auto';
+    }
+    function open(key, item) {
+      clearTimeout(closeTimer);
+      const wasOpen = wrap.classList.contains('open');
+      showPanel(key, item);
+      if (!wasOpen) { wrap.style.transition = 'none'; void wrap.offsetHeight; wrap.style.transition = ''; }
+      wrap.classList.add('open');
+      items.forEach((it) => it.classList.toggle('open', it.dataset.menu === key));
+      openKey = key;
+    }
+    function close() { wrap.classList.remove('open'); items.forEach((it) => it.classList.remove('open')); openKey = null; }
+    function scheduleClose() { clearTimeout(closeTimer); closeTimer = setTimeout(close, 150); }
+
+    items.forEach((item) => {
+      const key = item.dataset.menu;
+      item.addEventListener('mouseenter', () => open(key, item));
+      item.addEventListener('mouseleave', scheduleClose);
+      item.addEventListener('focusin', () => open(key, item));
+      item.querySelector('.nav-link').addEventListener('click', (e) => { e.preventDefault(); openKey === key ? close() : open(key, item); });
+    });
+    wrap.addEventListener('mouseenter', () => clearTimeout(closeTimer));
+    wrap.addEventListener('mouseleave', scheduleClose);
+    wrap.addEventListener('focusin', () => clearTimeout(closeTimer));
+    document.addEventListener('focusin', (e) => { if (openKey && !wrap.contains(e.target) && ![...items].some((it) => it.contains(e.target))) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    document.addEventListener('click', (e) => { if (openKey && !wrap.contains(e.target) && ![...items].some((it) => it.contains(e.target))) close(); });
+  })();
+</script>
+<script src="assets/cart-badge.js"></script>
+<script src="assets/search.js"></script>
+<script src="assets/soon.js"></script>
+</body>
+</html>

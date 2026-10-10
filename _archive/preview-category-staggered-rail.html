@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shop by Category — Staggered Rail (preview)</title>
+<!--
+  Preview of a "Staggered Rail" alternative to the plain 4-box category grid.
+  No card boxes — cutout-style images at alternating heights, with a subtle
+  scroll-triggered fade+rise reveal (stagger, no bounce/spring — matches the
+  brief's "restrained motion" and tokens.md's timing/easing rules).
+  Same cream/Fraunces/Inter token system as the rest of the mockups.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-bg-primary: #F7F1E8;
+    --color-text-primary: #4A4741;
+    --color-text-muted: #838280;
+    --color-border: rgba(74,71,65,0.2);
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Inter', -apple-system, sans-serif;
+    --ease-default: cubic-bezier(.4,0,.2,1);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--color-bg-primary); color: var(--color-text-primary);
+    font-family: var(--font-body); padding: 60px 20px 200px;
+  }
+  .filler { height: 70vh; display: flex; align-items: center; justify-content: center; color: var(--color-text-muted); font-size: 0.85rem; }
+  .filler::before { content: "scroll down ↓"; }
+
+  h2.title {
+    font-family: var(--font-display); font-weight: 300; letter-spacing: -0.02em;
+    font-size: clamp(1.6rem, 5vw, 2.3rem); margin: 0 0 40px; text-align: center;
+  }
+
+  .rail {
+    display: flex; gap: 24px; max-width: 1100px; margin: 0 auto;
+    overflow-x: auto; padding: 20px 8px 40px; scroll-snap-type: x proximity;
+  }
+  .rail::-webkit-scrollbar { display: none; }
+
+  .cat-item {
+    flex: 0 0 160px; scroll-snap-align: start; text-align: center;
+    opacity: 0; transform: translateY(28px);
+    transition: opacity 550ms var(--ease-default), transform 550ms var(--ease-default);
+  }
+  .cat-item.in-view { opacity: 1; transform: translateY(0); }
+
+  /* Alternating baseline — the zigzag rhythm */
+  .cat-item:nth-child(odd)  { margin-top: 36px; }
+  .cat-item:nth-child(even) { margin-top: 0; }
+
+  .cat-cutout {
+    width: 150px; height: 190px; margin: 0 auto 14px;
+    border-radius: 50% 50% 46% 46% / 55% 55% 45% 45%;
+    background: linear-gradient(150deg,#e6dccb,#d3c3ac);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 300ms var(--ease-default);
+  }
+  .cat-item:hover .cat-cutout { transform: translateY(-6px); }
+  .cat-cutout .ph { font-size: 0.6rem; color: rgba(74,71,65,0.4); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .cat-label {
+    font-family: var(--font-display); font-weight: 400; font-size: 1.05rem;
+    position: relative; display: inline-block; padding-bottom: 4px;
+  }
+  .cat-label::after {
+    content: ""; position: absolute; left: 50%; bottom: 0; height: 1px; width: 0;
+    background: var(--color-text-primary); transition: width 250ms var(--ease-default), left 250ms var(--ease-default);
+  }
+  .cat-item:hover .cat-label::after { width: 100%; left: 0; }
+
+  .note { max-width: 640px; margin: 60px auto 0; text-align: center; font-size: 0.85rem; color: var(--color-text-muted); }
+</style>
+</head>
+<body>
+
+  <div class="filler"></div>
+
+  <h2 class="title">Shop by Category</h2>
+  <div class="rail" id="rail">
+    <div class="cat-item"><div class="cat-cutout"><span class="ph">Photo</span></div><div class="cat-label">Tote</div></div>
+    <div class="cat-item"><div class="cat-cutout"><span class="ph">Photo</span></div><div class="cat-label">Shoulder</div></div>
+    <div class="cat-item"><div class="cat-cutout"><span class="ph">Photo</span></div><div class="cat-label">Crossbody</div></div>
+    <div class="cat-item"><div class="cat-cutout"><span class="ph">Photo</span></div><div class="cat-label">Mini</div></div>
+    <div class="cat-item"><div class="cat-cutout"><span class="ph">Photo</span></div><div class="cat-label">Work</div></div>
+  </div>
+
+  <p class="note">Scroll this section into view again (refresh and scroll slowly) to see the stagger. Each cutout fades up 550ms with a ~90ms delay after the previous one — no bounce, no spring, matching tokens.md's restrained-motion rule.</p>
+
+  <script>
+    const items = document.querySelectorAll('.cat-item');
+    items.forEach((el, i) => { el.style.transitionDelay = (i * 90) + 'ms'; });
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+    items.forEach(el => io.observe(el));
+  </script>
+</body>
+</html>

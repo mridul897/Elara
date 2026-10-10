@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELARA — Account</title>
+<meta name="description" content="Sign in or create your ELARA account to see orders, saved bags and addresses.">
+<meta name="theme-color" content="#FFFDF9">
+<link rel="icon" type="image/svg+xml" href="assets/home/favicon.svg">
+<meta name="robots" content="noindex">
+<!--
+  Account flow — build of the Figma frames "Account Page / Login" (262:1494), "Create account" (265:1462),
+  "Enter code" (259:1536) and "Dashboard" (259:1641). 1440px artboard, scaled down below 1440 like the other pages.
+
+  One page, four views: login (sign in + join + order status), create account, enter code, dashboard.
+  Sign in or sign up with a mobile number OR an email; there is no password, only a one-time code.
+
+  There is no auth backend, so this is a DEMO: accounts live in localStorage ("elara.accounts.v1"),
+  the signed-in account id in "elara.session.v1", and any 6-digit code is accepted except 000000 (shows the "wrong code" error).
+  Deep link: my-account.html#create opens the Create account view.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #fffdf9;
+    --bg-card: #f7f1e8;
+    --bg-panel: #f8f4ef;
+    --text: #4a4741;
+    --text-muted: #838280;
+    --text-faint: #a8a5a0;
+    --border-soft: rgba(74,71,65,0.25);
+    --accent: #2a72de;
+    --focus: #3184ff;
+    --success: #0ca817;
+    --danger: #d22c15;
+    --amber: #c77d0a;
+    --r-large: 32px;
+    --r-media: 12px;
+    --r-small: 8px;
+    --r-pill: 999px;
+    --ease: cubic-bezier(.4,0,.2,1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { overflow-x: clip; }   /* clip, not hidden: hidden turns html and body into two scroll containers (double scrollbar) */
+  body { background: var(--bg-page); color: var(--text); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+  [hidden] { display: none !important; }
+  a { color: inherit; text-decoration: none; }
+  button, input { font: inherit; color: inherit; }
+  button { background: none; border: none; cursor: pointer; }
+  img, svg { display: block; }
+  .serif { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; }
+  .cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+
+  .page { position: relative; width: 1440px; margin: 0 auto; padding-top: 109px; zoom: var(--fit, 1); }
+  .abs { position: absolute; }
+
+  /* ===== Nav (22:641) — same component as the homepage ===== */
+  .nav { left: 0; top: 0; width: 1440px; height: 109px; padding: 10px; display: flex; align-items: center; justify-content: center; z-index: 20; }
+  .nav-inner { width: 100%; display: flex; gap: 144px; align-items: center; justify-content: center; padding: 0 37px; }
+  .nav-logo { position: relative; width: 222px; height: 101px; flex-shrink: 0; }
+  .nav-right { display: flex; gap: 104px; align-items: center; }
+  .nav-links { display: flex; gap: 32px; align-items: center; }
+  .nav-link { display: flex; gap: 6px; align-items: center; font-weight: 500; font-size: 16px; line-height: 1.5; text-transform: uppercase; white-space: nowrap; transition: background-color .15s var(--ease), color .15s var(--ease); }
+  .nav-link img { width: 16px; height: 16px; display: block; }
+  .nav-tools { display: flex; gap: 18px; align-items: center; }
+  .nav-icons { display: flex; gap: 20px; align-items: center; width: 58px; }
+  .ico20 { position: relative; width: 20px; height: 20px; flex-shrink: 0; overflow: clip; }
+  .ico20 img { position: absolute; display: block; }
+  /* Nav search / account icons: soft circle on hover, same cue as the cart pill */
+  .nav-icons .ico20 { overflow: visible; cursor: pointer; }
+  .nav-icons .ico20::before { content: ""; position: absolute; inset: -8px; border-radius: 50%; background: #f1e9dc; opacity: 0; transform: scale(.7); transition: opacity .15s cubic-bezier(.4,0,.2,1), transform .2s cubic-bezier(.4,0,.2,1); }
+  .nav-icons .ico20:hover::before, .nav-icons .ico20:focus-visible::before { opacity: 1; transform: scale(1); }
+  .nav-icons .ico20 img { z-index: 1; }
+  .nav-icons a.ico20 { display: block; }
+  .cart-btn { display: flex; gap: 10px; align-items: center; justify-content: center; height: 40px; padding: 10px 18px; border: 1px solid var(--text); border-radius: var(--r-pill); font-weight: 500; font-size: 16px; line-height: 1.5; text-transform: uppercase; white-space: nowrap; transition: background-color .15s var(--ease); }
+  .cart-btn:hover { background: var(--bg-card); }
+  .nav-item { position: relative; }
+  .nav-chev { transition: transform 220ms var(--ease); }
+  .nav-item.open .nav-chev { transform: rotate(180deg); }
+  .nav-menu-wrap { position: absolute; top: 99px; z-index: 10; background: var(--bg-page); box-shadow: 0 28px 56px rgba(28,27,26,0.12); opacity: 0; visibility: hidden; transform: translateY(-10px); transition: opacity 260ms var(--ease), transform 260ms var(--ease), visibility 0s linear 260ms, left 260ms var(--ease); pointer-events: none; overflow: hidden; }
+  .nav-menu-wrap.mega { left: 0; width: 1440px; border-radius: 0 0 var(--r-large) var(--r-large); }
+  .nav-menu-wrap.light { width: auto; border-radius: var(--r-large); }
+  .nav-menu-wrap.open { opacity: 1; visibility: visible; transform: translateY(0); transition: opacity 260ms var(--ease), transform 260ms var(--ease), height 320ms var(--ease), left 320ms var(--ease); pointer-events: auto; }
+  .nav-panel { display: none; padding: 48px 64px 56px; }
+  .nav-menu-wrap.light .nav-panel { padding: 20px; }
+  .nav-panel.active { display: block; animation: navPanelIn 240ms var(--ease); }
+  @keyframes navPanelIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .nav-menu-wrap.mega .nav-panel { padding: 0; }
+  .dd-panel { position: relative; width: 1440px; height: 360px; }
+  .dd-card { position: absolute; left: 82px; top: 56px; width: 332px; height: 248px; border-radius: var(--r-media); overflow: hidden; }
+  .dd-card .cover { border-radius: var(--r-media); transition: transform .4s var(--ease); }
+  .dd-card:hover .cover { transform: scale(1.05); }
+  .dd-card-fade { position: absolute; left: 50%; bottom: -14px; width: 604px; height: 83px; transform: translateX(-50%); pointer-events: none; }
+  .dd-card-fade i { position: absolute; inset: 0; filter: blur(52px); font-style: normal; }
+  .dd-card-fade i:first-child { background: rgba(40,40,40,0.53); }
+  .dd-card-fade i:last-child { background: rgba(40,40,40,0.88); mix-blend-mode: multiply; }
+  .dd-card-label { position: absolute; left: 14px; right: 14px; bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #fff; }
+  .dd-card-label:not(.two-line) > span:first-child { font-size: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dd-card-label img { width: 24px; height: 24px; flex-shrink: 0; }
+  .dd-card-label.two-line { flex-direction: column; align-items: flex-start; gap: 0; }
+  .dd-card-eyebrow { font-weight: 500; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; color: #d3d1ce; }
+  .dd-card-title { font-size: 16px; font-weight: 400; }
+  .dd-divider { position: absolute; left: 831px; top: 29px; width: 1px; height: 301.5px; }
+  .dd-list { position: absolute; left: 853px; top: 56px; width: 268px; display: flex; flex-direction: column; gap: 20px; }
+  .dd-list-group { display: flex; flex-direction: column; gap: 16px; }
+  .dd-list-coll { gap: 16px; }
+  .dd-row { display: flex; align-items: center; gap: 12px; color: var(--text); border-radius: var(--r-media); padding: 6px; margin: -6px; }
+  .dd-row:hover { background: var(--bg-card); }
+  .dd-row-thumb { position: relative; width: 48px; height: 48px; border-radius: 999px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-soft); }
+  .dd-row-thumb .cover { border-radius: 999px; }
+  .dd-row-thumb.icon { border: none; }
+  .dd-row-title { font-size: 18px; white-space: nowrap; }
+  .nm-simple-list { display: flex; flex-direction: column; gap: 2px; width: 280px; }
+  .nm-simple { padding: 12px 16px; border-radius: var(--r-media); font-size: 16px; color: var(--text); }
+  .nm-simple:hover { background: var(--bg-card); }
+  /* Nav search / account icons: soft circle on hover, same cue as the cart pill */
+  .nav-icons .ico20 { overflow: visible; cursor: pointer; }
+  .nav-icons .ico20::before { content: ""; position: absolute; inset: -8px; border-radius: 50%; background: #f1e9dc; opacity: 0; transform: scale(.7); transition: opacity .15s cubic-bezier(.4,0,.2,1), transform .2s cubic-bezier(.4,0,.2,1); }
+  .nav-icons .ico20:hover::before, .nav-icons .ico20:focus-visible::before { opacity: 1; transform: scale(1); }
+  .nav-icons .ico20 img { z-index: 1; }
+  .nav-icons a.ico20 { display: block; }
+
+  .breadcrumb { display: flex; gap: 6px; padding: 16px 0 0 64px; font-size: 12px; line-height: 1.5; color: var(--text-muted); white-space: nowrap; }
+  .breadcrumb a:hover { color: var(--text); }
+  .breadcrumb [aria-current] { color: var(--text); }
+
+  /* ===== Login view ===== */
+  .lg-body { display: flex; flex-direction: column; align-items: center; padding: 40px 0 72px; }
+  .lg-col { width: 920px; display: flex; flex-direction: column; gap: 24px; }
+  .lg-row { display: flex; gap: 24px; align-items: stretch; }
+  .card { background: var(--bg-page); border: 1px solid var(--border-soft); border-radius: var(--r-media); }
+  .card h2, .side h2, .details h2 { font-size: 24px; font-weight: 400; line-height: 1.1; letter-spacing: -0.72px; }
+  .sign-card { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 32px; }
+  .sign-card h2, .join-card h2 { text-align: center; }
+  .join-card { width: 448px; flex-shrink: 0; min-height: 431px; display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 32px; background-image: linear-gradient(144.264deg, rgb(255,228,140) 5.57%, rgb(255,248,211) 90.69%); }
+  .center-note { font-size: 14px; line-height: 1.5; color: var(--text-muted); text-align: center; }
+  .benefits { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 16px; width: 100%; }
+  .benefit { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 14px; line-height: 1.5; text-align: center; }
+  .benefit img { width: 44px; height: 44px; }
+  .join-card .btn { margin-top: auto; }
+
+  /* Toggle */
+  .seg { display: flex; gap: 4px; width: 100%; padding: 4px; background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--r-pill); }
+  .seg button { flex: 1; padding: 9px 0; border-radius: var(--r-pill); font-size: 14px; font-weight: 500; line-height: 1.5; color: var(--text); transition: background-color .2s var(--ease), color .2s var(--ease); }
+  .seg button[aria-checked="true"] { background: var(--text); color: #fff; }
+  .seg button:not([aria-checked="true"]):hover { background: rgba(74,71,65,0.08); }
+
+  /* Banner */
+  .banner { overflow: hidden; display: flex; flex-direction: column; align-items: center; }
+  .banner > img { width: 100%; height: 300px; object-fit: cover; }
+  .banner-text { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 36px 40px 40px; width: 100%; }
+  .banner-steps { display: flex; align-items: center; gap: 16px; }
+  .step-box { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 16px 28px; background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--r-media); line-height: 1.5; }
+  .step-box b { font-size: 16px; font-weight: 500; white-space: pre; }
+  .step-box span { font-size: 14px; color: var(--text-muted); }
+  .banner-steps img { width: 20px; height: 10px; }
+  .lnk { font-size: 14px; font-weight: 500; line-height: 1.5; color: var(--accent); }
+  .lnk:hover { text-decoration: underline; }
+
+  /* Order status card */
+  .status-card { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 32px; }
+  .status-card .fields { width: 100%; align-items: flex-end; }
+  .status-card .btn { flex: none; width: 130px; }
+
+  /* Footer */
+  .foot { display: flex; flex-direction: column; gap: 32px; padding: 48px 64px; background: var(--bg-card); border-top: 1px solid var(--border-soft); }
+  .foot-cols { display: flex; gap: 40px; }
+  .foot-col { flex: 1; display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: var(--text-muted); }
+  .foot-col b { font-size: 11px; font-weight: 700; letter-spacing: .88px; text-transform: uppercase; color: var(--text-faint); }
+  .foot-col a:hover { color: var(--text); }
+  .foot-bottom { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-faint); }
+
+  /* ===== Title row / main (create, code, dashboard) ===== */
+  .title-row { display: flex; align-items: flex-end; justify-content: space-between; padding: 24px 128px 0; }
+  .title-text { display: flex; flex-direction: column; gap: 4px; }
+  .title-text h1 { font-size: 36px; font-weight: 300; line-height: 1.1; letter-spacing: -1.8px; }
+  .title-text h1:focus { outline: none; }
+  .title-text p { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+  .title-link { font-size: 18px; font-weight: 500; line-height: 1.5; color: var(--accent); white-space: nowrap; }
+  .title-link:hover { text-decoration: underline; }
+  .main { display: flex; align-items: flex-start; gap: 64px; padding: 32px 128px 64px; }
+  .details { display: flex; flex-direction: column; gap: 32px; width: 740px; flex-shrink: 0; }
+  .side { display: flex; flex-direction: column; gap: 16px; width: 380px; flex-shrink: 0; padding: 24px; background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--r-media); }
+  .divider { height: 1px; background: var(--border-soft); }
+  .tip { display: flex; flex-direction: column; gap: 4px; font-size: 14px; line-height: 1.5; }
+  .tip b { font-weight: 500; }
+  .tip span { color: var(--text-muted); }
+  .form { display: flex; flex-direction: column; gap: 32px; }
+
+  /* Form controls */
+  .fields { display: flex; gap: 16px; }
+  .field { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .field label { display: flex; align-items: center; gap: 6px; font-size: 14px; line-height: 1.5; }
+  .field label img { width: 6px; height: 6px; }
+  .input { display: flex; align-items: center; gap: 12px; height: 48px; padding: 0 16px; border: 1px solid var(--border-soft); border-radius: var(--r-small); background: var(--bg-page); transition: border-color .15s var(--ease), box-shadow .15s var(--ease); cursor: text; }
+  .input:hover { border-color: rgba(74,71,65,0.5); }
+  .input:focus-within { border-color: var(--text); box-shadow: 0 0 0 3px rgba(49,132,255,0.2); }
+  .input input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; font-size: 14px; line-height: 1.5; }
+  .input input::placeholder { color: var(--text-faint); }
+  .input .prefix { font-size: 14px; line-height: 1.5; }
+  .input .vr { width: 1px; height: 20px; background: var(--border-soft); flex-shrink: 0; }
+  .input.invalid { border-color: var(--danger); }
+  .input.invalid:focus-within { box-shadow: 0 0 0 3px rgba(210,44,21,0.15); }
+  .err { font-size: 12px; line-height: 1.5; color: var(--danger); }
+  .hint { font-size: 12px; line-height: 1.5; color: var(--text-muted); }
+  .form-error { padding: 12px 16px; border: 1px solid var(--danger); border-radius: var(--r-small); font-size: 14px; line-height: 1.5; color: var(--danger); }
+  .form-error button { color: var(--accent); font-weight: 500; text-decoration: underline; }
+  .note { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+  .note button { color: var(--accent); font-weight: 500; }
+  .note button:hover { text-decoration: underline; }
+  .check { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; line-height: 1.5; cursor: pointer; }
+  .check input { position: absolute; opacity: 0; width: 20px; height: 20px; }
+  .check i { flex-shrink: 0; width: 20px; height: 20px; border: 1.2px solid rgba(74,71,65,0.6); border-radius: 4px; background: var(--bg-page); display: grid; place-items: center; transition: background-color .15s, border-color .15s; }
+  .check input:checked + i { background: var(--text); border-color: var(--text); }
+  .check input:checked + i::after { content: ""; width: 10px; height: 5px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: translateY(-1px) rotate(-45deg); }
+  .check input:focus-visible + i { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .check.invalid i { border-color: var(--danger); }
+  .check a { text-decoration: underline; }
+
+  /* Code boxes */
+  .code { display: flex; gap: 12px; }
+  .code input { flex: 1; min-width: 0; height: 60px; text-align: center; font-size: 24px; border: 1px solid var(--border-soft); border-radius: var(--r-small); background: var(--bg-page); outline: 0; transition: border-color .15s, box-shadow .15s; caret-color: var(--accent); }
+  .code input:focus { border-color: var(--text); box-shadow: 0 0 0 3px rgba(49,132,255,0.2); }
+  .code.invalid input { border-color: var(--danger); }
+
+  .actions { display: flex; gap: 16px; }
+  .btn { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; height: 50px; padding: 0 24px; border-radius: var(--r-pill); font-size: 15px; font-weight: 500; line-height: 1; white-space: nowrap; transition: background-color .15s var(--ease), color .15s var(--ease); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: #1f5fc4; }
+  .btn-outline { border: 1px solid var(--text); }
+  .btn-outline:hover { background: rgba(255,255,255,0.55); }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .wide { width: 100%; flex: none; }
+
+  /* Dashboard */
+  .tabs { display: flex; gap: 28px; }
+  .tab { display: flex; flex-direction: column; gap: 10px; font-size: 16px; line-height: 1.5; color: var(--text-muted); }
+  .tab::after { content: ""; height: 2px; background: transparent; }
+  .tab:hover { color: var(--text); }
+  .tab[aria-selected="true"] { color: var(--text); font-weight: 500; }
+  .tab[aria-selected="true"]::after { background: var(--text); }
+  .order { display: flex; flex-direction: column; gap: 16px; padding: 20px 24px; background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--r-media); }
+  .order-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; line-height: 1.5; }
+  .order-id { display: flex; align-items: center; gap: 12px; }
+  .order-id b { font-size: 16px; font-weight: 500; }
+  .order-id span { font-size: 14px; color: var(--text-muted); }
+  .pill { padding: 4px 12px; border-radius: var(--r-pill); font-size: 12px; font-weight: 500; line-height: 1.5; white-space: nowrap; }
+  .pill.blue { background: rgba(42,114,222,0.12); color: var(--accent); }
+  .pill.green { background: rgba(12,168,23,0.12); color: var(--success); }
+  .pill.amber { background: rgba(199,125,10,0.14); color: var(--amber); }
+  .order-items { display: flex; align-items: center; gap: 12px; }
+  .photo { position: relative; width: 64px; height: 80px; flex-shrink: 0; border: 1px solid var(--border-soft); border-radius: var(--r-media); background: #f2ecde; }
+  .photo .cover { border-radius: var(--r-media); }
+  .order-items p { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+  .order-bottom { display: flex; align-items: center; justify-content: space-between; line-height: 1.5; }
+  .order-bottom div { display: flex; align-items: center; gap: 8px; }
+  .order-bottom span { font-size: 14px; color: var(--text-muted); }
+  .order-bottom b { font-size: 16px; font-weight: 500; }
+  .empty-box { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 24px; border: 1px dashed var(--border-soft); border-radius: var(--r-media); font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+  .empty-box .btn { flex: none; width: 220px; }
+  .rowitem { display: flex; flex-direction: column; gap: 4px; font-size: 14px; line-height: 1.5; }
+  .rowhead { display: flex; align-items: center; justify-content: space-between; font-weight: 500; }
+  .rowhead button { color: var(--accent); font-weight: 500; }
+  .rowhead button:hover { text-decoration: underline; }
+  .rowitem p { color: var(--text-muted); }
+  .addr { display: flex; flex-direction: column; gap: 4px; padding: 16px 20px; background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--r-media); font-size: 14px; line-height: 1.5; }
+  .addr b { font-weight: 500; }
+  .addr span { color: var(--text-muted); }
+  .saved-grid { display: flex; flex-direction: column; gap: 12px; }
+  .saved { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--r-media); }
+  .saved .info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.5; }
+  .saved .info b { font-size: 14px; font-weight: 500; }
+  .saved .info span { font-size: 12px; color: var(--text-muted); }
+  .saved .price { font-size: 14px; font-weight: 500; white-space: nowrap; }
+  .saved button { font-size: 14px; font-weight: 500; color: var(--accent); }
+  .saved button:hover { text-decoration: underline; }
+  .toast { position: fixed; left: 50%; bottom: 32px; transform: translate(-50%, 20px); padding: 12px 20px; background: var(--text); color: #fff; border-radius: var(--r-pill); font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .25s var(--ease); z-index: 60; }
+  .toast.on { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="abs nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo" aria-label="ELARA home"><img class="cover" src="assets/home/logo.webp" alt="ELARA"></a>
+      <div class="nav-right">
+        <nav class="nav-links" aria-label="Primary">
+          <div class="nav-item" data-menu="new-arrivals"><a href="#" class="nav-link">New Arrivals <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="bags"><a href="#" class="nav-link">Bags <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="collections"><a href="#" class="nav-link">Collections <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="best-sellers"><a href="#" class="nav-link">Best Sellers <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <a href="my-contact-screen.html" class="nav-link">Contact Us</a>
+        </nav>
+        <div class="nav-tools">
+          <div class="nav-icons">
+            <button class="ico20" aria-label="Search"><img src="assets/home/icon-search.svg" alt="" style="inset:0;width:20px;height:20px;"></button>
+            <a href="my-account.html" class="ico20" aria-label="Account"><img src="assets/home/icon-account.svg" alt="" style="left:22.27%;top:8.33%;width:57.44%;height:82.55%;"></a>
+          </div>
+          <a href="my-cart-screen.html" class="cart-btn">My cart
+            <span class="ico20"><img src="assets/home/icon-cart.svg" alt="" style="left:5.21%;top:5.21%;width:87.63%;height:89.58%;"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-menu-wrap" id="navMenuWrap">
+      <div class="nav-panel" data-panel="new-arrivals">
+        <div class="dd-panel">
+          <a href="my-product-detail-screen.html?p=leather-tote-bag" class="dd-card">
+            <img class="cover" src="assets/home/dd-na-card-1.webp" alt="Leather Tote Bag">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Leather Tote Bag</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <a href="my-product-detail-screen.html?p=aveline-convertible-tote" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-na-card-2.webp" alt="Aveline Convertible Tote">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Aveline Convertible Tote</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
+          <div class="dd-list">
+            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-1.webp" alt=""></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
+            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-2.webp" alt=""></span><span class="dd-row-title">Sienna Structured Purse</span></a>
+            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-3.webp" alt=""></span><span class="dd-row-title">Isla Bags</span></a>
+            <a href="my-plp-screen.html?collection=new" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All New Arrivals</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="bags">
+        <div class="dd-panel">
+          <a href="my-product-detail-screen.html?p=suede-crossbody" class="dd-card">
+            <img class="cover" src="assets/home/dd-bags-card-1.webp" alt="Cross Body Bags">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Cross Body Bags</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <a href="my-product-detail-screen.html?p=structured-work-satchel" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-bags-card-2.webp" alt="Work &amp; Travel">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Work &amp; Travel</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
+          <div class="dd-list">
+            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-1.webp" alt=""></span><span class="dd-row-title">Tote</span></a>
+            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-2.webp" alt=""></span><span class="dd-row-title">Shoulder</span></a>
+            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-3.webp" alt=""></span><span class="dd-row-title">Mini</span></a>
+            <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All Category Bags</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="collections">
+        <div class="dd-panel">
+          <a href="#coming-soon" data-soon="Our Signature Pieces" class="dd-card">
+            <img class="cover" src="assets/home/dd-coll-card-1.webp" alt="Our Signature Pieces">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label two-line"><span class="dd-card-eyebrow">Signature</span><span class="dd-card-title">Our Signature Pieces</span></div>
+          </a>
+          <a href="#coming-soon" data-soon="Everyday Essentials" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-coll-card-2.webp" alt="Everyday Essentials">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label two-line"><span class="dd-card-eyebrow">Everyday</span><span class="dd-card-title">Everyday Essentials</span></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="" style="left:826px;">
+          <div class="dd-list dd-list-coll" style="left:850px; top:92px;">
+            <div class="dd-list-group">
+              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-1.webp" alt=""></span><span class="dd-row-title">The Evening Edit</span></a>
+              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-2.webp" alt=""></span><span class="dd-row-title">Designed for Work</span></a>
+            </div>
+            <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-see-all.svg" alt=""></span><span class="dd-row-title">See All Collections</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="best-sellers">
+        <div class="nm-simple-list">
+          <a href="my-plp-screen.html" class="nm-simple">All Best Sellers</a>
+          <a href="my-plp-screen.html" class="nm-simple">Customer Favorites</a>
+          <a href="my-plp-screen.html" class="nm-simple">Most Loved</a>
+          <a href="my-plp-screen.html" class="nm-simple">Trending Now</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div id="app"></div>
+
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  // Below 1440 only: shrink the artboard to the viewport (never scales up).
+  function fit() { document.documentElement.style.setProperty('--fit', Math.min(1, document.documentElement.clientWidth / 1440)); }
+  fit();
+  new ResizeObserver(fit).observe(document.documentElement);
+
+  // ---------- helpers ----------
+  const ACC_KEY = 'elara.accounts.v1', SESSION_KEY = 'elara.session.v1', ORDERS_KEY = 'elara.orders.v1', ORDER_KEY = 'elara.order.v1', SAVED_KEY = 'elara.saved.v1', CART_KEY = 'elara.cart.v1';
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const money = (n) => 'Tk. ' + Number(n).toLocaleString('en-US') + '/-';
+  const read = (k, f) => { try { const v = JSON.parse(localStorage.getItem(k)); return v === null ? f : v; } catch (e) { return f; } };
+  const write = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+  const normPhone = (v) => { let d = String(v).replace(/\D/g, ''); if (d.startsWith('880')) d = d.slice(3); if (d.startsWith('0')) d = d.slice(1); return d; };
+  const phoneOk = (v) => /^1[3-9]\d{8}$/.test(normPhone(v));
+  const emailOk = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(v).trim());
+  const fmtPhone = (p) => String(p).replace(/^\+880(\d{4})(\d{6})$/, '+880 $1 $2');
+  const toast = (msg) => { const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 2200); };
+
+  const accounts = () => read(ACC_KEY, []);
+  const saveAccounts = (a) => write(ACC_KEY, a);
+  const session = () => { const id = read(SESSION_KEY, null); return id ? accounts().find((a) => a.id === id) || null : null; };
+  const findAccount = (type, value) => { const v = type === 'phone' ? '+880' + normPhone(value) : String(value).trim().toLowerCase(); return accounts().find((a) => (type === 'phone' ? a.phone === v : a.email === v)) || null; };
+  const contactLabel = (c) => c.type === 'phone' ? '+880 ' + normPhone(c.value).replace(/^(\d{4})(\d+)$/, '$1 $2') : String(c.value).trim().toLowerCase();
+
+  // ---------- order history + status (same simulated clock as the tracking page) ----------
+  function orderHistory() {
+    const list = read(ORDERS_KEY, []).slice();
+    const last = read(ORDER_KEY, null);
+    if (last && last.items && !list.some((o) => o.id === last.id) && !((last.payment === 'bkash' || last.payment === 'nagad') && !last.paid)) list.push(last);
+    return list.sort((a, b) => new Date(b.placedAt) - new Date(a.placedAt));
+  }
+  function ordersFor(acc) { return orderHistory().filter((o) => (acc.phone && o.customer && o.customer.phone === acc.phone) || (acc.email && o.customer && o.customer.email && o.customer.email.toLowerCase() === acc.email)); }
+  function orderStatus(o) {
+    if ((o.payment === 'bkash' || o.payment === 'nagad') && !o.paid) return ['Awaiting payment', 'amber'];
+    const placed = new Date(o.placedAt), dhaka = o.zone === 'Dhaka';
+    const out = new Date(placed); out.setDate(out.getDate() + (dhaka ? 1 : 3)); out.setHours(9, 15, 0, 0);
+    const times = [placed, new Date(placed.getTime() + 25 * 60000), new Date(placed.getTime() + 4 * 3600e3), out, new Date(out.getTime() + 8 * 3600e3)];
+    let s = 1; times.forEach((t, i) => { if (Date.now() >= t.getTime()) s = i + 1; });
+    return [['Order placed', 'Confirmed', 'Packed', 'Out for delivery', 'Delivered'][s - 1], s === 5 ? 'green' : 'blue'];
+  }
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const fmtDate = (iso) => { const d = new Date(iso); return d.getDate() + ' ' + MONTHS[d.getMonth()] + ', ' + d.getFullYear(); };
+
+  // ---------- state ----------
+  const S = { view: 'login', method: 'phone', pending: null, tab: 'orders', timer: null, left: 42, form: {} };
+  const app = $('app');
+
+  // ---------- shared markup ----------
+  const REQ = '<img src="assets/checkout/required-dot.svg" alt="required">';
+  const seg = (m) => `<div class="seg" role="radiogroup" aria-label="Use mobile number or email"><button type="button" role="radio" aria-checked="${m === 'phone'}" data-method="phone">Mobile number</button><button type="button" role="radio" aria-checked="${m === 'email'}" data-method="email">Email</button></div>`;
+  const contactField = (m, id, value) => m === 'phone'
+    ? `<div class="field"><label for="${id}">Mobile number ${REQ}</label><div class="input" data-for="${id}"><span class="prefix">+880</span><span class="vr"></span><input id="${id}" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="1XXX XXXXXX" value="${esc(value || '')}"></div><p class="err" id="e_${id}" hidden></p></div>`
+    : `<div class="field"><label for="${id}">Email address ${REQ}</label><div class="input" data-for="${id}"><input id="${id}" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" value="${esc(value || '')}"></div><p class="err" id="e_${id}" hidden></p></div>`;
+  const tips = (title, items) => `<aside class="side"><h2 class="serif">${title}</h2>${items.map((t, i) => (i ? '<div class="divider"></div>' : '') + `<div class="tip"><b>${t[0]}</b><span>${t[1]}</span></div>`).join('')}</aside>`;
+  const titleRow = (title, sub, link) => `<div class="title-row"><div class="title-text"><h1 class="serif" id="h1" tabindex="-1">${title}</h1><p>${sub}</p></div>${link || ''}</div>`;
+  const crumbs = (last, mid) => `<nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">Home</a><span>/</span>${mid ? `<a href="my-account.html" data-go="login">${mid}</a><span>/</span>` : ''}<span aria-current="page">${last}</span></nav>`;
+
+  function setErr(id, msg) { const e = $('e_' + id); if (!e) return; e.textContent = msg; e.hidden = false; const b = document.querySelector('.input[data-for="' + id + '"]'); if (b) b.classList.add('invalid'); $(id).setAttribute('aria-invalid', 'true'); }
+  function clearErr(id) { const e = $('e_' + id); if (e) e.hidden = true; const b = document.querySelector('.input[data-for="' + id + '"]'); if (b) b.classList.remove('invalid'); const i = $(id); if (i) i.removeAttribute('aria-invalid'); }
+  function wireInputs() {
+    app.querySelectorAll('.input').forEach((box) => box.addEventListener('click', (e) => { if (e.target === box) $(box.dataset.for).focus(); }));
+    app.querySelectorAll('.input input').forEach((i) => i.addEventListener('input', () => { clearErr(i.id); const fe = $('formError'); if (fe) fe.hidden = true; }));
+  }
+
+  // ---------- views ----------
+  const FOOT = `<footer class="foot"><div class="foot-cols">
+    <div class="foot-col"><b>Shop</b><a href="my-plp-screen.html">New Arrivals</a><a href="my-plp-screen.html">Best Sellers</a><a href="my-plp-screen.html">Collections</a><a href="my-plp-screen.html">All Bags</a></div>
+    <div class="foot-col"><b>Customer Service</b><a href="#" data-soon="Shipping & Delivery" data-soon-page>Shipping &amp; Delivery</a><a href="#" data-soon="Returns & Exchange" data-soon-page>Returns &amp; Exchange</a><a href="my-order-tracking.html">Order Tracking</a><a href="my-contact-screen.html">Contact Us</a></div>
+    <div class="foot-col"><b>About</b><a href="#" data-soon="Our Story" data-soon-page>Our Story</a><a href="my-contact-screen.html">Contact</a></div>
+    <div class="foot-col"><b>Legal</b><a href="#" data-soon="Privacy Policy" data-soon-page>Privacy Policy</a><a href="#" data-soon="Terms of Service" data-soon-page>Terms of Service</a></div></div>
+    <div class="foot-bottom"><span>© 2026 ELARA. All rights reserved.</span><span>Dhaka Tk 60 (1–3 days) · Outside Dhaka Tk 120 (3–5 days) · Free over Tk 3,000</span></div></footer>`;
+
+  function viewLogin() {
+    const m = S.method;
+    app.innerHTML = `<div class="lg-body"><div class="lg-col">
+      <div class="lg-row">
+        <div class="card sign-card"><h2 class="serif">Sign in to ELARA</h2>
+          <form id="signinForm" style="display:contents" novalidate>
+            ${seg(m)}
+            <div style="width:100%">${contactField(m, 'lgContact', S.form.lg)}</div>
+            <p class="center-note">We will send a one-time code to this ${m === 'phone' ? 'number' : 'email'}. No password needed.</p>
+            <p class="form-error" id="formError" role="alert" hidden style="width:100%"></p>
+            <button type="submit" class="btn btn-accent wide">Send code</button>
+            <a href="my-plp-screen.html" class="lnk">Or continue as a guest</a>
+          </form>
+        </div>
+        <div class="card join-card" id="joinCard"><h2 class="serif">Join ELARA</h2>
+          <p class="center-note">Sign up with your mobile number or email and get the member treatment every time you shop.</p>
+          <div class="benefits">
+            <div class="benefit"><img src="assets/account/benefit-track.svg" alt=""><span>Track every order</span></div>
+            <div class="benefit"><img src="assets/account/benefit-save.svg" alt=""><span>Save bags for later</span></div>
+            <div class="benefit"><img src="assets/account/benefit-early.svg" alt=""><span>Early access to new arrivals</span></div>
+            <div class="benefit"><img src="assets/account/benefit-birthday.svg" alt=""><span>A treat on your birthday</span></div>
+          </div>
+          <button type="button" class="btn btn-outline wide" data-go="create">Create account</button>
+        </div>
+      </div>
+      <div class="card banner"><img src="assets/home/hero-bg.webp" alt="">
+        <div class="banner-text"><h2 class="serif" style="text-align:center">Because great style should be remembered</h2>
+          <p class="center-note">Create an account to see all your orders in one place, save the bags you love, and get first look at new arrivals. It is free and takes a minute.</p>
+          <div class="banner-steps">
+            <div class="step-box"><b>1  Create account</b><span>Free to join</span></div><img src="assets/account/step-arrow.svg" alt="">
+            <div class="step-box"><b>2  Shop as usual</b><span>Guest or signed in</span></div><img src="assets/account/step-arrow.svg" alt="">
+            <div class="step-box"><b>3  Enjoy the perks</b><span>Orders, saved bags, early access</span></div>
+          </div>
+          <button type="button" class="lnk" data-go="create">Discover more perks</button>
+        </div></div>
+      <div class="card status-card"><h2 class="serif" style="text-align:center">Check your order status</h2>
+        <p class="center-note">View your order status and delivery tracking information. No account needed.</p>
+        <form id="statusForm" class="fields" novalidate>
+          <div class="field"><label for="osId">Order number ${REQ}</label><div class="input" data-for="osId"><input id="osId" placeholder="ELR-129260" autocomplete="off" autocapitalize="characters" spellcheck="false"></div><p class="err" id="e_osId" hidden></p></div>
+          <div class="field"><label for="osContact">Mobile number or email ${REQ}</label><div class="input" data-for="osContact"><input id="osContact" placeholder="01712 345678 or you@example.com" autocomplete="off"></div><p class="err" id="e_osContact" hidden></p></div>
+          <button type="submit" class="btn btn-outline">Check</button>
+        </form>
+        <p class="form-error" id="statusError" role="alert" hidden style="width:100%"></p>
+      </div>
+    </div></div>${FOOT}`;
+    document.title = 'ELARA — Sign in';
+    wireInputs();
+
+    $('signinForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const v = $('lgContact').value; S.form.lg = v;
+      const ok = m === 'phone' ? phoneOk(v) : emailOk(v);
+      if (!ok) { setErr('lgContact', m === 'phone' ? 'Enter a valid mobile number, like 1712 345678.' : 'Enter a valid email address.'); $('lgContact').focus(); return; }
+      const acc = findAccount(m, v);
+      if (!acc) {
+        const fe = $('formError');
+        fe.innerHTML = `We could not find an account with this ${m === 'phone' ? 'number' : 'email'}. <button type="button" data-go="create">Create one?</button>`;
+        fe.hidden = false; S.form.cr = v; S.form.crMethod = m; return;
+      }
+      S.pending = { mode: 'signin', contact: { type: m, value: v }, accountId: acc.id };
+      go('code');
+    });
+
+    $('statusForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = $('osId').value.trim().toUpperCase(), c = $('osContact').value.trim();
+      let bad = false;
+      if (!id) { setErr('osId', 'Enter your order number.'); bad = true; } else clearErr('osId');
+      if (!c) { setErr('osContact', 'Enter the mobile number or email you used.'); bad = true; } else clearErr('osContact');
+      if (bad) return;
+      const o = orderHistory().find((x) => x.id === id);
+      const p = normPhone(c);
+      const match = o && o.customer && ((c.includes('@') && o.customer.email && o.customer.email.toLowerCase() === c.toLowerCase()) || (!c.includes('@') && p && normPhone(o.customer.phone) === p));
+      if (!match) { const se = $('statusError'); se.textContent = 'We could not find an order with those details. Check the order number and contact, then try again.'; se.hidden = false; return; }
+      location.href = 'my-order-tracking.html?order=' + encodeURIComponent(o.id);
+    });
+    ['osId', 'osContact'].forEach((i) => $(i).addEventListener('input', () => { $('statusError').hidden = true; }));
+  }
+
+  function viewCreate() {
+    const m = S.form.crMethod || S.method;
+    app.innerHTML = crumbs('Create account') + titleRow('Create your account', 'It takes a minute. We use a one-time code, so there is no password to remember.') + `
+      <div class="main"><div class="details"><h2 class="serif">Your details</h2>
+        <form id="createForm" class="form" novalidate>
+          <div class="field"><label for="crName">Full name ${REQ}</label><div class="input" data-for="crName"><input id="crName" autocomplete="name" placeholder="Your full name" value="${esc(S.form.name || '')}"></div><p class="err" id="e_crName" hidden></p></div>
+          ${seg(m)}
+          ${contactField(m, 'crContact', S.form.cr)}
+          <div class="field"><label for="crBday">Birthday (optional)</label><div class="input" data-for="crBday"><input id="crBday" inputmode="numeric" placeholder="DD / MM" maxlength="7" autocomplete="off" value="${esc(S.form.bday || '')}"></div><p class="err" id="e_crBday" hidden></p><p class="hint">We use it only to send you a small treat in your birthday month.</p></div>
+          <label class="check" id="termsRow"><input type="checkbox" id="crTerms"><i></i><span>I agree to the <a href="#" data-soon="Terms of Service" data-soon-page>Terms of Service</a> and <a href="#" data-soon="Privacy Policy" data-soon-page>Privacy Policy</a>.</span></label>
+          <p class="err" id="e_crTerms" hidden></p>
+          <p class="form-error" id="formError" role="alert" hidden></p>
+          <div class="actions"><button type="submit" class="btn btn-accent">Create account</button></div>
+          <p class="note">Already have an account? <button type="button" data-go="login">Sign in</button></p>
+        </form></div>
+      ${tips('What you get', [['Every order in one place', 'Track deliveries without typing an order number.'], ['Save bags for later', 'Keep the pieces you love and come back when you are ready.'], ['Faster checkout', 'Your name and delivery address are filled in for you.']])}</div>`;
+    document.title = 'ELARA — Create account';
+    wireInputs();
+    const bday = $('crBday');
+    bday.addEventListener('input', () => { const d = bday.value.replace(/\D/g, '').slice(0, 4); bday.value = d.length > 2 ? d.slice(0, 2) + ' / ' + d.slice(2) : d; });
+    $('crTerms').addEventListener('change', () => { $('termsRow').classList.remove('invalid'); $('e_crTerms').hidden = true; });
+    $('createForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = $('crName').value.trim(), v = $('crContact').value, b = bday.value.trim();
+      S.form.name = name; S.form.cr = v; S.form.bday = b; S.form.crMethod = m;
+      let bad = false;
+      if (name.length < 2) { setErr('crName', 'Please enter your full name.'); bad = true; } else clearErr('crName');
+      if (!(m === 'phone' ? phoneOk(v) : emailOk(v))) { setErr('crContact', m === 'phone' ? 'Enter a valid mobile number, like 1712 345678.' : 'Enter a valid email address.'); bad = true; } else clearErr('crContact');
+      let bd = null;
+      if (b) { const mm = b.match(/^(\d{2}) \/ (\d{2})$/); const d = mm && +mm[1], mo = mm && +mm[2]; if (!mm || d < 1 || d > 31 || mo < 1 || mo > 12) { setErr('crBday', 'Enter day and month, like 14 / 08.'); bad = true; } else { clearErr('crBday'); bd = b; } } else clearErr('crBday');
+      if (!$('crTerms').checked) { $('termsRow').classList.add('invalid'); const te = $('e_crTerms'); te.textContent = 'Please agree to the terms to continue.'; te.hidden = false; bad = true; }
+      if (bad) { const f = app.querySelector('.invalid input, [aria-invalid]') || null; if (f) f.focus(); return; }
+      if (findAccount(m, v)) {
+        const fe = $('formError'); fe.innerHTML = `There is already an account with this ${m === 'phone' ? 'number' : 'email'}. <button type="button" data-go="login">Sign in instead?</button>`; fe.hidden = false; S.form.lg = v; S.method = m; return;
+      }
+      S.pending = { mode: 'signup', contact: { type: m, value: v }, data: { name, birthday: bd } };
+      go('code');
+    });
+  }
+
+  function viewCode() {
+    const p = S.pending; if (!p) { go('login'); return; }
+    const label = contactLabel(p.contact), isUp = p.mode === 'signup', what = p.contact.type === 'phone' ? 'mobile number' : 'email';
+    app.innerHTML = crumbs('Enter code', isUp ? 'Create account' : 'Sign in') + titleRow('Enter your code', `We sent a 6-digit code to ${esc(label)}.`) + `
+      <div class="main"><div class="details"><h2 class="serif">6-digit code</h2>
+        <form id="codeForm" class="form" novalidate>
+          <div><div class="code" id="codeBoxes">${[0, 1, 2, 3, 4, 5].map((i) => `<input inputmode="numeric" maxlength="1" autocomplete="${i ? 'off' : 'one-time-code'}" aria-label="Digit ${i + 1}" data-i="${i}">`).join('')}</div><p class="err" id="codeErr" style="margin-top:8px" hidden></p></div>
+          <div class="actions"><button type="submit" class="btn btn-accent">${isUp ? 'Verify and create account' : 'Verify and sign in'}</button></div>
+          <p class="note" id="resendNote"></p>
+          <button type="button" class="lnk" style="align-self:flex-start" data-go="${isUp ? 'create' : 'login'}">Change ${what}</button>
+        </form></div>
+      ${tips('Good to know', [['The code is valid for 5 minutes', 'Ask for a new one if it runs out.'], ['No message yet?', `Check the ${what} is right, then wait a moment for it to arrive.`], ['Never share this code', 'ELARA will never call or message you asking for it.']])}</div>`;
+    document.title = 'ELARA — Enter your code';
+    const boxes = [...app.querySelectorAll('#codeBoxes input')];
+    const fail = (msg) => { $('codeBoxes').classList.add('invalid'); $('codeErr').textContent = msg; $('codeErr').hidden = false; };
+    const reset = () => { $('codeBoxes').classList.remove('invalid'); $('codeErr').hidden = true; };
+    boxes.forEach((b, i) => {
+      b.addEventListener('input', () => { b.value = b.value.replace(/\D/g, '').slice(0, 1); reset(); if (b.value && boxes[i + 1]) boxes[i + 1].focus(); });
+      b.addEventListener('keydown', (e) => { if (e.key === 'Backspace' && !b.value && boxes[i - 1]) { boxes[i - 1].focus(); boxes[i - 1].value = ''; } if (e.key === 'ArrowLeft' && boxes[i - 1]) boxes[i - 1].focus(); if (e.key === 'ArrowRight' && boxes[i + 1]) boxes[i + 1].focus(); });
+      b.addEventListener('paste', (e) => { const d = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6); if (!d) return; e.preventDefault(); d.split('').forEach((c, k) => { if (boxes[k]) boxes[k].value = c; }); (boxes[Math.min(d.length, 5)]).focus(); reset(); });
+    });
+    boxes[0].focus();
+    // resend countdown
+    S.left = 42; clearInterval(S.timer);
+    const paint = () => { $('resendNote').innerHTML = S.left > 0 ? `Did not get it? You can ask for a new code in 0:${String(S.left).padStart(2, '0')}.` : 'Did not get it? <button type="button" id="resendBtn">Send a new code</button>'; const rb = $('resendBtn'); if (rb) rb.addEventListener('click', () => { S.left = 42; paint(); toast('A new code is on its way.'); startTick(); }); };
+    const startTick = () => { clearInterval(S.timer); S.timer = setInterval(() => { if (!$('resendNote')) { clearInterval(S.timer); return; } S.left = Math.max(0, S.left - 1); paint(); if (!S.left) clearInterval(S.timer); }, 1000); };
+    paint(); startTick();
+
+    $('codeForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const code = boxes.map((b) => b.value).join('');
+      if (code.length < 6) { fail('Enter all 6 digits.'); (boxes.find((b) => !b.value) || boxes[0]).focus(); return; }
+      if (code === '000000') { fail('That code is not right. Check the message and try again.'); boxes.forEach((b) => { b.value = ''; }); boxes[0].focus(); return; }
+      let acc;
+      if (isUp) {
+        const list = accounts();
+        acc = { id: 'acc-' + Date.now().toString(36), name: p.data.name, phone: p.contact.type === 'phone' ? '+880' + normPhone(p.contact.value) : null, email: p.contact.type === 'email' ? p.contact.value.trim().toLowerCase() : null, birthday: p.data.birthday, createdAt: new Date().toISOString() };
+        list.push(acc); saveAccounts(list);
+      } else acc = accounts().find((a) => a.id === p.accountId);
+      write(SESSION_KEY, acc.id); clearInterval(S.timer); S.pending = null; S.tab = 'orders';
+      toast(isUp ? 'Welcome to ELARA, ' + acc.name.split(' ')[0] + '.' : 'Signed in.');
+      go('dash');
+    });
+  }
+
+  function viewDash() {
+    const acc = session(); if (!acc) { go('login'); return; }
+    const first = acc.name.split(' ')[0], orders = ordersFor(acc), tab = S.tab;
+    const contact = acc.phone ? fmtPhone(acc.phone) : acc.email;
+    const latest = orders[0];
+    const addr = latest && latest.address ? latest.address : null;
+    const addrText = (a) => esc(a.line1) + (a.line2 ? ', ' + esc(a.line2) : '') + ', ' + [a.area, a.upazila, a.district].map(esc).join(', ');
+    const tabs = [['orders', 'Orders'], ['saved', 'Saved items'], ['addresses', 'Addresses'], ['profile', 'Profile']];
+
+    let body = '';
+    if (tab === 'orders') {
+      body = '<h2 class="serif">Recent orders</h2>' + (orders.length ? orders.map((o) => {
+        const st = orderStatus(o), names = o.items.map((l) => esc(l.name) + (l.colour ? ' (' + esc(l.colour) + ')' : '')).join(', ');
+        return `<div class="order"><div class="order-top"><div class="order-id"><b>${esc(o.id)}</b><span>${fmtDate(o.placedAt)}</span></div><span class="pill ${st[1]}">${st[0]}</span></div>
+          <div class="order-items">${o.items.slice(0, 4).map((l) => `<div class="photo"><img class="cover" src="${esc(l.img)}" alt=""></div>`).join('')}<p>${names}</p></div>
+          <div class="divider"></div>
+          <div class="order-bottom"><div><span>Total</span><b>${money(o.total)}</b></div><a class="lnk" href="my-order-tracking.html?order=${encodeURIComponent(o.id)}">${st[0] === 'Delivered' ? 'View order →' : (st[0] === 'Awaiting payment' ? 'Finish payment →' : 'Track order →')}</a></div></div>`;
+      }).join('') : `<div class="empty-box"><span>You have no orders yet. Your orders will show up here once you place one.</span><a href="my-plp-screen.html" class="btn btn-accent">Start shopping</a></div>`);
+    } else if (tab === 'saved') {
+      const saved = read(SAVED_KEY, []);
+      body = '<h2 class="serif">Saved items</h2>' + (saved.length ? `<div class="saved-grid">${saved.map((l, i) => `<div class="saved"><div class="photo"><img class="cover" src="${esc(l.img)}" alt=""></div><div class="info"><b>${esc(l.name)}</b><span>${[l.colour, l.size].filter(Boolean).map(esc).join(' · ')}</span></div><span class="price">${money(l.price)}</span><button type="button" data-move="${i}">Move to bag</button></div>`).join('')}</div>` : `<div class="empty-box"><span>Nothing saved yet. Use "Save for later" in your bag to keep a piece here.</span><a href="my-plp-screen.html" class="btn btn-accent">Browse bags</a></div>`);
+    } else if (tab === 'addresses') {
+      const seen = new Set(), list = [];
+      orders.forEach((o) => { const a = o.address; if (!a) return; const k = (a.line1 + a.area).toLowerCase(); if (!seen.has(k)) { seen.add(k); list.push(a); } });
+      body = '<h2 class="serif">Addresses</h2>' + (list.length ? list.map((a, i) => `<div class="addr"><b>${esc(acc.name)}${i === 0 ? ' · Default' : ''}</b><span>${addrText(a)}</span><span>${esc(a.division)}</span></div>`).join('') + '<p class="note">Addresses are saved from your orders. You can change the address at checkout.</p>' : `<div class="empty-box"><span>No saved addresses yet. We save one after your first order.</span><a href="my-plp-screen.html" class="btn btn-accent">Start shopping</a></div>`);
+    } else {
+      body = `<h2 class="serif">Profile</h2><form id="profileForm" class="form" novalidate>
+        <div class="field"><label for="pfName">Full name ${REQ}</label><div class="input" data-for="pfName"><input id="pfName" value="${esc(acc.name)}"></div><p class="err" id="e_pfName" hidden></p></div>
+        <div class="fields"><div class="field"><label for="pfPhone">Mobile number</label><div class="input" data-for="pfPhone"><span class="prefix">+880</span><span class="vr"></span><input id="pfPhone" type="tel" placeholder="1XXX XXXXXX" value="${esc(acc.phone ? normPhone(acc.phone) : '')}"></div><p class="err" id="e_pfPhone" hidden></p></div>
+        <div class="field"><label for="pfEmail">Email</label><div class="input" data-for="pfEmail"><input id="pfEmail" type="email" placeholder="you@example.com" value="${esc(acc.email || '')}"></div><p class="err" id="e_pfEmail" hidden></p></div></div>
+        <div class="field"><label for="pfBday">Birthday (optional)</label><div class="input" data-for="pfBday"><input id="pfBday" inputmode="numeric" placeholder="DD / MM" maxlength="7" value="${esc(acc.birthday || '')}"></div><p class="err" id="e_pfBday" hidden></p></div>
+        <div class="actions"><button type="submit" class="btn btn-accent">Save changes</button></div></form>`;
+    }
+    const side = `<aside class="side"><h2 class="serif">Account details</h2>
+      <div class="rowitem"><div class="rowhead"><span>Default address</span><button type="button" data-tab="addresses">${addr ? 'Edit' : 'View'}</button></div><p>${addr ? addrText(addr) + ', ' + esc(addr.division) : 'No address saved yet'}</p></div><div class="divider"></div>
+      <div class="rowitem"><div class="rowhead"><span>Mobile</span><button type="button" data-tab="profile">${acc.phone ? 'Change' : 'Add'}</button></div><p>${acc.phone ? fmtPhone(acc.phone) : 'Not added yet'}</p></div><div class="divider"></div>
+      <div class="rowitem"><div class="rowhead"><span>Email</span><button type="button" data-tab="profile">${acc.email ? 'Change' : 'Add'}</button></div><p>${acc.email ? esc(acc.email) : 'Not added yet'}</p></div></aside>`;
+
+    app.innerHTML = crumbs('Account') + titleRow('Hi, ' + esc(first), esc(acc.name) + ' · ' + esc(contact), '<button type="button" class="title-link" id="signOut">Sign out</button>') + `
+      <div class="main"><div class="details"><div class="tabs" role="tablist">${tabs.map((t) => `<button type="button" class="tab" role="tab" aria-selected="${t[0] === tab}" data-tab="${t[0]}">${t[1]}</button>`).join('')}</div>${body}</div>${side}</div>`;
+    document.title = 'ELARA — My account';
+    wireInputs();
+    $('signOut').addEventListener('click', () => { try { localStorage.removeItem(SESSION_KEY); } catch (e) {} toast('Signed out.'); S.form = {}; go('login'); });
+    app.querySelectorAll('[data-move]').forEach((b) => b.addEventListener('click', () => {
+      const saved = read(SAVED_KEY, []), l = saved.splice(+b.dataset.move, 1)[0]; if (!l) return;
+      const cart = read(CART_KEY, []), same = cart.find((c) => c.id === l.id); if (same) same.qty = Math.min(5, same.qty + l.qty); else cart.push(l);
+      write(CART_KEY, cart); write(SAVED_KEY, saved); if (window.ElaraCart) ElaraCart.refreshBadge(); toast('Moved to your bag.'); viewDash();
+    }));
+    const pf = $('profileForm');
+    if (pf) {
+      const bd = $('pfBday'); bd.addEventListener('input', () => { const d = bd.value.replace(/\D/g, '').slice(0, 4); bd.value = d.length > 2 ? d.slice(0, 2) + ' / ' + d.slice(2) : d; });
+      pf.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = $('pfName').value.trim(), ph = $('pfPhone').value.trim(), em = $('pfEmail').value.trim(), b = bd.value.trim();
+        let bad = false;
+        if (name.length < 2) { setErr('pfName', 'Please enter your full name.'); bad = true; } else clearErr('pfName');
+        if (ph && !phoneOk(ph)) { setErr('pfPhone', 'Enter a valid mobile number.'); bad = true; } else clearErr('pfPhone');
+        if (em && !emailOk(em)) { setErr('pfEmail', 'That email address does not look right.'); bad = true; } else clearErr('pfEmail');
+        if (!ph && !em) { setErr('pfPhone', 'Keep at least a mobile number or an email.'); bad = true; }
+        const mm = b.match(/^(\d{2}) \/ (\d{2})$/); if (b && (!mm || +mm[1] < 1 || +mm[1] > 31 || +mm[2] < 1 || +mm[2] > 12)) { setErr('pfBday', 'Enter day and month, like 14 / 08.'); bad = true; } else clearErr('pfBday');
+        const list = accounts();
+        const clash = (k, v) => v && list.some((a) => a.id !== acc.id && a[k] === v);
+        if (!bad && clash('phone', ph ? '+880' + normPhone(ph) : null)) { setErr('pfPhone', 'Another account already uses this number.'); bad = true; }
+        if (!bad && clash('email', em.toLowerCase())) { setErr('pfEmail', 'Another account already uses this email.'); bad = true; }
+        if (bad) return;
+        const me = list.find((a) => a.id === acc.id);
+        me.name = name; me.phone = ph ? '+880' + normPhone(ph) : null; me.email = em ? em.toLowerCase() : null; me.birthday = b || null;
+        saveAccounts(list); toast('Changes saved.'); viewDash();
+      });
+    }
+  }
+
+  // ---------- routing ----------
+  function go(view, opts) {
+    S.view = view; clearInterval(S.timer);
+    if (view === 'login') viewLogin(); else if (view === 'create') viewCreate(); else if (view === 'code') viewCode(); else viewDash();
+    if (!(opts && opts.keepScroll)) window.scrollTo({ top: 0 });
+    const h = $('h1'); if (h && view !== 'login' && view !== 'code') h.focus({ preventScroll: true });
+    history.replaceState(null, '', view === 'create' ? '#create' : location.pathname.split('/').pop());
+  }
+  app.addEventListener('click', (e) => {
+    const g = e.target.closest('[data-go]'); if (g) { e.preventDefault(); const to = g.dataset.go; if (to === 'create') { S.form.crMethod = S.form.crMethod || S.method; } if (to === 'login' && S.form.crMethod) S.method = S.form.crMethod; go(to); return; }
+    const m = e.target.closest('[data-method]'); if (m) { if ($('crName')) { S.form.name = $('crName').value; S.form.bday = $('crBday').value; } const f = $('lgContact') || $('crContact'); if (f) { if ($('lgContact')) S.form.lg = ''; else S.form.cr = ''; } S.method = m.dataset.method; S.form.crMethod = S.method; S.form.lg = ''; S.form.cr = ''; go(S.view, { keepScroll: true }); return; }
+    const t = e.target.closest('[data-tab]'); if (t) { S.tab = t.dataset.tab; viewDash(); }
+  });
+
+  // start
+  if (session()) go('dash'); else go(location.hash === '#create' ? 'create' : 'login', { keepScroll: true });
+
+  // Nav dropdowns — identical behaviour to the homepage.
+  document.querySelectorAll('.nav-menu-wrap img').forEach((img) => { if (img.decode) img.decode().catch(() => {}); });
+  (function () {
+    const wrap = document.getElementById('navMenuWrap');
+    if (!wrap) return;
+    const items = document.querySelectorAll('.nav-item[data-menu]');
+    const panels = wrap.querySelectorAll('.nav-panel');
+    let closeTimer = null;
+    let openKey = null;
+
+    function showPanel(key, item) {
+      panels.forEach((p) => p.classList.toggle('active', p.dataset.panel === key));
+      const isMega = key !== 'best-sellers';
+      wrap.classList.toggle('mega', isMega);
+      wrap.classList.toggle('light', !isMega);
+      if (isMega) {
+        wrap.style.left = '0px';
+      } else {
+        const itemRect = item.getBoundingClientRect();
+        const navRect = document.querySelector('.nav').getBoundingClientRect();
+        wrap.style.left = Math.round(itemRect.left - navRect.left) + 'px';
+      }
+      const activeEl = wrap.querySelector('.nav-panel.active');
+      wrap.style.height = activeEl ? activeEl.offsetHeight + 'px' : 'auto';
+    }
+    function open(key, item) {
+      clearTimeout(closeTimer);
+      const wasOpen = wrap.classList.contains('open');
+      showPanel(key, item);
+      if (!wasOpen) { wrap.style.transition = 'none'; void wrap.offsetHeight; wrap.style.transition = ''; }
+      wrap.classList.add('open');
+      items.forEach((it) => it.classList.toggle('open', it.dataset.menu === key));
+      openKey = key;
+    }
+    function close() { wrap.classList.remove('open'); items.forEach((it) => it.classList.remove('open')); openKey = null; }
+    function scheduleClose() { clearTimeout(closeTimer); closeTimer = setTimeout(close, 150); }
+
+    items.forEach((item) => {
+      const key = item.dataset.menu;
+      item.addEventListener('mouseenter', () => open(key, item));
+      item.addEventListener('mouseleave', scheduleClose);
+      item.addEventListener('focusin', () => open(key, item));
+      item.querySelector('.nav-link').addEventListener('click', (e) => { e.preventDefault(); openKey === key ? close() : open(key, item); });
+    });
+    wrap.addEventListener('mouseenter', () => clearTimeout(closeTimer));
+    wrap.addEventListener('mouseleave', scheduleClose);
+    wrap.addEventListener('focusin', () => clearTimeout(closeTimer));
+    document.addEventListener('focusin', (e) => { if (openKey && !wrap.contains(e.target) && ![...items].some((it) => it.contains(e.target))) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    document.addEventListener('click', (e) => { if (openKey && !wrap.contains(e.target) && ![...items].some((it) => it.contains(e.target))) close(); });
+  })();
+</script>
+<script src="assets/cart-badge.js"></script>
+<script src="assets/search.js"></script>
+<script src="assets/soon.js"></script>
+</body>
+</html>

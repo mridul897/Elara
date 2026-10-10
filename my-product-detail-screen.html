@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELARA</title>
+<meta name="description" content="ELARA bag details: photos, colours, size, delivery and exchange, and customer reviews.">
+<meta name="theme-color" content="#FFFDF9">
+<link rel="icon" type="image/svg+xml" href="assets/home/favicon.svg">
+<!--
+  Product Detail Page — pixel-perfect build of Figma node 180:3356
+  (Elara Women's bag E-commerce project). 1440px artboard; below 1440 the whole
+  artboard scales down (same approach as index.html). Mobile layout
+  comes when it is designed in Figma.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script>
+  // The markup below is a Nafisa Tote template that the script at the bottom fills with the bag from ?p=.
+  // Keep it hidden until that has happened, so the template never flashes before the right bag.
+  document.documentElement.classList.add('pdp-boot');
+  setTimeout(function () { document.documentElement.classList.remove('pdp-boot'); }, 2500);
+</script>
+<style>
+  html.pdp-boot .breadcrumb, html.pdp-boot main { visibility: hidden; }
+  :root {
+    --bg-page: #fffdf9;
+    --bg-card: #f7f1e8;
+    --bg-panel: #f8f4ef;
+    --text: #4a4741;
+    --text-muted: #838280;
+    --text-faint: #a8a5a0;
+    --border-soft: rgba(74,71,65,0.25);
+    --accent: #2a72de;
+    --accent-soft: rgba(42,114,222,0.1);
+    --focus: #3184ff;
+    --danger-heart: #b4483f;
+    --r-large: 32px;
+    --r-media: 12px;
+    --r-small: 8px;
+    --r-pill: 999px;
+    --ease: cubic-bezier(.4,0,.2,1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { overflow-x: clip; }   /* clip, not hidden: hidden turns html and body into two scroll containers (double scrollbar) */
+  body { background: var(--bg-page); color: var(--text); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; background: none; border: none; cursor: pointer; color: inherit; }
+  img { display: block; }
+  .serif { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; }
+  .cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+
+  /* 1440px artboard, scaled down on narrower screens (never scales up) */
+  .page { position: relative; width: 1440px; margin: 0 auto; padding-top: 109px; zoom: var(--fit, 1); }
+  .abs { position: absolute; }
+
+  /* ===== Nav (22:641) — same component as the homepage ===== */
+  .nav { left: 0; top: 0; width: 1440px; height: 109px; padding: 10px; display: flex; align-items: center; justify-content: center; z-index: 20; }
+  .nav-inner { width: 100%; display: flex; gap: 144px; align-items: center; justify-content: center; padding: 0 37px; }
+  .nav-logo { position: relative; width: 222px; height: 101px; flex-shrink: 0; }
+  .nav-right { display: flex; gap: 104px; align-items: center; }
+  .nav-links { display: flex; gap: 32px; align-items: center; }
+  .nav-link { display: flex; gap: 6px; align-items: center; font-weight: 500; font-size: 16px; line-height: 1.5; text-transform: uppercase; white-space: nowrap; transition: background-color .15s var(--ease), color .15s var(--ease); }
+  .nav-link img { width: 16px; height: 16px; display: block; }
+  .nav-tools { display: flex; gap: 18px; align-items: center; }
+  .nav-icons { display: flex; gap: 20px; align-items: center; width: 58px; }
+  .ico20 { position: relative; width: 20px; height: 20px; flex-shrink: 0; overflow: clip; }
+  .ico20 img { position: absolute; display: block; }
+  /* Nav search / account icons: soft circle on hover, same cue as the cart pill */
+  .nav-icons .ico20 { overflow: visible; cursor: pointer; }
+  .nav-icons .ico20::before { content: ""; position: absolute; inset: -8px; border-radius: 50%; background: #f1e9dc; opacity: 0; transform: scale(.7); transition: opacity .15s cubic-bezier(.4,0,.2,1), transform .2s cubic-bezier(.4,0,.2,1); }
+  .nav-icons .ico20:hover::before, .nav-icons .ico20:focus-visible::before { opacity: 1; transform: scale(1); }
+  .nav-icons .ico20 img { z-index: 1; }
+  .nav-icons a.ico20 { display: block; }
+  .cart-btn { display: flex; gap: 10px; align-items: center; justify-content: center; height: 40px; padding: 10px 18px; border: 1px solid var(--text); border-radius: var(--r-pill); font-weight: 500; font-size: 16px; line-height: 1.5; text-transform: uppercase; white-space: nowrap; transition: background-color .15s var(--ease); }
+  .cart-btn:hover { background: var(--bg-card); }
+  .nav-item { position: relative; }
+  .nav-chev { transition: transform 220ms var(--ease); }
+  .nav-item.open .nav-chev { transform: rotate(180deg); }
+  .nav-menu-wrap { position: absolute; top: 99px; z-index: 10; background: var(--bg-page); box-shadow: 0 28px 56px rgba(28,27,26,0.12); opacity: 0; visibility: hidden; transform: translateY(-10px); transition: opacity 260ms var(--ease), transform 260ms var(--ease), visibility 0s linear 260ms, left 260ms var(--ease); pointer-events: none; overflow: hidden; }
+  .nav-menu-wrap.mega { left: 0; width: 1440px; border-radius: 0 0 var(--r-large) var(--r-large); }
+  .nav-menu-wrap.light { width: auto; border-radius: var(--r-large); }
+  .nav-menu-wrap.open { opacity: 1; visibility: visible; transform: translateY(0); transition: opacity 260ms var(--ease), transform 260ms var(--ease), height 320ms var(--ease), left 320ms var(--ease); pointer-events: auto; }
+  .nav-panel { display: none; padding: 48px 64px 56px; }
+  .nav-menu-wrap.light .nav-panel { padding: 20px; }
+  .nav-panel.active { display: block; animation: navPanelIn 240ms var(--ease); }
+  @keyframes navPanelIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .nav-menu-wrap.mega .nav-panel { padding: 0; }
+  .dd-panel { position: relative; width: 1440px; height: 360px; }
+  .dd-card { position: absolute; left: 82px; top: 56px; width: 332px; height: 248px; border-radius: var(--r-media); overflow: hidden; }
+  .dd-card .cover { border-radius: var(--r-media); transition: transform .4s var(--ease); }
+  .dd-card:hover .cover { transform: scale(1.05); }
+  .dd-card-fade { position: absolute; left: 50%; bottom: -14px; width: 604px; height: 83px; transform: translateX(-50%); pointer-events: none; }
+  .dd-card-fade i { position: absolute; inset: 0; filter: blur(52px); font-style: normal; }
+  .dd-card-fade i:first-child { background: rgba(40,40,40,0.53); }
+  .dd-card-fade i:last-child { background: rgba(40,40,40,0.88); mix-blend-mode: multiply; }
+  .dd-card-label { position: absolute; left: 14px; right: 14px; bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #fff; }
+  .dd-card-label:not(.two-line) > span:first-child { font-size: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dd-card-label img { width: 24px; height: 24px; flex-shrink: 0; }
+  .dd-card-label.two-line { flex-direction: column; align-items: flex-start; gap: 0; }
+  .dd-card-eyebrow { font-weight: 500; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; color: #d3d1ce; }
+  .dd-card-title { font-size: 16px; font-weight: 400; }
+  .dd-divider { position: absolute; left: 831px; top: 29px; width: 1px; height: 301.5px; }
+  .dd-list { position: absolute; left: 853px; top: 56px; width: 268px; display: flex; flex-direction: column; gap: 20px; }
+  .dd-list-group { display: flex; flex-direction: column; gap: 16px; }
+  .dd-list-coll { gap: 16px; }
+  .dd-row { display: flex; align-items: center; gap: 12px; color: var(--text); border-radius: var(--r-media); padding: 6px; margin: -6px; }
+  .dd-row:hover { background: var(--bg-card); }
+  .dd-row-thumb { position: relative; width: 48px; height: 48px; border-radius: 999px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-soft); }
+  .dd-row-thumb .cover { border-radius: 999px; }
+  .dd-row-thumb.icon { border: none; }
+  .dd-row-title { font-size: 18px; white-space: nowrap; }
+  .nm-simple-list { display: flex; flex-direction: column; gap: 2px; width: 280px; }
+  .nm-simple { padding: 12px 16px; border-radius: var(--r-media); font-size: 16px; color: var(--text); }
+  .nm-simple:hover { background: var(--bg-card); }
+
+  /* ===== Breadcrumb (184:1026) ===== */
+  .breadcrumb { display: flex; align-items: flex-start; gap: 6px; padding: 16px 0 0 64px; font-size: 12px; line-height: 1.5; color: var(--text-muted); }
+  .breadcrumb a:hover { color: var(--text); }
+  .breadcrumb [aria-current] { color: var(--text); }
+
+  /* ===== PDP Main (184:1034) ===== */
+  .pdp-main { display: flex; align-items: flex-start; gap: 64px; padding: 24px 128px 0; }
+
+  /* Gallery */
+  .gallery { width: 660px; flex-shrink: 0; }
+  .gallery-main { position: relative; width: 660px; height: 825px; border: 1px solid var(--border-soft); border-radius: var(--r-media); overflow: hidden; background: #f2ecde; }
+  .gallery-main { touch-action: pan-y; }
+  .gallery-main img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity .22s var(--ease); }
+  .gallery-arrow { position: absolute; top: 50%; z-index: 1; display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin-top: -22px; border: 1px solid var(--border-soft); border-radius: var(--r-pill); background: rgba(255,253,249,0.92); color: var(--text); transition: background-color .15s var(--ease), border-color .15s var(--ease), transform .15s var(--ease); }
+  .gallery-arrow:hover { background: var(--bg-page); border-color: var(--text); }
+  .gallery-arrow:active { transform: scale(.94); }
+  .gallery-main[data-at="start"] .gallery-arrow.prev, .gallery-main[data-at="end"] .gallery-arrow.next { opacity: 0; visibility: hidden; pointer-events: none; }
+  .gallery-arrow.prev { left: 16px; }
+  .gallery-arrow.next { right: 16px; }
+  .gallery-arrow svg { width: 18px; height: 18px; }
+  @media (prefers-reduced-motion: reduce) { .gallery-main img, .gallery-arrow { transition: none; } }
+  /* the size-guide picture is a square diagram — cropping it to 4:5 would cut the measurements, so it is shown whole */
+  .gallery-main.contain img { object-fit: contain; }
+  .thumbs { display: flex; gap: 8px; padding: 10px 20px; width: 660px; }
+  .thumb { position: relative; flex: 0 0 56px; width: 56px; height: 70px; border: 1px solid var(--border-soft); border-radius: var(--r-small); overflow: hidden; background: #f2ecde; padding: 0; }
+  .thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .thumb[aria-selected="true"] { border: 2px solid var(--accent); }
+  .thumb:not([aria-selected="true"]):hover { border-color: var(--text); }
+
+  /* Info */
+  .info { width: 460px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; }
+  .info-header { display: flex; flex-direction: column; gap: 8px; }
+  .title-block { display: flex; flex-direction: column; gap: 4px; }
+  .eyebrow { font-weight: 700; font-size: 12px; line-height: 1.5; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; }
+  .title-row { display: flex; align-items: flex-start; justify-content: space-between; }
+  .product-name { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 300; font-size: 36px; line-height: 1.1; letter-spacing: -1.8px; color: var(--text); min-width: 0; text-wrap: balance; }
+  .gallery.single .gallery-arrow, .gallery.single .thumbs { display: none; }
+  .product-name.long { font-size: 30px; letter-spacing: -1.4px; }
+  .price .was { font-size: 16px; color: var(--text-faint); text-decoration: line-through; margin-right: 8px; letter-spacing: 0; font-family: 'Inter', sans-serif; font-weight: 400; }
+  .wish { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; flex-shrink: 0; border: 1px solid var(--text); border-radius: var(--r-pill); font-size: 18px; line-height: 1.5; transition: background-color .15s var(--ease), color .15s var(--ease), border-color .15s var(--ease); }
+  .wish:hover { background: var(--bg-card); }
+  .wish[aria-pressed="true"] { color: var(--danger-heart); border-color: var(--danger-heart); }
+  .rating-row { display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 1.5; }
+  .rating-row .stars { width: 68px; height: 12px; }
+  .rating-row a { color: var(--accent); }
+  .rating-row a:hover { text-decoration: underline; }
+  .price { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 24px; line-height: 1.1; letter-spacing: -0.72px; color: var(--text); }
+
+  .trust { display: flex; flex-direction: column; gap: 8px; padding: 16px; background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--r-media); font-size: 14px; line-height: 1.5; }
+  .trust-row { display: flex; align-items: center; gap: 8px; color: var(--text-muted); }
+  .trust-row strong { font-weight: 500; color: var(--text); }
+  .trust-row .ic18 { width: 18px; height: 18px; flex-shrink: 0; }
+  .trust-row .ic16 { padding-top: 3px; flex-shrink: 0; }
+  .trust-row .ic16 img { width: 16px; height: 16px; }
+
+  .option { display: flex; flex-direction: column; gap: 8px; }
+  .option-label { display: flex; justify-content: space-between; font-size: 14px; line-height: 1.5; white-space: nowrap; }
+  .option-label .value { color: var(--text-muted); }
+  .swatches { display: flex; gap: 8px; }
+  .swatch { position: relative; width: 64px; height: 80px; padding: 0; border-radius: var(--r-small); overflow: hidden; background: var(--bg-card); }
+  .swatch img { width: 100%; height: 100%; object-fit: cover; }
+  .swatch::after { content: ""; position: absolute; inset: 0; border: 1px solid var(--border-soft); border-radius: inherit; transition: border-color .15s var(--ease); }
+  .swatch[aria-checked="true"]::after { border: 2px solid var(--accent); }
+  .swatch:not([aria-checked="true"]):hover::after { border-color: var(--text); }
+  .chips { display: flex; gap: 8px; }
+  .chip { display: flex; align-items: center; justify-content: center; height: 44px; min-width: 44px; padding: 0 14px; border: 1px solid var(--text); border-radius: var(--r-pill); font-size: 14px; line-height: 1.5; color: var(--text); white-space: nowrap; transition: background-color .15s var(--ease), border-color .15s var(--ease), color .15s var(--ease); }
+  .chip:not([aria-checked="true"]):not(:disabled):hover { background: var(--bg-card); }
+  .chip[aria-checked="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--focus); }
+  .chip:disabled { border-color: var(--border-soft); color: var(--text-faint); opacity: 0.6; cursor: not-allowed; }
+  .size-guide { font-size: 12px; line-height: 1.5; color: var(--accent); align-self: flex-start; }
+  .size-guide:hover { text-decoration: underline; }
+  .stepper { display: inline-flex; align-items: center; align-self: flex-start; border: 1px solid var(--text); border-radius: var(--r-pill); overflow: hidden; }
+  .stepper button { width: 40px; height: 40px; font-size: 16px; line-height: 1.5; color: var(--text); }
+  .stepper button:disabled { color: var(--text-faint); cursor: not-allowed; }
+  .stepper button:not(:disabled):hover { background: var(--bg-card); }
+  .stepper output { display: flex; align-items: center; justify-content: center; width: 32px; height: 40px; font-size: 14px; line-height: 1.5; }
+
+  .actions { display: flex; flex-direction: column; gap: 10px; padding-top: 8px; }
+  .btn { display: flex; align-items: center; justify-content: center; height: 50px; width: 100%; padding: 0 24px; border-radius: var(--r-pill); font-weight: 500; font-size: 15px; line-height: 1; white-space: nowrap; transition: background-color .15s var(--ease), border-color .15s var(--ease); }
+  .btn-outline { border: 1px solid var(--text); color: var(--text); }
+  .btn-outline:hover { background: var(--bg-card); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: #2056a6; }
+  .hint { font-size: 12px; line-height: 1.5; color: var(--text-faint); }
+
+  /* ===== Details wrap (185:1071) ===== */
+  .details-wrap { padding: 24px 0 0 128px; }
+  .details { width: 820px; padding: 24px 64px 0; border-top: 1px solid var(--border-soft); }
+  .acc { border-bottom: 1px solid var(--border-soft); width: 692px; }
+  .acc summary { display: flex; align-items: center; justify-content: space-between; min-height: 61px; padding: 16px 0; list-style: none; cursor: pointer; }
+  .acc summary::-webkit-details-marker { display: none; }
+  .acc-title { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 17px; line-height: 1.1; color: var(--text); white-space: nowrap; }
+  .acc-sign { font-size: 19px; line-height: 1.5; color: var(--text-muted); }
+  .acc-sign::before { content: "+"; }
+  .acc[open] .acc-sign::before { content: "–"; }
+  .acc-body { padding-bottom: 16px; font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+
+  /* ===== Reviews (full section, below the product details) ===== */
+  .rv { padding: 72px 128px 0; --star-on: #D49A1E; --star-off: #DDD5C6; }
+  .rv-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border-soft); }
+  .rv-title { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 300; font-size: 40px; line-height: 1.1; letter-spacing: -1.6px; color: var(--text); }
+  .rv-lede { margin-top: 6px; font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+  .rv-btn { display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 24px; border: 1px solid var(--text); border-radius: var(--r-pill); font-size: 14px; font-weight: 500; line-height: 1; white-space: nowrap; color: var(--text); transition: background-color .15s var(--ease), color .15s var(--ease); }
+  .rv-btn:hover { background: var(--bg-card); }
+  .rv-btn.solid { background: var(--text); color: var(--bg-page); }
+  .rv-btn.solid:hover { background: #2f2d29; }
+
+  .rv-stars { --s: 16px; display: inline-block; flex-shrink: 0; position: relative; width: calc(var(--s) * 5); height: var(--s); vertical-align: middle;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23DDD5C6' d='M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z'/%3E%3C/svg%3E") repeat-x 0 0 / var(--s) var(--s); }
+  .rv-stars::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--v) / 5 * 100%);
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23D49A1E' d='M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z'/%3E%3C/svg%3E") repeat-x 0 0 / var(--s) var(--s); }
+
+  .rv-summary { display: grid; grid-template-columns: 250px minmax(0, 1fr) 300px; gap: 72px; padding: 36px 0; border-bottom: 1px solid var(--border-soft); }
+  .rv-overall { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+  .rv-score { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 300; font-size: 76px; line-height: 1; letter-spacing: -3.4px; color: var(--text); }
+  .rv-overall .rv-stars { --s: 22px; }
+  .rv-count { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+  .rv-reco { display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 14px; line-height: 1.4; color: var(--text); }
+  .rv-reco svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--accent); }
+  .rv-col-title { margin-bottom: 14px; font-size: 12px; font-weight: 700; line-height: 1.5; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
+  .rv-dist { display: flex; flex-direction: column; gap: 2px; }
+  .rv-dist-row { display: grid; grid-template-columns: 48px minmax(0, 1fr) 36px; align-items: center; gap: 14px; width: 100%; padding: 6px 8px; margin: 0 -8px; border-radius: 8px; font-size: 14px; line-height: 1.4; color: var(--text); text-align: left; transition: background-color .15s var(--ease); }
+  .rv-dist-row:hover { background: var(--bg-card); }
+  .rv-dist-row[aria-pressed="true"] { background: var(--accent-soft); }
+  .rv-dist-row .lbl { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+  .rv-dist-row .lbl svg { width: 13px; height: 13px; color: var(--star-on); }
+  .rv-bar { position: relative; height: 8px; border-radius: 99px; background: #ece5d8; overflow: hidden; }
+  .rv-bar i { position: absolute; left: 0; top: 0; bottom: 0; width: var(--w, 0%); border-radius: inherit; background: var(--text); transition: width .5s var(--ease); }
+  .rv-dist-row .n { text-align: right; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+  .rv-sub { display: flex; flex-direction: column; gap: 16px; }
+  .rv-sub-row { display: grid; grid-template-columns: 1fr 36px; gap: 6px 12px; font-size: 14px; line-height: 1.4; }
+  .rv-sub-row .rv-bar { grid-column: 1 / -1; height: 6px; }
+  .rv-sub-row b { font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .rv-form { margin: 32px 0 0; padding: 32px; max-width: 760px; background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--r-media); }
+  .rv-form[hidden] { display: none; }
+  .rv-form h3 { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 24px; line-height: 1.1; letter-spacing: -0.72px; margin-bottom: 20px; }
+  .rv-field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+  .rv-field > label, .rv-field > .lab { font-size: 14px; font-weight: 500; line-height: 1.4; }
+  .rv-field .opt { font-weight: 400; color: var(--text-muted); }
+  .rv-input { width: 100%; padding: 13px 16px; border: 1px solid var(--border-soft); border-radius: 12px; background: var(--bg-page); font: inherit; font-size: 15px; line-height: 1.5; color: var(--text); transition: border-color .15s var(--ease), box-shadow .15s var(--ease); }
+  textarea.rv-input { resize: vertical; min-height: 120px; }
+  .rv-input::placeholder { color: var(--text-faint); }
+  .rv-input:hover { border-color: var(--text-muted); }
+  .rv-input:focus { outline: none; border-color: var(--focus); box-shadow: 0 0 0 3px rgba(49,132,255,0.18); }
+  .rv-field.bad .rv-input, .rv-field.bad .rv-rate { border-color: var(--danger-heart); }
+  .rv-err { min-height: 0; font-size: 12px; line-height: 1.4; color: var(--danger-heart); }
+  .rv-err:empty { display: none; }
+  .rv-meta-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-faint); }
+  .rv-rate { display: inline-flex; align-self: flex-start; gap: 2px; padding: 2px; border: 1px solid transparent; border-radius: 10px; }
+  .rv-rate button { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: var(--star-off); transition: color .12s var(--ease), transform .12s var(--ease); }
+  .rv-rate button svg { width: 30px; height: 30px; }
+  .rv-rate button.on { color: var(--star-on); }
+  .rv-rate button:hover { transform: scale(1.1); }
+  .rv-rate-note { font-size: 13px; color: var(--text-muted); min-height: 20px; }
+  .rv-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .rv-yesno { display: flex; gap: 8px; }
+  .rv-yesno button { height: 48px; padding: 0 22px; border: 1px solid var(--text); border-radius: var(--r-pill); font-size: 14px; transition: background-color .15s var(--ease), border-color .15s var(--ease), color .15s var(--ease); }
+  .rv-yesno button:hover { background: var(--bg-card); }
+  .rv-yesno button[aria-checked="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--focus); }
+  .rv-form-actions { display: flex; gap: 12px; margin-top: 8px; }
+  .rv-thanks { display: flex; align-items: center; gap: 10px; margin-top: 24px; padding: 14px 18px; max-width: 760px; border: 1px solid var(--border-soft); border-radius: var(--r-media); background: var(--bg-panel); font-size: 14px; }
+  .rv-thanks[hidden] { display: none; }
+  .rv-thanks svg { width: 18px; height: 18px; color: var(--accent); flex-shrink: 0; }
+
+  .rv-tools { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 28px 0 8px; }
+  .rv-kws { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .rv-kws .lab { margin-right: 4px; font-size: 14px; color: var(--text-muted); }
+  .rv-kw { height: 36px; padding: 0 14px; border: 1px solid var(--border-soft); border-radius: var(--r-pill); font-size: 13px; line-height: 1; color: var(--text); transition: background-color .15s var(--ease), border-color .15s var(--ease); }
+  .rv-kw:hover { background: var(--bg-card); border-color: var(--text-muted); }
+  .rv-kw[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--focus); }
+  .rv-kw small { margin-left: 4px; color: var(--text-faint); font-size: 12px; }
+  .rv-sort { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text-muted); white-space: nowrap; }
+  .rv-sort select { height: 40px; padding: 0 34px 0 14px; border: 1px solid var(--border-soft); border-radius: 10px; background: var(--bg-page) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%234a4741' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E") no-repeat right 10px center / 14px; font: inherit; font-size: 14px; color: var(--text); appearance: none; cursor: pointer; }
+  .rv-status { display: flex; align-items: center; gap: 12px; padding: 8px 0 16px; font-size: 13px; color: var(--text-muted); border-bottom: 1px solid var(--border-soft); }
+  .rv-status button { color: var(--accent); font-size: 13px; }
+  .rv-status button:hover { text-decoration: underline; }
+
+  .rv-item { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 40px; padding: 28px 0; border-bottom: 1px solid var(--border-soft); }
+  .rv-who { display: flex; flex-direction: column; gap: 4px; font-size: 13px; line-height: 1.5; color: var(--text-muted); }
+  .rv-avatar { width: 48px; height: 48px; margin-bottom: 8px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border-soft); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 500; color: var(--text); object-fit: cover; }
+  .rv-name { font-size: 15px; font-weight: 500; line-height: 1.4; color: var(--text); }
+  .rv-verified { display: flex; align-items: center; gap: 6px; color: var(--text); }
+  .rv-verified svg { width: 14px; height: 14px; color: var(--accent); }
+  .rv-yours { align-self: flex-start; padding: 2px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+  .rv-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .rv-date { font-size: 13px; color: var(--text-muted); }
+  .rv-headline { margin-top: 10px; font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 20px; line-height: 1.25; letter-spacing: -0.4px; color: var(--text); }
+  .rv-body { margin-top: 8px; max-width: 680px; font-size: 15px; line-height: 1.65; color: var(--text); }
+  .rv-body mark { background: rgba(212,154,30,0.22); color: inherit; border-radius: 3px; }
+  .rv-rec { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 13px; color: var(--text); }
+  .rv-rec svg { width: 14px; height: 14px; color: var(--accent); }
+  .rv-help { display: flex; align-items: center; gap: 12px; margin-top: 16px; font-size: 13px; color: var(--text-muted); }
+  .rv-help button { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border: 1px solid var(--border-soft); border-radius: var(--r-pill); font-size: 13px; color: var(--text); transition: background-color .15s var(--ease), border-color .15s var(--ease); }
+  .rv-help button:hover { background: var(--bg-card); border-color: var(--text-muted); }
+  .rv-help button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--focus); }
+  .rv-help button svg { width: 14px; height: 14px; }
+  .rv-empty { padding: 56px 0; text-align: center; font-size: 15px; color: var(--text-muted); }
+  .rv-more { display: flex; justify-content: center; padding: 32px 0 0; }
+  @media (prefers-reduced-motion: reduce) { .rv-bar i, .rv-rate button { transition: none; } }
+
+  /* ===== Contact (186:591) ===== */
+  .contact-wrap { padding: 56px 128px 0; }
+  .contact { position: relative; display: flex; align-items: center; gap: 32px; padding: 28px 40px 28px 36px; overflow: hidden; background: linear-gradient(100deg, #f4ebdc 0%, #f9f4ea 55%, #fffdf9 100%); border: 1px solid var(--border-soft); border-radius: 20px; box-shadow: 0 12px 32px rgba(74,71,65,0.08); }
+  .contact::before { content: ""; position: absolute; right: -60px; top: -90px; width: 280px; height: 280px; border-radius: 50%; background: radial-gradient(circle, rgba(37,211,102,0.16), rgba(37,211,102,0) 70%); pointer-events: none; }
+  .wa-icon { position: relative; display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; flex-shrink: 0; border-radius: var(--r-pill); background: #25d366; box-shadow: 0 8px 20px rgba(37,211,102,0.35); }
+  .wa-icon::after { content: ""; position: absolute; inset: -7px; border-radius: inherit; border: 1.5px solid rgba(37,211,102,0.45); animation: waPulse 2.6s ease-out infinite; }
+  @keyframes waPulse { 0% { transform: scale(.88); opacity: .9; } 100% { transform: scale(1.25); opacity: 0; } }
+  .wa-icon img { width: 30px; height: 30px; }
+  .contact-text { position: relative; flex: 1; display: flex; flex-direction: column; gap: 6px; line-height: 1.4; }
+  .contact-text strong { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 24px; line-height: 1.15; letter-spacing: -0.72px; color: var(--text); }
+  .contact-text span { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-muted); }
+  .contact-text span::before { content: ""; width: 8px; height: 8px; flex-shrink: 0; border-radius: 50%; background: #25d366; box-shadow: 0 0 0 3px rgba(37,211,102,0.2); }
+  .contact-link { position: relative; display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 26px; border-radius: var(--r-pill); background: #1f9d57; color: #fff; font-size: 15px; font-weight: 500; line-height: 1; white-space: nowrap; box-shadow: 0 8px 18px rgba(31,157,87,0.28); transition: background-color .2s var(--ease), transform .2s var(--ease), box-shadow .2s var(--ease); }
+  .contact-link i { font-style: normal; display: inline-block; transition: transform .25s var(--ease); }
+  .contact-link:hover { background: #178747; transform: translateY(-1px); box-shadow: 0 12px 24px rgba(31,157,87,0.34); }
+  .contact-link:hover i { transform: translateX(4px); }
+  @media (prefers-reduced-motion: reduce) { .wa-icon::after { animation: none; opacity: 0; } .contact-link, .contact-link i { transition: none; } }
+
+  /* ===== Related (186:600) ===== */
+  .related { padding: 48px 192px; display: flex; flex-direction: column; gap: 16px; }
+  .related h2 { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 24px; line-height: 1.1; letter-spacing: -0.72px; color: var(--text); }
+  .related-cards { display: flex; gap: 16px; }
+  .rcard { display: flex; flex-direction: column; gap: 8px; width: 180px; }
+  .rcard-media { position: relative; height: 225px; border: 1px solid var(--border-soft); border-radius: var(--r-media); overflow: hidden; }
+  .rcard-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .4s var(--ease); }
+  .rcard:hover .rcard-media img { transform: scale(1.04); }
+  .rcard-meta { display: flex; flex-direction: column; gap: 2px; font-size: 13px; line-height: 20px; color: var(--text); }
+  .rcard-meta b { font-weight: 500; }
+
+  /* Add-to-bag confirmation (not in Figma yet — minimal feedback so the button is not dead) */
+  .toast { position: fixed; left: 50%; bottom: 32px; z-index: 60; transform: translate(-50%, 12px); opacity: 0; pointer-events: none; display: flex; align-items: center; gap: 16px; padding: 14px 20px; background: var(--text); color: var(--bg-page); border-radius: var(--r-pill); font-size: 14px; line-height: 1.5; transition: opacity .26s var(--ease), transform .26s var(--ease); }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+  .toast a { font-weight: 500; text-decoration: underline; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="abs nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo" aria-label="ELARA home"><img class="cover" src="assets/home/logo.webp" alt="ELARA"></a>
+      <div class="nav-right">
+        <nav class="nav-links" aria-label="Primary">
+          <div class="nav-item" data-menu="new-arrivals"><a href="#" class="nav-link">New Arrivals <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="bags"><a href="#" class="nav-link">Bags <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="collections"><a href="#" class="nav-link">Collections <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="best-sellers"><a href="#" class="nav-link">Best Sellers <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <a href="my-contact-screen.html" class="nav-link">Contact Us</a>
+        </nav>
+        <div class="nav-tools">
+          <div class="nav-icons">
+            <button class="ico20" aria-label="Search"><img src="assets/home/icon-search.svg" alt="" style="inset:0;width:20px;height:20px;"></button>
+            <a href="my-account.html" class="ico20" aria-label="Account"><img src="assets/home/icon-account.svg" alt="" style="left:22.27%;top:8.33%;width:57.44%;height:82.55%;"></a>
+          </div>
+          <a href="my-cart-screen.html" class="cart-btn">My cart
+            <span class="ico20"><img src="assets/home/icon-cart.svg" alt="" style="left:5.21%;top:5.21%;width:87.63%;height:89.58%;"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-menu-wrap" id="navMenuWrap">
+      <div class="nav-panel" data-panel="new-arrivals">
+        <div class="dd-panel">
+          <a href="my-product-detail-screen.html?p=leather-tote-bag" class="dd-card">
+            <img class="cover" src="assets/home/dd-na-card-1.webp" alt="Leather Tote Bag">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Leather Tote Bag</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <a href="my-product-detail-screen.html?p=aveline-convertible-tote" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-na-card-2.webp" alt="Aveline Convertible Tote">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Aveline Convertible Tote</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
+          <div class="dd-list">
+            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-1.webp" alt=""></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
+            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-2.webp" alt=""></span><span class="dd-row-title">Sienna Structured Purse</span></a>
+            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-3.webp" alt=""></span><span class="dd-row-title">Isla Bags</span></a>
+            <a href="my-plp-screen.html?collection=new" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All New Arrivals</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="bags">
+        <div class="dd-panel">
+          <a href="my-product-detail-screen.html?p=suede-crossbody" class="dd-card">
+            <img class="cover" src="assets/home/dd-bags-card-1.webp" alt="Cross Body Bags">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Cross Body Bags</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <a href="my-product-detail-screen.html?p=structured-work-satchel" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-bags-card-2.webp" alt="Work &amp; Travel">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Work &amp; Travel</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
+          <div class="dd-list">
+            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-1.webp" alt=""></span><span class="dd-row-title">Tote</span></a>
+            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-2.webp" alt=""></span><span class="dd-row-title">Shoulder</span></a>
+            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-3.webp" alt=""></span><span class="dd-row-title">Mini</span></a>
+            <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All Category Bags</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="collections">
+        <div class="dd-panel">
+          <a href="#coming-soon" data-soon="Our Signature Pieces" class="dd-card">
+            <img class="cover" src="assets/home/dd-coll-card-1.webp" alt="Our Signature Pieces">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label two-line"><span class="dd-card-eyebrow">Signature</span><span class="dd-card-title">Our Signature Pieces</span></div>
+          </a>
+          <a href="#coming-soon" data-soon="Everyday Essentials" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-coll-card-2.webp" alt="Everyday Essentials">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label two-line"><span class="dd-card-eyebrow">Everyday</span><span class="dd-card-title">Everyday Essentials</span></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="" style="left:826px;">
+          <div class="dd-list dd-list-coll" style="left:850px; top:92px;">
+            <div class="dd-list-group">
+              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-1.webp" alt=""></span><span class="dd-row-title">The Evening Edit</span></a>
+              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-2.webp" alt=""></span><span class="dd-row-title">Designed for Work</span></a>
+            </div>
+            <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-see-all.svg" alt=""></span><span class="dd-row-title">See All Collections</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="best-sellers">
+        <div class="nm-simple-list">
+          <a href="my-plp-screen.html" class="nm-simple">All Best Sellers</a>
+          <a href="my-plp-screen.html" class="nm-simple">Customer Favorites</a>
+          <a href="my-plp-screen.html" class="nm-simple">Most Loved</a>
+          <a href="my-plp-screen.html" class="nm-simple">Trending Now</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="index.html">Home</a><span aria-hidden="true">/</span>
+    <a href="my-plp-screen.html">Bags</a><span aria-hidden="true">/</span>
+    <a href="my-plp-screen.html?category=tote" id="crumbCat">Tote</a><span aria-hidden="true">/</span>
+    <span aria-current="page" id="crumbName"></span>
+  </nav>
+
+  <main>
+    <div class="pdp-main">
+
+      <!-- ===== Gallery ===== -->
+      <div class="gallery">
+        <div class="gallery-main" id="mainPhoto" data-at="start">
+          <img id="mainPhotoImg" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" style="opacity:0">
+          <button type="button" class="gallery-arrow prev" id="galleryPrev" aria-label="Previous image"><svg viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M11 3 5 9l6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="gallery-arrow next" id="galleryNext" aria-label="Next image"><svg viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M7 3l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <span class="sr-only" id="galleryStatus" role="status" aria-live="polite"></span>
+        </div>
+        <div class="thumbs" id="thumbs" role="tablist" aria-label="Product images"></div>
+      </div>
+
+      <!-- ===== Info ===== -->
+      <div class="info">
+        <div class="info-header">
+          <div class="title-block">
+            <p class="eyebrow" id="eyebrow">Tote Bags · Premium Leather</p>
+            <div class="title-row">
+              <h1 class="product-name"></h1>
+              <button class="wish" id="wishBtn" aria-pressed="false" aria-label="Save to wishlist">♡</button>
+            </div>
+          </div>
+          <div class="rating-row">
+            <img class="stars" src="assets/pdp/ad418.svg" alt="" aria-hidden="true">
+            <span id="ratingScore">4.8</span>
+            <a href="#reviews" id="ratingLink">126 reviews</a>
+          </div>
+          <p class="price" id="price">Tk. 4,500/-</p>
+        </div>
+
+        <div class="trust">
+          <div class="trust-row"><img class="ic18" src="assets/pdp/23227.svg" alt=""><p><strong>Dhaka Tk. 60</strong> (1–3 days) · <strong>Outside Dhaka Tk. 120</strong> (3–5 days)</p></div>
+          <div class="trust-row"><img class="ic18" src="assets/pdp/23227.svg" alt=""><p><strong>Free over Tk. 3,000</strong></p></div>
+          <div class="trust-row"><span class="ic16"><img src="assets/pdp/0b065.svg" alt=""></span><p>Cash on Delivery available · bKash · Nagad · Card</p></div>
+          <div class="trust-row"><span class="ic16"><img src="assets/pdp/f3c2e.svg" alt=""></span><p>Exchange within 7 days — see policy below</p></div>
+        </div>
+
+        <div class="option" role="radiogroup" aria-label="Colour">
+          <div class="option-label"><span>Colour</span><span class="value" id="colourValue">Camel</span></div>
+          <div class="swatches" id="swatches"></div>
+        </div>
+
+        <div class="option" role="radiogroup" aria-label="Size">
+          <div class="option-label"><span>Size</span><span class="value" id="sizeNote">31 × 24 × 12 cm — about the width of an A4 notebook</span></div>
+          <div class="chips">
+            <button class="chip" role="radio" aria-checked="false">Small</button>
+            <button class="chip" role="radio" aria-checked="true">Medium</button>
+            <button class="chip" role="radio" aria-checked="false" disabled title="Out of stock">Large</button>
+          </div>
+          <a href="#size-guide" class="size-guide" id="sizeGuideLink">See full size guide</a>
+        </div>
+
+        <div class="option">
+          <div class="option-label"><span>Quantity</span></div>
+          <div class="stepper">
+            <button id="qtyMinus" aria-label="Decrease quantity" disabled>–</button>
+            <output id="qtyValue" aria-live="polite">1</output>
+            <button id="qtyPlus" aria-label="Increase quantity">+</button>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-outline" id="addBtn">Add to Bag</button>
+          <button type="button" class="btn btn-accent" id="buyBtn">Buy Now</button>
+          <p class="hint">Add to Bag keeps shopping. Buy Now takes just this item straight to checkout — your bag stays as it is.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Details ===== -->
+    <div class="details-wrap">
+      <div class="details">
+        <details class="acc" open>
+          <summary><span class="acc-title">Description &amp; materials</span><span class="acc-sign" aria-hidden="true"></span></summary>
+          <p class="acc-body" id="descBody">Full-grain leather exterior with a brushed brass hardware finish. Structured base holds its shape when set down. Interior fully lined with a zip pocket and two slip pockets.</p>
+        </details>
+        <details class="acc" id="size-guide">
+          <summary><span class="acc-title">Size &amp; dimensions</span><span class="acc-sign" aria-hidden="true"></span></summary>
+          <p class="acc-body" id="dimBody">Width 31 cm · Height 24 cm · Depth 12 cm · Strap drop 22 cm · Weight 780 g</p>
+        </details>
+        <details class="acc">
+          <summary><span class="acc-title">Care instructions</span><span class="acc-sign" aria-hidden="true"></span></summary>
+          <p class="acc-body" id="careBody">Wipe clean with a soft, dry cloth. Avoid prolonged sun exposure and moisture. Store with the dust bag provided.</p>
+        </details>
+        <details class="acc">
+          <summary><span class="acc-title">Shipping &amp; returns</span><span class="acc-sign" aria-hidden="true"></span></summary>
+          <p class="acc-body">Dhaka: 1–3 working days, Tk. 60. Outside Dhaka: 3–5 working days, Tk. 120. Free delivery on orders over Tk. 3,000. Exchange accepted within 7 days of delivery for an unused item in original packaging — message us to start an exchange, our team will guide you through the next step.</p>
+        </details>
+      </div>
+    </div>
+
+    <!-- ===== Reviews ===== -->
+    <section class="rv" id="reviews" aria-labelledby="rvTitle">
+      <div class="rv-head">
+        <div>
+          <h2 class="rv-title" id="rvTitle">Customer reviews</h2>
+          <p class="rv-lede" id="rvLede">What people who bought this bag say about it.</p>
+        </div>
+        <button type="button" class="rv-btn solid" id="rvWriteBtn" aria-expanded="false" aria-controls="rvForm">Write a review</button>
+      </div>
+
+      <div class="rv-summary">
+        <div class="rv-overall">
+          <span class="rv-score" id="rvScore">4.8</span>
+          <span class="rv-stars" id="rvStars" style="--v:4.8" role="img" aria-label="4.8 out of 5"></span>
+          <span class="rv-count" id="rvCount">Based on 126 reviews</span>
+          <span class="rv-reco" id="rvReco"></span>
+        </div>
+        <div>
+          <p class="rv-col-title">Rating snapshot</p>
+          <div class="rv-dist" id="rvDist"></div>
+        </div>
+        <div>
+          <p class="rv-col-title">Average ratings</p>
+          <div class="rv-sub" id="rvSub"></div>
+        </div>
+      </div>
+
+      <form class="rv-form" id="rvForm" hidden novalidate>
+        <h3>Write a review for <span id="rvFormName"></span></h3>
+        <div class="rv-field" id="fldRate">
+          <span class="lab" id="rvRateLab">Your rating</span>
+          <div class="rv-rate" id="rvRate" role="radiogroup" aria-labelledby="rvRateLab"></div>
+          <span class="rv-rate-note" id="rvRateNote"></span>
+          <p class="rv-err" id="errRate"></p>
+        </div>
+        <div class="rv-field" id="fldTitle">
+          <label for="rvHeadline">Headline</label>
+          <input class="rv-input" id="rvHeadline" maxlength="60" placeholder="Sum it up in a few words" autocomplete="off">
+          <p class="rv-err" id="errTitle"></p>
+        </div>
+        <div class="rv-field" id="fldText">
+          <label for="rvText">Your review</label>
+          <textarea class="rv-input" id="rvText" maxlength="800" placeholder="What did you like or dislike? How is the quality, size and colour in person?"></textarea>
+          <div class="rv-meta-row"><span class="rv-err" id="errText"></span><span id="rvTextCount">0 / 800</span></div>
+        </div>
+        <div class="rv-grid2">
+          <div class="rv-field" id="fldName">
+            <label for="rvName">Your name</label>
+            <input class="rv-input" id="rvName" maxlength="40" placeholder="First name and last initial" autocomplete="name">
+            <p class="rv-err" id="errName"></p>
+          </div>
+          <div class="rv-field">
+            <span class="lab" id="rvRecLab">Would you recommend this bag?</span>
+            <div class="rv-yesno" role="radiogroup" aria-labelledby="rvRecLab">
+              <button type="button" role="radio" aria-checked="true" data-v="1">Yes</button>
+              <button type="button" role="radio" aria-checked="false" data-v="0">No</button>
+            </div>
+          </div>
+        </div>
+        <div class="rv-form-actions">
+          <button type="submit" class="rv-btn solid">Submit review</button>
+          <button type="button" class="rv-btn" id="rvCancel">Cancel</button>
+        </div>
+      </form>
+      <p class="rv-thanks" id="rvThanks" hidden role="status"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M5.2 8.2l1.9 1.9 3.7-3.9"/></svg><span>Thank you. Your review is now on this page.</span></p>
+
+      <div class="rv-tools">
+        <div class="rv-kws" id="rvKws" role="group" aria-label="Filter by topic"></div>
+        <label class="rv-sort">Sort by
+          <select id="rvSort">
+            <option value="recent">Most recent</option>
+            <option value="helpful">Most helpful</option>
+            <option value="high">Highest rated</option>
+            <option value="low">Lowest rated</option>
+          </select>
+        </label>
+      </div>
+      <div class="rv-status" id="rvStatus" role="status" aria-live="polite"></div>
+      <div id="rvList"></div>
+      <div class="rv-more"><button type="button" class="rv-btn" id="rvMore">Show more reviews</button></div>
+    </section>
+
+    <!-- ===== Contact ===== -->
+    <div class="contact-wrap">
+      <div class="contact">
+        <span class="wa-icon"><img src="assets/pdp/11704.svg" alt=""></span>
+        <div class="contact-text">
+          <strong>Have a question about this bag?</strong>
+          <span>Message us on WhatsApp — we reply within 1 business day.</span>
+        </div>
+        <a href="my-contact-screen.html" class="contact-link">Chat on WhatsApp <i aria-hidden="true">→</i></a>
+      </div>
+    </div>
+
+    <!-- ===== Related ===== -->
+    <section class="related" aria-label="You may also like">
+      <h2>You may also like</h2>
+      <div class="related-cards" id="relatedCards">
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toastText">Added to your bag.</span><a href="my-cart-screen.html">View bag</a></div>
+
+<script src="assets/products.js"></script>
+<script>
+  // Below 1440 only: shrink the artboard to the viewport (never scales up).
+  function fit() { document.documentElement.style.setProperty('--fit', Math.min(1, document.documentElement.clientWidth / 1440)); }
+  fit();
+  new ResizeObserver(fit).observe(document.documentElement);
+
+  // ----- which bag, which colour -----------------------------------------------------------------------------
+  // my-product-detail-screen.html?p=<id>&colour=<colour id>. Data: assets/products.js (generated from the Figma PDP frames).
+  const ALL = window.ELARA_PRODUCTS || [];
+  const query = new URLSearchParams(location.search);
+  const product = ALL.find((x) => x.id === query.get('p')) || ALL[0];
+  let colour = product.colours.find((c) => c.id === query.get('colour')) || product.colours[0];
+  const money = (n) => 'Tk. ' + n.toLocaleString('en-US') + '/-';
+  const $ = (id) => document.getElementById(id);
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const crumb = { tote: 'Tote', shoulder: 'Shoulder', crossbody: 'Crossbody', mini: 'Mini', 'travel-work': 'Travel & Work' };
+
+  // ----- static facts for this bag ---------------------------------------------------------------------------
+  document.title = 'ELARA — ' + product.name;
+  $('crumbCat').textContent = crumb[product.cat] || product.crumb;
+  $('crumbCat').href = 'my-plp-screen.html?category=' + product.cat;
+  $('crumbName').textContent = product.name;
+  $('eyebrow').textContent = product.eyebrow;
+  $('ratingScore').textContent = product.rating.toFixed(1);
+  $('ratingLink').textContent = product.reviews + ' reviews';
+  $('price').innerHTML = (product.was ? '<span class="was">' + money(product.was) + '</span>' : '') + money(product.price);
+  const [dw, dh, dd] = product.dims;
+  $('sizeNote').textContent = dw + ' × ' + dh + ' × ' + dd + ' cm — ' + (product.nafisa ? product.fits : product.fits);
+  $('descBody').textContent = product.desc;
+  $('dimBody').textContent = 'Width ' + dw + ' cm · Height ' + dh + ' cm · Depth ' + dd + ' cm';
+  $('careBody').textContent = product.care;
+  // three other bags from the same category
+  (function () {
+    const same = ALL.filter((x) => x.cat === product.cat && x.id !== product.id);
+    const others = same.concat(ALL.filter((x) => x.cat !== product.cat && x.id !== product.id));
+    const start = Math.max(0, ALL.indexOf(product)) % Math.max(1, same.length);
+    const pick = same.slice(start).concat(same.slice(0, start)).concat(others).slice(0, 3);
+    $('relatedCards').innerHTML = pick.map((x) => '<a class="rcard" href="my-product-detail-screen.html?p=' + x.id + '"><div class="rcard-media"><img src="' + x.colours[0].card + '" alt="' + esc(x.name) + '" loading="lazy"></div><div class="rcard-meta"><span>' + esc(x.name) + '</span><b>' + money(x.price) + '</b></div></a>').join('');
+  })();
+
+  // ----- reviews ---------------------------------------------------------------------------------------------
+  // Placeholder review data, generated per bag (seeded by product id so it is stable). The star counts add up to
+  // product.reviews and average to product.rating. A review written on this page is kept in localStorage only.
+  (function () {
+    const LS_R = 'elara.reviews.v1', LS_V = 'elara.reviewVotes.v1';
+    const rd = (k, f) => { try { return JSON.parse(localStorage.getItem(k)) || f; } catch (e) { return f; } };
+    const wr = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+
+    let seed = 7; for (const ch of product.id) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
+    const rand = (() => { let a = seed; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; })();
+    const shuffle = (arr) => { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
+
+    const TEXTS = {
+      5: [
+        ['Even better in person', 'The colour and finish are richer than the photos. Stitching is neat and the hardware feels solid.'],
+        ['My everyday bag now', 'Fits my phone, wallet, keys and a small water bottle without looking bulky. I have used it every day this month.'],
+        ['Worth every taka', 'The leather feels premium and the shape holds well. I got so many compliments at work.'],
+        ['The perfect gift', 'Bought it for my sister’s birthday and she loved it. It came in a neat dust bag, nicely packed.'],
+        ['Great quality', 'Light enough to carry all day and the strap sits comfortably. Very happy with the quality for the price.'],
+        ['Exactly as pictured', 'No surprises, it looks just like the photos. The zip runs smoothly and the lining is clean.'],
+        ['Beautiful bag', 'Elegant without being flashy. It goes with both my office clothes and casual outfits.'],
+        ['Fast delivery, lovely bag', 'Arrived in two days in Dhaka. The bag is sturdy and the finish is very smooth.'],
+      ],
+      4: [
+        ['Very good, one small gripe', 'Lovely quality and it looks great. I wish the inside had one more pocket, but that is a small thing.'],
+        ['Happy with it', 'Good size for daily use. The colour is slightly different from the screen but still pretty.'],
+        ['Nice and sturdy', 'Feels well made and the strap is comfortable. Delivery took four days, a little longer than I hoped.'],
+        ['Looks premium', 'The finish looks expensive and it is easy to wipe clean. A bit snug for a larger laptop.'],
+        ['Good value', 'Solid build and a neat design. The packaging could be better, but the bag itself is great.'],
+        ['Pretty and practical', 'Holds everything I need for the day. The handles are a little stiff at first but soften with use.'],
+      ],
+      3: [
+        ['Decent, not amazing', 'Good looking bag but smaller than I expected. Please check the size before ordering.'],
+        ['Okay for the price', 'The quality is fine. The colour looked a bit different in daylight.'],
+        ['Average', 'It does the job. The zip felt a little tight at first.'],
+        ['Nice, but slow delivery', 'The bag is nice, though it took almost a week to reach me outside Dhaka.'],
+      ],
+      2: [
+        ['Not what I hoped', 'The size was smaller than I imagined and the strap feels thin. The exchange was easy though.'],
+        ['Disappointed with the finish', 'There was a small scratch near the clasp when it arrived. Support replied quickly.'],
+        ['Too small for me', 'Pretty bag, but I could not fit my tablet. Please read the size guide.'],
+      ],
+      1: [
+        ['Arrived damaged', 'The corner was scuffed on arrival. I asked for an exchange and I am waiting to hear back.'],
+        ['Not as described', 'The colour is quite different from the photos, so I returned it.'],
+      ],
+    };
+    const EXTRA = ['The zip runs smoothly.', 'The dust bag is a nice touch.', 'Cash on delivery made it easy.', 'The strap sits well on the shoulder.', 'Easy to wipe clean.', 'The inside is roomy and well lined.'];
+    const FIRST = ['Nusrat', 'Farjana', 'Tasnim', 'Sadia', 'Maliha', 'Ishrat', 'Rafia', 'Anika', 'Mahira', 'Samira', 'Tania', 'Lamia', 'Nabila', 'Jannat', 'Sumaiya', 'Priya', 'Afia', 'Mim', 'Rumana', 'Shirin', 'Mitu', 'Nova', 'Fariha', 'Zarin', 'Orin', 'Sharmin', 'Tabassum', 'Rima', 'Aditi', 'Nadia'];
+    const LAST = ['Jahan', 'Akter', 'Rahman', 'Islam', 'Chowdhury', 'Hossain', 'Khan', 'Begum', 'Sultana', 'Ahmed', 'Siddique', 'Karim', 'Mondal', 'Haque', 'Das', 'Sarkar'];
+    const CITY = ['Dhaka', 'Dhaka', 'Dhaka', 'Chattogram', 'Sylhet', 'Rajshahi', 'Khulna', 'Cumilla', 'Gazipur', 'Narayanganj', 'Rangpur', 'Mymensingh'];
+    const KEYWORDS = [['Leather', /leather/i], ['Size', /\bsize|fits?\b|small|snug|laptop|tablet|roomy/i], ['Quality', /quality|well made|sturdy|solid|stitch/i], ['Delivery', /deliver|arriv|days|packag|dust bag/i], ['Colour', /colou?r/i], ['Strap', /strap|handle/i], ['Zip', /\bzip/i]];
+
+    // star counts: weights t^(5-k), t found by bisection so the mean equals product.rating
+    const N = Math.max(1, product.reviews | 0), target = Math.min(4.95, Math.max(3.05, product.rating));
+    const meanFor = (t) => { let s = 0, w = 0; for (let k = 5; k >= 1; k--) { const x = Math.pow(t, 5 - k); s += k * x; w += x; } return s / w; };
+    let lo = 0, hi = 1; for (let i = 0; i < 40; i++) { const mid = (lo + hi) / 2; if (meanFor(mid) > target) lo = mid; else hi = mid; }
+    const t = (lo + hi) / 2, wsum = [5, 4, 3, 2, 1].reduce((a, k) => a + Math.pow(t, 5 - k), 0);
+    const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    let sum = 0; [5, 4, 3, 2, 1].forEach((k) => { counts[k] = Math.round(N * Math.pow(t, 5 - k) / wsum); sum += counts[k]; });
+    counts[5] += N - sum; if (counts[5] < 0) { counts[4] += counts[5]; counts[5] = 0; }
+    const mean = () => [5, 4, 3, 2, 1].reduce((a, k) => a + k * counts[k], 0) / N;
+    for (let i = 0; i < 300; i++) {
+      const m = mean();
+      if (m < target - 0.025) { const k = [1, 2, 3, 4].find((x) => counts[x] > 0); if (k === undefined) break; counts[k]--; counts[k + 1]++; }
+      else if (m > target + 0.025) { const k = [5, 4, 3, 2].find((x) => counts[x] > 0); if (k === undefined) break; counts[k]--; counts[k - 1]++; }
+      else break;
+    }
+    const starList = []; [5, 4, 3, 2, 1].forEach((k) => { for (let i = 0; i < counts[k]; i++) starList.push(k); });
+    shuffle(starList);
+
+    const cursor = {}; const decks = {};
+    const nextText = (s) => { if (!decks[s] || cursor[s] >= decks[s].length) { decks[s] = shuffle(TEXTS[s].slice()); cursor[s] = 0; } return decks[s][cursor[s]++]; };
+    const used = new Set(); const colours = product.colours.map((c) => c.label);
+    const today = new Date(); today.setHours(12, 0, 0, 0);
+    let off = 1;
+    const generated = starList.map((s, i) => {
+      let name; do { name = FIRST[Math.floor(rand() * FIRST.length)] + ' ' + LAST[Math.floor(rand() * LAST.length)]; } while (used.has(name) && used.size < FIRST.length * LAST.length);
+      used.add(name);
+      const [title, body] = nextText(s);
+      off += 1 + Math.floor(rand() * 4);
+      const extra = s >= 4 && rand() < 0.5 ? ' ' + EXTRA[Math.floor(rand() * EXTRA.length)] : '';
+      return { id: product.id + '-' + i, stars: s, title, text: body + extra, name, city: CITY[Math.floor(rand() * CITY.length)],
+        colour: colours[Math.floor(rand() * colours.length)], ts: today.getTime() - off * 86400000, helpful: Math.floor(rand() * rand() * 22), rec: s >= 4 || (s === 3 && rand() < 0.5) };
+    });
+    if (product.nafisa) {   // the two reviews from the Figma design keep their wording
+      const a = generated.find((r) => r.stars === 5), b = generated.find((r) => r.stars === 4);
+      if (a) Object.assign(a, { name: 'Nusrat Jahan', title: 'Came exactly as pictured', text: 'Came exactly as pictured, the tan is even richer in person. Fits my 13-inch laptop with room to spare.' });
+      if (b) Object.assign(b, { name: 'Farjana Akter', title: 'Good leather, slow update', text: 'Good quality leather. Delivery to my area took the full 5 days, would have liked an update in between.' });
+    }
+
+    // ----- state + helpers
+    const mine = () => (rd(LS_R, {})[product.id] || []);
+    const votes = rd(LS_V, {});
+    const all = () => mine().map((r, i) => Object.assign({ id: 'mine-' + r.ts, mine: true }, r)).concat(generated);
+    const state = { star: 0, kw: '', sort: 'recent', shown: 6 };
+    const fmtDate = (ts) => new Date(ts).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const initials = (n) => n.trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+    const stars = (v, s) => '<span class="rv-stars" style="--v:' + v + (s ? ';--s:' + s + 'px' : '') + '" role="img" aria-label="' + v + ' out of 5"></span>';
+    const STAR_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8z"/></svg>';
+    const CHECK = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.4l3.2 3.2L13 4.8"/></svg>';
+    const THUMB = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 7.2V14H3a1 1 0 0 1-1-1V8.2a1 1 0 0 1 1-1h2.5zM5.5 7.2l2.3-4.6a1.4 1.4 0 0 1 2.6.9L10 6h3a1.2 1.2 0 0 1 1.2 1.4l-.8 5a1.4 1.4 0 0 1-1.4 1.2H5.5"/></svg>';
+    const matchKw = (r) => !state.kw || KEYWORDS.some(([n, re]) => n === state.kw && re.test(r.title + ' ' + r.text));
+
+    function highlight(text) {
+      const s = esc(text); if (!state.kw) return s;
+      const re = KEYWORDS.find((k) => k[0] === state.kw)[1];
+      return s.replace(new RegExp(re.source, 'gi'), (m) => '<mark>' + m + '</mark>');
+    }
+
+    function renderSummary() {
+      const list = all(), n = list.length, c = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+      list.forEach((r) => { c[r.stars]++; });
+      const avg = list.reduce((a, r) => a + r.stars, 0) / n, a1 = Math.round(avg * 10) / 10;
+      $('rvScore').textContent = a1.toFixed(1);
+      $('rvStars').style.setProperty('--v', avg.toFixed(2)); $('rvStars').setAttribute('aria-label', a1.toFixed(1) + ' out of 5');
+      $('rvCount').textContent = 'Based on ' + n + ' review' + (n === 1 ? '' : 's');
+      const rec = Math.round(list.filter((r) => r.rec !== false && (r.rec || r.stars >= 4)).length / n * 100);
+      $('rvReco').innerHTML = CHECK + '<span><b>' + rec + '%</b> would recommend this bag</span>';
+      $('ratingScore').textContent = a1.toFixed(1);
+      $('ratingLink').textContent = n + ' review' + (n === 1 ? '' : 's');
+      $('rvDist').innerHTML = [5, 4, 3, 2, 1].map((k) => '<button type="button" class="rv-dist-row" data-star="' + k + '" aria-pressed="' + (state.star === k) + '" aria-label="' + c[k] + ' reviews with ' + k + ' stars. Show only these">' +
+        '<span class="lbl">' + k + STAR_SVG + '</span><span class="rv-bar"><i style="--w:' + (c[k] / n * 100).toFixed(1) + '%"></i></span><span class="n">' + c[k] + '</span></button>').join('');
+      const sub = [['Appearance', Math.min(5, avg + 0.1)], ['Quality of material', avg], ['Value for money', Math.max(1, avg - 0.2)], ['Size and fit', Math.max(1, avg - 0.1)]];
+      $('rvSub').innerHTML = sub.map(([l, v]) => '<div class="rv-sub-row"><span>' + l + '</span><b>' + v.toFixed(1) + '</b><span class="rv-bar"><i style="--w:' + (v / 5 * 100).toFixed(1) + '%"></i></span></div>').join('');
+      $('rvKws').innerHTML = '<span class="lab">Mentioned in reviews:</span>' + KEYWORDS.map(([nm, re]) => {
+        const k = list.filter((r) => re.test(r.title + ' ' + r.text)).length;
+        return k ? '<button type="button" class="rv-kw" data-kw="' + nm + '" aria-pressed="' + (state.kw === nm) + '">' + nm + '<small>' + k + '</small></button>' : '';
+      }).join('');
+    }
+
+    function renderList() {
+      const rows = all().filter((r) => (!state.star || r.stars === state.star) && matchKw(r));
+      const by = { recent: (a, b) => b.ts - a.ts, helpful: (a, b) => (b.helpful + (votes[b.id] ? 1 : 0)) - (a.helpful + (votes[a.id] ? 1 : 0)) || b.ts - a.ts,
+        high: (a, b) => b.stars - a.stars || b.ts - a.ts, low: (a, b) => a.stars - b.stars || b.ts - a.ts };
+      rows.sort(by[state.sort]);
+      const part = rows.slice(0, state.shown);
+      const filtered = state.star || state.kw;
+      $('rvStatus').innerHTML = '<span>Showing ' + part.length + ' of ' + rows.length + ' review' + (rows.length === 1 ? '' : 's') + '</span>' +
+        (filtered ? '<button type="button" id="rvClear">Clear filters</button>' : '');
+      $('rvList').innerHTML = part.length ? part.map((r) => {
+        const voted = !!votes[r.id], n = r.helpful + (voted ? 1 : 0);
+        return '<article class="rv-item"><div class="rv-who"><div class="rv-avatar" aria-hidden="true">' + esc(initials(r.name)) + '</div>' +
+          '<span class="rv-name">' + esc(r.name) + '</span>' +
+          (r.mine ? '<span class="rv-yours">Your review</span>' : '<span class="rv-verified">' + CHECK + 'Verified buyer</span><span>' + esc(r.city) + '</span><span>Bought: ' + esc(r.colour) + '</span>') +
+          '</div><div><div class="rv-top">' + stars(r.stars) + '<span class="rv-date">' + (r.mine ? 'Just now' : fmtDate(r.ts)) + '</span></div>' +
+          '<h3 class="rv-headline">' + esc(r.title) + '</h3><p class="rv-body">' + highlight(r.text) + '</p>' +
+          (r.rec || (r.mine && r.rec) ? '<p class="rv-rec">' + CHECK + 'I would recommend this bag</p>' : '') +
+          '<div class="rv-help"><span>Was this helpful?</span><button type="button" data-help="' + r.id + '" aria-pressed="' + voted + '">' + THUMB + 'Helpful (' + n + ')</button></div></div></article>';
+      }).join('') : '<p class="rv-empty">No reviews match these filters yet.</p>';
+      $('rvMore').parentElement.style.display = rows.length > state.shown ? '' : 'none';
+    }
+    const renderAll = () => { renderSummary(); renderList(); };
+
+    // ----- interactions
+    $('rvDist').addEventListener('click', (e) => { const b = e.target.closest('[data-star]'); if (!b) return; const k = +b.dataset.star; state.star = state.star === k ? 0 : k; state.shown = 6; renderAll(); });
+    $('rvKws').addEventListener('click', (e) => { const b = e.target.closest('[data-kw]'); if (!b) return; state.kw = state.kw === b.dataset.kw ? '' : b.dataset.kw; state.shown = 6; renderAll(); });
+    $('rvStatus').addEventListener('click', (e) => { if (e.target.id === 'rvClear') { state.star = 0; state.kw = ''; state.shown = 6; renderAll(); } });
+    $('rvSort').addEventListener('change', (e) => { state.sort = e.target.value; state.shown = 6; renderList(); });
+    $('rvMore').addEventListener('click', () => { state.shown += 6; renderList(); });
+    $('rvList').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-help]'); if (!b) return;
+      const id = b.dataset.help; if (votes[id]) delete votes[id]; else votes[id] = 1;
+      wr(LS_V, votes); renderList();
+      const again = $('rvList').querySelector('[data-help="' + id + '"]'); if (again) again.focus({ preventScroll: true });
+    });
+
+    // ----- write a review
+    const form = $('rvForm'), writeBtn = $('rvWriteBtn');
+    const NOTE = ['', 'Poor', 'Fair', 'Good', 'Very good', 'Excellent'];
+    let rating = 0, recommend = true;
+    $('rvFormName').textContent = product.name;
+    $('rvRate').innerHTML = [1, 2, 3, 4, 5].map((k) => '<button type="button" role="radio" aria-checked="false" aria-label="' + k + ' star' + (k > 1 ? 's' : '') + '" data-k="' + k + '">' + STAR_SVG + '</button>').join('');
+    const paintRate = (hover) => {
+      const v = hover || rating;
+      $('rvRate').querySelectorAll('button').forEach((b) => { const k = +b.dataset.k; b.classList.toggle('on', k <= v); b.setAttribute('aria-checked', String(k === rating)); });
+      $('rvRateNote').textContent = NOTE[v] || '';
+    };
+    $('rvRate').addEventListener('click', (e) => { const b = e.target.closest('[data-k]'); if (!b) return; rating = +b.dataset.k; paintRate(); clearErr('fldRate', 'errRate'); });
+    $('rvRate').addEventListener('mouseover', (e) => { const b = e.target.closest('[data-k]'); if (b) paintRate(+b.dataset.k); });
+    $('rvRate').addEventListener('mouseleave', () => paintRate());
+    form.querySelector('.rv-yesno').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-v]'); if (!b) return; recommend = b.dataset.v === '1';
+      form.querySelectorAll('.rv-yesno button').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+    });
+    $('rvText').addEventListener('input', () => { $('rvTextCount').textContent = $('rvText').value.length + ' / 800'; clearErr('fldText', 'errText'); });
+    $('rvHeadline').addEventListener('input', () => clearErr('fldTitle', 'errTitle'));
+    $('rvName').addEventListener('input', () => clearErr('fldName', 'errName'));
+    function clearErr(f, e) { $(f).classList.remove('bad'); $(e).textContent = ''; }
+    function setErr(f, e, msg) { $(f).classList.add('bad'); $(e).textContent = msg; }
+    function openForm(open) {
+      form.hidden = !open; writeBtn.setAttribute('aria-expanded', String(open));
+      if (open) { $('rvThanks').hidden = true; form.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => $('rvHeadline').focus({ preventScroll: true }), 250); }
+    }
+    writeBtn.addEventListener('click', () => openForm(form.hidden));
+    $('rvCancel').addEventListener('click', () => { openForm(false); writeBtn.focus(); });
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = $('rvHeadline').value.trim(), text = $('rvText').value.trim(), name = $('rvName').value.trim();
+      let ok = true, first = null;
+      const bad = (f, er, msg, focus) => { setErr(f, er, msg); ok = false; if (!first) first = focus; };
+      if (!rating) bad('fldRate', 'errRate', 'Please choose a star rating.', $('rvRate').querySelector('button'));
+      if (title.length < 3) bad('fldTitle', 'errTitle', 'Add a short headline.', $('rvHeadline'));
+      if (text.length < 20) bad('fldText', 'errText', 'Please write at least 20 characters.', $('rvText'));
+      if (name.length < 2) bad('fldName', 'errName', 'Please add your name.', $('rvName'));
+      if (!ok) { first.focus(); return; }
+      const store = rd(LS_R, {}); (store[product.id] = store[product.id] || []).unshift({ ts: Date.now(), stars: rating, title, text, name, rec: recommend });
+      wr(LS_R, store);
+      form.reset(); rating = 0; recommend = true; paintRate(); $('rvTextCount').textContent = '0 / 800';
+      form.querySelectorAll('.rv-yesno button').forEach((x, i) => x.setAttribute('aria-checked', String(i === 0)));
+      openForm(false);
+      state.star = 0; state.kw = ''; state.sort = 'recent'; $('rvSort').value = 'recent'; state.shown = 6;
+      renderAll();
+      $('rvThanks').hidden = false; $('rvThanks').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+
+    renderAll();
+  })();
+
+  // ----- gallery ---------------------------------------------------------------------------------------------
+  const gallery = (function () {
+    const main = $('mainPhoto'), img = $('mainPhotoImg'), status = $('galleryStatus'), thumbsEl = $('thumbs');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let index = 0, swapToken = 0, thumbs = [];
+    const photos = () => colour.photos;
+
+    function drawThumbs() {
+      document.querySelector('.gallery').classList.toggle('single', photos().length < 2);
+      thumbsEl.innerHTML = photos().map((ph, k) => '<button class="thumb" role="tab" aria-selected="' + (k === 0) + '"' + (ph.contain ? ' style="background:' + (colour.guideBg || '') + '"' : '') + '><img src="' + ph.src + '" alt="' + ph.alt.charAt(0).toUpperCase() + ph.alt.slice(1) + '"' + (k > 0 ? ' loading="lazy"' : '') + '></button>').join('');
+      thumbs = [...thumbsEl.querySelectorAll('.thumb')];
+      thumbs.forEach((t, k) => t.addEventListener('click', () => show(k, true)));
+    }
+    function show(i, announce) {
+      const list = photos();
+      index = Math.max(0, Math.min(list.length - 1, i));  // no wrap-around: the first photo has no "previous", the last has no "next"
+      main.dataset.at = index === 0 ? 'start' : index === list.length - 1 ? 'end' : '';
+      const ph = list[index];
+      const label = product.name + ', ' + colour.label + ' — ' + ph.alt;
+      thumbs.forEach((t, k) => t.setAttribute('aria-selected', String(k === index)));
+      main.classList.toggle('contain', !!ph.contain);
+      main.style.background = ph.contain ? (colour.guideBg || '') : '';
+
+      // Soft cross-fade: fade out, swap once the next photo has decoded, fade back in.
+      const token = ++swapToken;
+      if (reduceMotion) { img.src = ph.src; img.alt = label; img.style.opacity = '1'; }
+      else {
+        img.style.opacity = '0';
+        const next = new Image();
+        next.src = ph.src;
+        (next.decode ? next.decode() : Promise.resolve()).catch(() => {}).then(() => {
+          if (token !== swapToken) return;
+          img.src = ph.src;
+          img.alt = label;
+          requestAnimationFrame(() => { img.style.opacity = '1'; });
+        });
+      }
+      if (announce) status.textContent = 'Image ' + (index + 1) + ' of ' + list.length + ': ' + ph.alt;
+    }
+    function setColour() { drawThumbs(); show(0); }
+    const prevBtn = $('galleryPrev'), nextBtn = $('galleryNext');
+    prevBtn.addEventListener('click', () => { show(index - 1, true); if (index === 0) nextBtn.focus({ preventScroll: true }); });
+    nextBtn.addEventListener('click', () => { show(index + 1, true); if (index === photos().length - 1) prevBtn.focus({ preventScroll: true }); });
+
+    // Left / Right arrow keys while focus is anywhere in the gallery (thumbnails, arrows).
+    document.querySelector('.gallery').addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      show(index + (e.key === 'ArrowRight' ? 1 : -1), true);
+      if (thumbs.includes(document.activeElement)) thumbs[index].focus();
+    });
+
+    // Swipe on touch screens.
+    let sx = 0, sy = 0, tracking = false;
+    main.addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse') return; tracking = true; sx = e.clientX; sy = e.clientY; });
+    main.addEventListener('pointerup', (e) => {
+      if (!tracking) return;
+      tracking = false;
+      const dx = e.clientX - sx, dy = e.clientY - sy;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) show(index + (dx < 0 ? 1 : -1), true);
+    });
+    main.addEventListener('pointercancel', () => { tracking = false; });
+
+    return { setColour };
+  })();
+
+  // Warm the cache for the other colours once the page is idle, so switching is instant.
+  window.addEventListener('load', () => setTimeout(() => {
+    product.colours.forEach((c) => c.photos.slice(0, 2).forEach((ph) => { new Image().src = ph.src; }));
+  }, 800));
+
+  // Colour, size, quantity, wishlist, add to bag.
+  (function () {
+    const swatchBox = $('swatches');
+    const colourValue = $('colourValue');
+    const name = document.querySelector('.product-name');
+    const heading = () => {
+      name.textContent = product.name + ' — ' + colour.label;
+      name.classList.toggle('long', name.textContent.length > 26);
+      colourValue.textContent = colour.label;
+    };
+    swatchBox.innerHTML = product.colours.map((c) => '<button class="swatch" role="radio" aria-checked="' + (c === colour) + '" aria-label="' + esc(c.label) + '" data-colour="' + c.id + '"><img src="' + c.tile + '" alt=""></button>').join('');
+    const swatches = [...swatchBox.querySelectorAll('.swatch')];
+    function choose(c, pushUrl) {
+      colour = c;
+      swatches.forEach((x) => x.setAttribute('aria-checked', String(x.dataset.colour === c.id)));
+      heading();
+      gallery.setColour();
+      if (window.__paintWish) window.__paintWish();
+      if (pushUrl) { try { history.replaceState(null, '', 'my-product-detail-screen.html?p=' + product.id + '&colour=' + c.id); } catch (e) {} }
+    }
+    swatches.forEach((sw) => sw.addEventListener('click', () => choose(product.colours.find((c) => c.id === sw.dataset.colour), true)));
+    choose(colour, false);
+
+    const chips = document.querySelectorAll('.chip');
+    chips.forEach((c) => c.addEventListener('click', () => {
+      if (c.disabled) return;
+      chips.forEach((x) => x.setAttribute('aria-checked', String(x === c)));
+    }));
+
+    let qty = 1;
+    const out = $('qtyValue'), minus = $('qtyMinus'), plus = $('qtyPlus');
+    function step(d) {
+      qty = Math.max(1, Math.min(5, qty + d));
+      out.textContent = qty;
+      minus.disabled = qty <= 1;
+      plus.disabled = qty >= 5;
+    }
+    minus.addEventListener('click', () => step(-1));
+    plus.addEventListener('click', () => step(1));
+
+    // The heart keeps the bag in the same "Saved" list the bag page and the account page read (elara.saved.v1).
+    const wish = $('wishBtn');
+    const SAVED = 'elara.saved.v1';
+    const readSaved = () => { try { return JSON.parse(localStorage.getItem(SAVED)) || []; } catch (e) { return []; } };
+    const isSaved = () => readSaved().some((l) => String(l.id).indexOf(product.id + '|' + colour.id + '|') === 0);
+    function paintWish() {
+      const on = isSaved();
+      wish.setAttribute('aria-pressed', String(on));
+      wish.textContent = on ? '♥' : '♡';
+      wish.setAttribute('aria-label', on ? 'Remove from wishlist' : 'Save to wishlist');
+    }
+    wish.addEventListener('click', () => {
+      let list = readSaved();
+      const prefix = product.id + '|' + colour.id + '|';
+      if (list.some((l) => String(l.id).indexOf(prefix) === 0)) list = list.filter((l) => String(l.id).indexOf(prefix) !== 0);
+      else {
+        const chip = document.querySelector('.chip[aria-checked="true"]');
+        const size = chip ? chip.textContent.trim() : 'Medium';
+        list.push({ id: prefix + size.toLowerCase(), name: product.name, price: product.price, img: colour.card, colour: colour.label, size: size, qty: 1 });
+      }
+      try { localStorage.setItem(SAVED, JSON.stringify(list)); } catch (e) {}
+      paintWish();
+    });
+    paintWish();
+    window.__paintWish = paintWish;
+
+    const toast = $('toast'), toastText = $('toastText');
+    $('addBtn').addEventListener('click', () => {
+      const size = document.querySelector('.chip[aria-checked="true"]').textContent;
+      addToCart(size);
+      const message = 'Added ' + qty + ' × ' + product.name + ' (' + size + ', ' + colour.label + ') to your bag.';
+      const arrived = () => {
+        if (window.ElaraCart) ElaraCart.refreshBadge({ pop: true, force: true });
+        toastText.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(window._toastTimer);
+        window._toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
+      };
+      if (window.ElaraCart) ElaraCart.fly($('addBtn'), arrived); else arrived();
+    });
+
+    // Same line shape the cart page reads: { id, name, price, img, colour, size, qty }.
+    function lineFor(size) {
+      return {
+        id: product.id + '|' + colour.id + '|' + size.toLowerCase(),
+        name: product.name,
+        price: product.price,
+        img: colour.card,
+        colour: colour.label,
+        size: size,
+        qty: qty,
+      };
+    }
+    function addToCart(size) {
+      const line = lineFor(size);
+      let cart = [];
+      try { cart = JSON.parse(localStorage.getItem('elara.cart.v1')) || []; } catch (e) {}
+      const same = cart.find((l) => l.id === line.id);
+      if (same) same.qty = Math.min(5, same.qty + line.qty); else cart.push(line);
+      try { localStorage.setItem('elara.cart.v1', JSON.stringify(cart)); } catch (e) {}
+    }
+
+    // Buy Now: check out only this item. The bag stays exactly as it is.
+    $('buyBtn').addEventListener('click', () => {
+      const size = document.querySelector('.chip[aria-checked="true"]').textContent;
+      try { localStorage.setItem('elara.buynow.v1', JSON.stringify([lineFor(size)])); } catch (e) {}
+      location.href = 'my-checkout-review.html?buynow=1';
+    });
+
+    $('sizeGuideLink').addEventListener('click', (e) => {
+      e.preventDefault();
+      const d = $('size-guide');
+      d.open = true;
+      d.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  })();
+
+  // Nav dropdowns — identical behaviour to the homepage.
+  document.querySelectorAll('.nav-menu-wrap img').forEach((img) => { if (img.decode) img.decode().catch(() => {}); });
+  (function () {
+    const wrap = document.getElementById('navMenuWrap');
+    if (!wrap) return;
+    const items = document.querySelectorAll('.nav-item[data-menu]');
+    const panels = wrap.querySelectorAll('.nav-panel');
+    let closeTimer = null;
+    let openKey = null;
+
+    function showPanel(key, item) {
+      panels.forEach((p) => p.classList.toggle('active', p.dataset.panel === key));
+      const isMega = key !== 'best-sellers';
+      wrap.classList.toggle('mega', isMega);
+      wrap.classList.toggle('light', !isMega);
+      if (isMega) {
+        wrap.style.left = '0px';
+      } else {
+        const itemRect = item.getBoundingClientRect();
+        const navRect = document.querySelector('.nav').getBoundingClientRect();
+        wrap.style.left = Math.round(itemRect.left - navRect.left) + 'px';
+      }
+      const activeEl = wrap.querySelector('.nav-panel.active');
+      wrap.style.height = activeEl ? activeEl.offsetHeight + 'px' : 'auto';
+    }
+    function open(key, item) {
+      clearTimeout(closeTimer);
+      const wasOpen = wrap.classList.contains('open');
+      showPanel(key, item);
+      if (!wasOpen) { wrap.style.transition = 'none'; void wrap.offsetHeight; wrap.style.transition = ''; }
+      wrap.classList.add('open');
+      items.forEach((it) => it.classList.toggle('open', it.dataset.menu === key));
+      openKey = key;
+    }
+    function close() { wrap.classList.remove('open'); items.forEach((it) => it.classList.remove('open')); openKey = null; }
+    function scheduleClose() { clearTimeout(closeTimer); closeTimer = setTimeout(close, 150); }
+
+    items.forEach((item) => {
+      const key = item.dataset.menu;
+      item.addEventListener('mouseenter', () => open(key, item));
+      item.addEventListener('mouseleave', scheduleClose);
+      item.addEventListener('focusin', () => open(key, item));
+      item.querySelector('.nav-link').addEventListener('click', (e) => { e.preventDefault(); openKey === key ? close() : open(key, item); });
+    });
+    wrap.addEventListener('mouseenter', () => clearTimeout(closeTimer));
+    wrap.addEventListener('mouseleave', scheduleClose);
+    wrap.addEventListener('focusin', () => clearTimeout(closeTimer));
+    document.addEventListener('focusin', (e) => { if (openKey && !wrap.contains(e.target) && ![...items].some((it) => it.contains(e.target))) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    document.addEventListener('click', (e) => { if (openKey && !wrap.contains(e.target) && ![...items].some((it) => it.contains(e.target))) close(); });
+  })();
+  document.documentElement.classList.remove('pdp-boot');
+</script>
+<script src="assets/cart-badge.js"></script>
+<script src="assets/search.js"></script>
+<script src="assets/soon.js"></script>
+</body>
+</html>

@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELARA — Payment</title>
+<meta name="description" content="Complete your bKash or Nagad payment for your ELARA order.">
+<meta name="theme-color" content="#FFFDF9">
+<link rel="icon" type="image/svg+xml" href="assets/home/favicon.svg">
+<meta name="robots" content="noindex">
+<!--
+  Mobile-money payment flow (bKash / Nagad) — build of the Figma frames
+  "Payment Page / bKash / Pay" (249:891), "Verifying" (251:1123) and "Error 1–5" (252:986, 252:1144, 252:1302, 252:1491, 252:1650).
+  1440px artboard; below 1440 the whole artboard scales down (same approach as the other pages).
+
+  Mobile money is a different flow shape from a card: the shopper leaves the site, pays in the wallet app (PIN + OTP),
+  comes back and types the Transaction ID, then we verify it asynchronously.
+
+  There is no payment backend yet, so verification is SIMULATED. After a valid-looking Transaction ID (10 letters/digits)
+  the page "verifies" for ~3 s, then:
+      FAIL…  -> not enough balance      OTPX… -> OTP expired
+      SLOW…  -> timeout (succeeds on "Check again")      USED… (or an ID already used on this device) -> duplicate
+      anything else -> success -> my-order-success.html
+  Preview any screen with ?state=pay | verifying | wrong | duplicate | balance | otp | timeout.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #fffdf9;
+    --bg-card: #f7f1e8;
+    --bg-panel: #f8f4ef;
+    --text: #4a4741;
+    --text-muted: #838280;
+    --text-faint: #a8a5a0;
+    --border-soft: rgba(74,71,65,0.25);
+    --accent: #2a72de;
+    --focus: #3184ff;
+    --success: #0ca817;
+    --danger: #d22c15;
+    --amber: #c77d0a;
+    --line-todo: #bdb8b2;
+    --r-large: 32px;
+    --r-media: 12px;
+    --r-small: 8px;
+    --r-pill: 999px;
+    --ease: cubic-bezier(.4,0,.2,1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { overflow-x: clip; }   /* clip, not hidden: hidden turns html and body into two scroll containers (double scrollbar) */
+  body { background: var(--bg-page); color: var(--text); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+  [hidden] { display: none !important; }
+  a { color: inherit; text-decoration: none; }
+  button, input { font: inherit; color: inherit; }
+  button { background: none; border: none; cursor: pointer; }
+  img, svg { display: block; }
+  .serif { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; }
+  .cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+
+  .page { position: relative; width: 1440px; margin: 0 auto; padding-top: 109px; zoom: var(--fit, 1); }
+  .abs { position: absolute; }
+
+  /* ===== Nav (22:641) — same component as the homepage ===== */
+  .nav { left: 0; top: 0; width: 1440px; height: 109px; padding: 10px; display: flex; align-items: center; justify-content: center; z-index: 20; }
+  .nav-inner { width: 100%; display: flex; gap: 144px; align-items: center; justify-content: center; padding: 0 37px; }
+  .nav-logo { position: relative; width: 222px; height: 101px; flex-shrink: 0; }
+  .nav-right { display: flex; gap: 104px; align-items: center; }
+  .nav-links { display: flex; gap: 32px; align-items: center; }
+  .nav-link { display: flex; gap: 6px; align-items: center; font-weight: 500; font-size: 16px; line-height: 1.5; text-transform: uppercase; white-space: nowrap; transition: background-color .15s var(--ease), color .15s var(--ease); }
+  .nav-link img { width: 16px; height: 16px; display: block; }
+  .nav-tools { display: flex; gap: 18px; align-items: center; }
+  .nav-icons { display: flex; gap: 20px; align-items: center; width: 58px; }
+  .ico20 { position: relative; width: 20px; height: 20px; flex-shrink: 0; overflow: clip; }
+  .ico20 img { position: absolute; display: block; }
+  /* Nav search / account icons: soft circle on hover, same cue as the cart pill */
+  .nav-icons .ico20 { overflow: visible; cursor: pointer; }
+  .nav-icons .ico20::before { content: ""; position: absolute; inset: -8px; border-radius: 50%; background: #f1e9dc; opacity: 0; transform: scale(.7); transition: opacity .15s cubic-bezier(.4,0,.2,1), transform .2s cubic-bezier(.4,0,.2,1); }
+  .nav-icons .ico20:hover::before, .nav-icons .ico20:focus-visible::before { opacity: 1; transform: scale(1); }
+  .nav-icons .ico20 img { z-index: 1; }
+  .nav-icons a.ico20 { display: block; }
+  .cart-btn { display: flex; gap: 10px; align-items: center; justify-content: center; height: 40px; padding: 10px 18px; border: 1px solid var(--text); border-radius: var(--r-pill); font-weight: 500; font-size: 16px; line-height: 1.5; text-transform: uppercase; white-space: nowrap; transition: background-color .15s var(--ease); }
+  .cart-btn:hover { background: var(--bg-card); }
+  .nav-item { position: relative; }
+  .nav-chev { transition: transform 220ms var(--ease); }
+  .nav-item.open .nav-chev { transform: rotate(180deg); }
+  .nav-menu-wrap { position: absolute; top: 99px; z-index: 10; background: var(--bg-page); box-shadow: 0 28px 56px rgba(28,27,26,0.12); opacity: 0; visibility: hidden; transform: translateY(-10px); transition: opacity 260ms var(--ease), transform 260ms var(--ease), visibility 0s linear 260ms, left 260ms var(--ease); pointer-events: none; overflow: hidden; }
+  .nav-menu-wrap.mega { left: 0; width: 1440px; border-radius: 0 0 var(--r-large) var(--r-large); }
+  .nav-menu-wrap.light { width: auto; border-radius: var(--r-large); }
+  .nav-menu-wrap.open { opacity: 1; visibility: visible; transform: translateY(0); transition: opacity 260ms var(--ease), transform 260ms var(--ease), height 320ms var(--ease), left 320ms var(--ease); pointer-events: auto; }
+  .nav-panel { display: none; padding: 48px 64px 56px; }
+  .nav-menu-wrap.light .nav-panel { padding: 20px; }
+  .nav-panel.active { display: block; animation: navPanelIn 240ms var(--ease); }
+  @keyframes navPanelIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .nav-menu-wrap.mega .nav-panel { padding: 0; }
+  .dd-panel { position: relative; width: 1440px; height: 360px; }
+  .dd-card { position: absolute; left: 82px; top: 56px; width: 332px; height: 248px; border-radius: var(--r-media); overflow: hidden; }
+  .dd-card .cover { border-radius: var(--r-media); transition: transform .4s var(--ease); }
+  .dd-card:hover .cover { transform: scale(1.05); }
+  .dd-card-fade { position: absolute; left: 50%; bottom: -14px; width: 604px; height: 83px; transform: translateX(-50%); pointer-events: none; }
+  .dd-card-fade i { position: absolute; inset: 0; filter: blur(52px); font-style: normal; }
+  .dd-card-fade i:first-child { background: rgba(40,40,40,0.53); }
+  .dd-card-fade i:last-child { background: rgba(40,40,40,0.88); mix-blend-mode: multiply; }
+  .dd-card-label { position: absolute; left: 14px; right: 14px; bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #fff; }
+  .dd-card-label:not(.two-line) > span:first-child { font-size: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dd-card-label img { width: 24px; height: 24px; flex-shrink: 0; }
+  .dd-card-label.two-line { flex-direction: column; align-items: flex-start; gap: 0; }
+  .dd-card-eyebrow { font-weight: 500; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; color: #d3d1ce; }
+  .dd-card-title { font-size: 16px; font-weight: 400; }
+  .dd-divider { position: absolute; left: 831px; top: 29px; width: 1px; height: 301.5px; }
+  .dd-list { position: absolute; left: 853px; top: 56px; width: 268px; display: flex; flex-direction: column; gap: 20px; }
+  .dd-list-group { display: flex; flex-direction: column; gap: 16px; }
+  .dd-list-coll { gap: 16px; }
+  .dd-row { display: flex; align-items: center; gap: 12px; color: var(--text); border-radius: var(--r-media); padding: 6px; margin: -6px; }
+  .dd-row:hover { background: var(--bg-card); }
+  .dd-row-thumb { position: relative; width: 48px; height: 48px; border-radius: 999px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-soft); }
+  .dd-row-thumb .cover { border-radius: 999px; }
+  .dd-row-thumb.icon { border: none; }
+  .dd-row-title { font-size: 18px; white-space: nowrap; }
+  .nm-simple-list { display: flex; flex-direction: column; gap: 2px; width: 280px; }
+  .nm-simple { padding: 12px 16px; border-radius: var(--r-media); font-size: 16px; color: var(--text); }
+  .nm-simple:hover { background: var(--bg-card); }
+
+  .breadcrumb { display: flex; gap: 6px; padding: 16px 0 0 64px; font-size: 12px; line-height: 1.5; color: var(--text-muted); white-space: nowrap; }
+  .breadcrumb a:hover { color: var(--text); }
+  .breadcrumb [aria-current] { color: var(--text); }
+
+  /* Title row */
+  .title-row { display: flex; align-items: flex-end; justify-content: space-between; padding: 24px 128px 0; }
+  .title-block { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+  .status-icon { padding-bottom: 12px; }
+  .status-icon svg { width: 56px; height: 56px; }
+  .title-text { display: flex; flex-direction: column; gap: 4px; }
+  .title-text h1 { font-size: 36px; font-weight: 300; line-height: 1.1; letter-spacing: -1.8px; }
+  .title-text h1:focus { outline: none; }
+  .title-text p { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+  .chips { display: flex; gap: 12px; padding-top: 12px; }
+  .chip { display: flex; align-items: center; gap: 8px; padding: 6px 14px; border: 1px solid var(--border-soft); border-radius: var(--r-pill); line-height: 1.5; }
+  .chip span { font-size: 12px; color: var(--text-muted); }
+  .chip b { font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .chip.timer b { color: var(--accent); }
+  .chip.timer.out b { color: var(--danger); }
+  .title-link { font-size: 18px; font-weight: 500; line-height: 1.5; color: var(--accent); white-space: nowrap; }
+  .title-link:hover { text-decoration: underline; }
+
+  /* Main */
+  .main { display: flex; align-items: flex-start; gap: 64px; padding: 32px 128px 64px; }
+  .details { display: flex; flex-direction: column; gap: 32px; width: 740px; flex-shrink: 0; }
+  .details h2, .side h2 { font-size: 24px; font-weight: 400; line-height: 1.1; letter-spacing: -0.72px; }
+
+  /* Error banner */
+  .banner { display: flex; align-items: flex-start; gap: 12px; padding: 16px 20px; border: 1px solid var(--danger); border-radius: var(--r-media); background: rgba(210,44,21,0.06); }
+  .banner svg { width: 24px; height: 24px; flex-shrink: 0; }
+  .banner div { display: flex; flex-direction: column; gap: 2px; line-height: 1.5; }
+  .banner b { font-size: 16px; font-weight: 500; }
+  .banner span { font-size: 14px; color: var(--text-muted); }
+
+  /* Pay-to card */
+  .payto { display: flex; flex-direction: column; gap: 12px; padding: 16px 24px; background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--r-media); }
+  .payto-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: 14px; line-height: 1.5; }
+  .payto-row > span { color: var(--text-muted); }
+  .payto .amount { font-size: 24px; line-height: 1.1; letter-spacing: -0.72px; color: var(--text); }
+  .payto hr { border: 0; height: 1px; background: var(--border-soft); }
+  .num { display: flex; align-items: center; gap: 16px; }
+  .num b { font-size: 16px; font-weight: 500; color: var(--text); }
+  .num button { font-size: 14px; font-weight: 500; color: var(--accent); }
+  .num button:hover { text-decoration: underline; }
+
+  /* Numbered steps */
+  .nsteps { display: flex; flex-direction: column; gap: 20px; list-style: none; }
+  .nstep { display: flex; align-items: flex-start; gap: 16px; }
+  .nstep > i { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1px solid var(--border-soft); border-radius: 14px; background: var(--bg-page); font-style: normal; font-size: 14px; font-weight: 500; flex-shrink: 0; }
+  .nstep div { display: flex; flex-direction: column; gap: 2px; line-height: 1.5; }
+  .nstep b { font-size: 16px; font-weight: 500; }
+  .nstep span { font-size: 14px; color: var(--text-muted); }
+
+  /* Form */
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field label { display: flex; align-items: center; gap: 6px; font-size: 14px; line-height: 1.5; }
+  .field label img { width: 6px; height: 6px; }
+  .input { display: flex; align-items: center; height: 48px; padding: 0 16px; border: 1px solid var(--border-soft); border-radius: var(--r-small); background: var(--bg-page); transition: border-color .15s var(--ease), box-shadow .15s var(--ease); cursor: text; }
+  .input:hover { border-color: rgba(74,71,65,0.5); }
+  .input:focus-within { border-color: var(--text); box-shadow: 0 0 0 3px rgba(49,132,255,0.2); }
+  .input input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; font-size: 14px; line-height: 1.5; text-transform: uppercase; }
+  .input input::placeholder { color: var(--text-faint); text-transform: none; }
+  .input.invalid { border-color: var(--danger); }
+  .input.invalid:focus-within { box-shadow: 0 0 0 3px rgba(210,44,21,0.15); }
+  .err { font-size: 12px; line-height: 1.5; color: var(--danger); }
+
+  .actions { display: flex; gap: 16px; }
+  .btn { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; height: 50px; padding: 0 24px; border-radius: var(--r-pill); font-size: 15px; font-weight: 500; line-height: 1; white-space: nowrap; transition: background-color .15s var(--ease), color .15s var(--ease); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: #1f5fc4; }
+  .btn-outline { border: 1px solid var(--text); }
+  .btn-outline:hover { background: var(--bg-card); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .note { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+
+  /* Status timeline */
+  .timeline { display: flex; flex-direction: column; }
+  .step { display: flex; align-items: stretch; gap: 16px; }
+  .rail { display: flex; flex-direction: column; align-items: center; width: 28px; flex-shrink: 0; }
+  .rail svg { width: 24px; height: 24px; }
+  .rail svg.now { width: 26px; height: 26px; }
+  .rail .ring { box-sizing: border-box; width: 24px; height: 24px; border: 1.5px solid var(--line-todo); border-radius: 12px; background: var(--bg-page); }
+  .rail .line { flex: 1; width: 2px; min-height: 1px; background: var(--line-todo); }
+  .rail .line.done { background: var(--success); }
+  .step-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; padding-bottom: 24px; line-height: 1.5; }
+  .step:last-child .step-text { padding-bottom: 0; }
+  .step-top { display: flex; align-items: center; gap: 12px; }
+  .step-top b { font-size: 16px; font-weight: 500; }
+  .step-top span { font-size: 14px; color: var(--text-muted); }
+  .step-text p { font-size: 14px; color: var(--text-muted); }
+  .step.now .step-top span { color: var(--accent); }
+  .step.fail .step-top span { color: var(--danger); }
+  .step.late .step-top span { color: var(--amber); }
+  .step.todo .step-top b { color: var(--text-muted); }
+
+  .details-list { border-top: 1px solid var(--border-soft); font-size: 14px; }
+  .details-row { display: flex; gap: 24px; padding: 16px 0; border-bottom: 1px solid var(--border-soft); line-height: 1.5; }
+  .details-row dt { width: 140px; flex-shrink: 0; color: var(--text-muted); }
+  .details-row dd { flex: 1; min-width: 0; }
+
+  .wa { display: flex; align-items: center; gap: 12px; padding: 16px 24px; background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--r-media); }
+  .wa-icon { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--r-pill); background: #25d366; flex-shrink: 0; }
+  .wa-icon img { width: 20px; height: 20px; }
+  .wa-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; line-height: 1.5; }
+  .wa-text b { font-size: 15px; font-weight: 500; }
+  .wa-text span { font-size: 14px; color: var(--text-muted); }
+  .wa-link { font-size: 14px; line-height: 1.5; color: var(--accent); white-space: nowrap; }
+  .wa-link:hover { text-decoration: underline; }
+
+  /* Order summary */
+  .side { display: flex; flex-direction: column; gap: 16px; width: 380px; flex-shrink: 0; padding: 24px; background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: var(--r-media); }
+  .divider { height: 1px; background: var(--border-soft); }
+  .sum-item { display: flex; align-items: flex-start; gap: 12px; }
+  .sum-photo { position: relative; width: 64px; height: 80px; flex-shrink: 0; border: 1px solid var(--border-soft); border-radius: var(--r-media); background: #f2ecde; }
+  .sum-photo .cover { border-radius: var(--r-media); }
+  .sum-details { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.5; }
+  .sum-details b { font-size: 14px; font-weight: 500; }
+  .sum-details span { font-size: 12px; color: var(--text-muted); }
+  .sum-price { font-size: 14px; font-weight: 500; line-height: 1.5; white-space: nowrap; }
+  .sum-line { display: flex; align-items: center; justify-content: space-between; font-size: 14px; line-height: 1.5; }
+  .sum-line span:first-child { color: var(--text-muted); }
+  .sum-line .strong { font-weight: 500; }
+  .sum-total { display: flex; align-items: center; justify-content: space-between; }
+  .sum-total span:first-child { font-size: 16px; line-height: 1.5; }
+  .sum-total .serif { font-size: 24px; line-height: 1.1; letter-spacing: -0.72px; }
+  .sum-note { font-size: 12px; line-height: 1.5; color: var(--text-muted); }
+
+  /* Verifying spinner */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin { animation: spin 1s linear infinite; transform-origin: 28px 28px; }
+  @media (prefers-reduced-motion: reduce) { .spin { animation-duration: 3s; } }
+
+  .empty { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; padding: 48px 128px 120px; }
+  .empty h1 { font-size: 36px; font-weight: 300; line-height: 1.1; letter-spacing: -1.8px; }
+  .empty p { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
+  .empty .btn { flex: none; width: 260px; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="abs nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo" aria-label="ELARA home"><img class="cover" src="assets/home/logo.webp" alt="ELARA"></a>
+      <div class="nav-right">
+        <nav class="nav-links" aria-label="Primary">
+          <div class="nav-item" data-menu="new-arrivals"><a href="#" class="nav-link">New Arrivals <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="bags"><a href="#" class="nav-link">Bags <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="collections"><a href="#" class="nav-link">Collections <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <div class="nav-item" data-menu="best-sellers"><a href="#" class="nav-link">Best Sellers <img class="nav-chev" src="assets/home/icon-chevron.svg" alt=""></a></div>
+          <a href="my-contact-screen.html" class="nav-link">Contact Us</a>
+        </nav>
+        <div class="nav-tools">
+          <div class="nav-icons">
+            <button class="ico20" aria-label="Search"><img src="assets/home/icon-search.svg" alt="" style="inset:0;width:20px;height:20px;"></button>
+            <a href="my-account.html" class="ico20" aria-label="Account"><img src="assets/home/icon-account.svg" alt="" style="left:22.27%;top:8.33%;width:57.44%;height:82.55%;"></a>
+          </div>
+          <a href="my-cart-screen.html" class="cart-btn">My cart
+            <span class="ico20"><img src="assets/home/icon-cart.svg" alt="" style="left:5.21%;top:5.21%;width:87.63%;height:89.58%;"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-menu-wrap" id="navMenuWrap">
+      <div class="nav-panel" data-panel="new-arrivals">
+        <div class="dd-panel">
+          <a href="my-product-detail-screen.html?p=leather-tote-bag" class="dd-card">
+            <img class="cover" src="assets/home/dd-na-card-1.webp" alt="Leather Tote Bag">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Leather Tote Bag</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <a href="my-product-detail-screen.html?p=aveline-convertible-tote" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-na-card-2.webp" alt="Aveline Convertible Tote">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Aveline Convertible Tote</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
+          <div class="dd-list">
+            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-1.webp" alt=""></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
+            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-2.webp" alt=""></span><span class="dd-row-title">Sienna Structured Purse</span></a>
+            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-3.webp" alt=""></span><span class="dd-row-title">Isla Bags</span></a>
+            <a href="my-plp-screen.html?collection=new" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All New Arrivals</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="bags">
+        <div class="dd-panel">
+          <a href="my-product-detail-screen.html?p=suede-crossbody" class="dd-card">
+            <img class="cover" src="assets/home/dd-bags-card-1.webp" alt="Cross Body Bags">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Cross Body Bags</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <a href="my-product-detail-screen.html?p=structured-work-satchel" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-bags-card-2.webp" alt="Work &amp; Travel">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label"><span>Work &amp; Travel</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
+          <div class="dd-list">
+            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-1.webp" alt=""></span><span class="dd-row-title">Tote</span></a>
+            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-2.webp" alt=""></span><span class="dd-row-title">Shoulder</span></a>
+            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-3.webp" alt=""></span><span class="dd-row-title">Mini</span></a>
+            <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All Category Bags</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="collections">
+        <div class="dd-panel">
+          <a href="#coming-soon" data-soon="Our Signature Pieces" class="dd-card">
+            <img class="cover" src="assets/home/dd-coll-card-1.webp" alt="Our Signature Pieces">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label two-line"><span class="dd-card-eyebrow">Signature</span><span class="dd-card-title">Our Signature Pieces</span></div>
+          </a>
+          <a href="#coming-soon" data-soon="Everyday Essentials" class="dd-card" style="left:454px;">
+            <img class="cover" src="assets/home/dd-coll-card-2.webp" alt="Everyday Essentials">
+            <div class="dd-card-fade"><i></i><i></i></div>
+            <div class="dd-card-label two-line"><span class="dd-card-eyebrow">Everyday</span><span class="dd-card-title">Everyday Essentials</span></div>
+          </a>
+          <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="" style="left:826px;">
+          <div class="dd-list dd-list-coll" style="left:850px; top:92px;">
+            <div class="dd-list-group">
+              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-1.webp" alt=""></span><span class="dd-row-title">The Evening Edit</span></a>
+              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-2.webp" alt=""></span><span class="dd-row-title">Designed for Work</span></a>
+            </div>
+            <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-see-all.svg" alt=""></span><span class="dd-row-title">See All Collections</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-panel" data-panel="best-sellers">
+        <div class="nm-simple-list">
+          <a href="my-plp-screen.html" class="nm-simple">All Best Sellers</a>
+          <a href="my-plp-screen.html" class="nm-simple">Customer Favorites</a>
+          <a href="my-plp-screen.html" class="nm-simple">Most Loved</a>
+          <a href="my-plp-screen.html" class="nm-simple">Trending Now</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="index.html">Home</a><span>/</span>
+    <a href="my-checkout-review.html" id="crumbCheckout">Checkout</a><span>/</span>
+    <span aria-current="page">Payment</span>
+  </nav>
+
+  <div id="app"></div>
+
+  <div class="empty" id="emptyView" hidden>
+    <h1 class="serif">No order to pay for</h1>
+    <p>We could not find an order waiting for payment on this device.</p>
+    <a href="my-plp-screen.html" class="btn btn-accent">Continue shopping</a>
+  </div>
+
+</div>
+
+<script>
+  // Below 1440 only: shrink the artboard to the viewport (never scales up).
+  function fit() { document.documentElement.style.setProperty('--fit', Math.min(1, document.documentElement.clientWidth / 1440)); }
+  fit();
+  new ResizeObserver(fit).observe(document.documentElement);
+
+  // ---------- data ----------
+  const ORDER_KEY = 'elara.order.v1', CART_KEY = 'elara.cart.v1', BUY_KEY = 'elara.buynow.v1', PROMO_KEY = 'elara.promo.v1', USED_KEY = 'elara.usedTrx.v1';
+  const WINDOW_MIN = 15;                       // how long the shopper has to pay
+  const METHODS = {                            // TODO: put the real merchant numbers here
+    bkash: { name: 'bKash', number: '01XXX XXXXXX' },
+    nagad: { name: 'Nagad', number: '01XXX XXXXXX' },
+  };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const money = (n) => 'Tk. ' + Number(n).toLocaleString('en-US') + '/-';
+  const read = (k, f) => { try { const v = JSON.parse(localStorage.getItem(k)); return v === null ? f : v; } catch (e) { return f; } };
+  const write = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+  const params = new URLSearchParams(location.search);
+
+  let order = read(ORDER_KEY, null);
+  const M = order && METHODS[order.payment];
+  const app = document.getElementById('app');
+
+  // ---------- inline icons (match the Figma assets) ----------
+  const ICON = {
+    done: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect width="24" height="24" rx="12" fill="#0CA817"/><path d="M6.5 12.5 10.5 16.5 17.5 8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    now: '<svg class="now" viewBox="0 0 26 26" fill="none" aria-hidden="true"><circle cx="13" cy="13" r="12.5" stroke="#3184FF"/><circle cx="13" cy="13" r="10" fill="#3184FF"/><circle cx="13" cy="13" r="4" fill="#fff"/></svg>',
+    fail: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect width="24" height="24" rx="12" fill="#D22C15"/><path d="M8.5 8.5 15.5 15.5M15.5 8.5 8.5 15.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>',
+    late: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect width="24" height="24" rx="12" fill="#C77D0A"/><path d="M12 6.5V13M12 16.6V16.7" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>',
+    todo: '<span class="ring"></span>',
+    alert: '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#D22C15"/><path d="M12 6.5V13M12 16.6V16.7" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>',
+    big: {
+      verifying: '<svg viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="26" fill="none" stroke="#4A4741" stroke-opacity=".15" stroke-width="4"/><g class="spin"><path d="M28 2A26 26 0 0 1 52.5 19.3" fill="none" stroke="#2A72DE" stroke-width="4" stroke-linecap="butt"/></g></svg>',
+      failed: '<svg viewBox="0 0 56 56" fill="none" aria-hidden="true"><circle cx="28" cy="28" r="28" fill="#D22C15"/><path d="M19 19 37 37M37 19 19 37" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>',
+      late: '<svg viewBox="0 0 56 56" fill="none" aria-hidden="true"><circle cx="28" cy="28" r="28" fill="#C77D0A"/><path d="M28 16V31M28 39.5V39.7" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg>',
+    },
+  };
+
+  // ---------- state ----------
+  // view: pay | verifying | balance | otp | timeout     err (pay view only): wrong | duplicate
+  const S = { view: 'pay', err: null, trx: '', timer: null, slowTries: 0, copied: false };
+  const previews = { pay: ['pay'], verifying: ['verifying'], wrong: ['pay', 'wrong'], duplicate: ['pay', 'duplicate'], balance: ['balance'], otp: ['otp'], timeout: ['timeout'] };
+
+  const used = () => read(USED_KEY, {});
+  const payBy = () => (order.payBy ? new Date(order.payBy).getTime() : new Date(order.placedAt).getTime() + WINDOW_MIN * 60000);
+  const total = () => order.total;
+
+  // ---------- shared pieces ----------
+  function titleRow({ icon, title, sub, chips, link }) {
+    return `<div class="title-row">
+      <div class="title-block">
+        ${icon ? `<div class="status-icon">${icon}</div>` : ''}
+        <div class="title-text"><h1 class="serif" id="h1" tabindex="-1">${title}</h1><p>${sub}</p></div>
+        <div class="chips">${chips}</div>
+      </div>
+      <a href="${link.href}" class="title-link" ${link.act ? `data-act="${link.act}"` : ''}>${link.text}</a>
+    </div>`;
+  }
+  const chip = (label, value, cls = '', id = '') => `<div class="chip ${cls}"><span>${label}</span><b${id ? ` id="${id}"` : ''}>${esc(value)}</b></div>`;
+  const wa = (title, body) => `<div class="wa"><span class="wa-icon"><img src="assets/pdp/11704.svg" alt=""></span><div class="wa-text"><b>${title}</b><span>${body}</span></div><a href="my-contact-screen.html" class="wa-link">Chat on WhatsApp →</a></div>`;
+  const checkoutHref = () => 'my-checkout-review.html' + (order.buyNow ? '?buynow=1' : '');
+
+  function summary(note) {
+    const o = order, count = o.items.reduce((n, l) => n + l.qty, 0);
+    return `<aside class="side" aria-label="Order summary"><h2 class="serif">Order summary</h2>
+      ${o.items.map((l) => `<div class="sum-item"><div class="sum-photo"><img class="cover" src="${esc(l.img)}" alt=""></div>
+        <div class="sum-details"><b>${esc(l.name)}</b><span>${[l.colour, l.size].filter(Boolean).map(esc).concat('Qty ' + l.qty).join(' · ')}</span></div>
+        <span class="sum-price">${money(l.price * l.qty)}</span></div>`).join('')}
+      <div class="divider"></div>
+      <div class="sum-line"><span>Subtotal (${count} ${count === 1 ? 'item' : 'items'})</span><span>${money(o.subtotal)}</span></div>
+      ${o.discount ? `<div class="sum-line"><span>Discount (${esc(o.promo)})</span><span>– ${money(o.discount)}</span></div>` : ''}
+      <div class="sum-line"><span>Delivery · ${esc(o.zone)}</span><span class="strong">${o.delivery ? money(o.delivery) : 'Free'}</span></div>
+      <div class="divider"></div>
+      <div class="sum-total"><span>Total</span><span class="serif">${money(o.total)}</span></div>
+      <p class="sum-note">${note}</p></aside>`;
+  }
+
+  function timeline(rows) {
+    return `<div class="timeline">${rows.map((r, i) => {
+      const last = i === rows.length - 1;
+      const line = last ? '' : `<span class="line${r.state === 'done' ? ' done' : ''}"></span>`;
+      return `<div class="step ${r.state}"><div class="rail">${ICON[r.state] || ICON.todo}${line}</div>
+        <div class="step-text"><div class="step-top"><b>${r.title}</b><span>${r.time}</span></div><p>${r.desc}</p></div></div>`;
+    }).join('')}</div>`;
+  }
+  const nsteps = (items) => `<ol class="nsteps">${items.map((s, i) => `<li class="nstep"><i>${i + 1}</i><div><b>${s[0]}</b><span>${s[1]}</span></div></li>`).join('')}</ol>`;
+
+  // ---------- views ----------
+  function renderPay() {
+    const m = M.name, amt = money(total()), err = S.err;
+    const banners = {
+      wrong: ['We could not verify this payment', `No ${m} payment matches this Transaction ID. Check the SMS from ${m} and enter the ID exactly as it appears.`],
+      duplicate: ['This Transaction ID was already used', `It is linked to another order, so we cannot apply it to ${esc(order.id)}. If you paid for this order, message us and we will fix it.`],
+    };
+    const fieldErr = { wrong: 'Transaction ID not found. It has 10 letters and numbers, like 8N7A6D5EE3.', duplicate: 'Already used for another order.' };
+    const waCopy = { wrong: ['Sure you paid?', `Send us the ${m} SMS and we will check it.`], duplicate: ['Paid for this order?', 'Send us your Transaction ID and we will fix it.'] }[err] || ['Payment not going through?', 'Message us your order number and we will check it for you.'];
+    const out = Date.now() >= payBy();
+    app.innerHTML = titleRow({
+      title: `Complete your ${m} payment`,
+      sub: `Your order is saved. Pay ${amt} with ${m} to confirm it.`,
+      chips: chip('Order number', order.id) + chip(out ? 'Payment window' : 'Pay within', out ? 'Ended' : '15:00', 'timer' + (out ? ' out' : ''), 'timerVal'),
+      link: { href: checkoutHref(), text: '← Back to checkout' },
+    }) + `<div class="main"><div class="details">
+      <h2 class="serif">How to pay with ${m}</h2>
+      ${err ? `<div class="banner" role="alert">${ICON.alert}<div><b>${banners[err][0]}</b><span>${banners[err][1]}</span></div></div>` : ''}
+      <div class="payto">
+        <div class="payto-row"><span>Amount to pay</span><span class="amount serif">${amt}</span></div><hr>
+        <div class="payto-row"><span>${m} merchant number</span><div class="num"><b>${esc(M.number)}</b><button type="button" id="copyBtn">Copy</button></div></div>
+      </div>
+      ${nsteps([
+        [`Open the ${m} app`, 'Choose Payment, then enter the merchant number above.'],
+        [`Send ${amt.replace('Tk. ', 'Tk. ')}`, `Enter the exact amount and your PIN. ${m} sends you an OTP by SMS, enter it to confirm.`],
+        ['Copy your Transaction ID', `It is on the ${m} success screen and in the SMS, like 8N7A6D5EE3.`],
+        ['Paste it below and verify', `We match your payment by Transaction ID, so it is fine to pay from any ${m} number.`],
+      ])}
+      <form id="trxForm" class="details" style="width:auto;gap:32px" novalidate>
+        <div class="field">
+          <label for="trx">Transaction ID (TrxID) <img src="assets/checkout/required-dot.svg" alt="required"></label>
+          <div class="input${err ? ' invalid' : ''}" id="trxBox"><input id="trx" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="14" placeholder="For example 8N7A6D5EE3" value="${esc(S.trx)}"${err ? ' aria-invalid="true"' : ''}></div>
+          <p class="err" id="trxErr"${err ? '' : ' hidden'}>${err ? fieldErr[err] : ''}</p>
+        </div>
+        ${out ? `<p class="note">The payment window has ended. Start a new one to get 15 more minutes.</p><div class="actions"><button type="button" class="btn btn-accent" id="restartBtn">Start a new payment</button></div>`
+              : `<div class="actions"><button type="submit" class="btn btn-accent">Verify payment</button></div>`}
+      </form>
+      ${wa(waCopy[0], waCopy[1])}
+    </div>${summary(`Pay ${amt} with ${m} to confirm your order.`)}</div>`;
+    document.title = 'ELARA — Pay with ' + m;
+  }
+
+  function statusPage() {
+    const m = M.name, amt = money(total()), trx = S.trx, v = S.view;
+    const t = {
+      verifying: { icon: ICON.big.verifying, title: 'Verifying your payment', sub: 'This usually takes under a minute. Please keep this page open.', link: ['← Back to payment steps', 'edit'] },
+      balance: { icon: ICON.big.failed, title: 'Payment not completed', sub: `Your ${m} balance was not enough, so the payment did not go through.`, link: ['← Back to checkout', null] },
+      otp: { icon: ICON.big.failed, title: 'Payment not completed', sub: `The OTP was not entered in time, so ${m} cancelled the payment.`, link: ['← Back to checkout', null] },
+      timeout: { icon: ICON.big.late, title: 'We could not confirm your payment yet', sub: 'Verification is taking longer than usual. If you already paid, your money is safe.', link: ['← Back to checkout', null] },
+    }[v];
+    const withTrx = v === 'verifying' || v === 'timeout';
+    const rows = {
+      verifying: [
+        { state: 'done', title: 'Payment details received', time: 'Just now', desc: `Transaction ID ${esc(trx)} for ${amt}.` },
+        { state: 'now', title: `Checking with ${m}`, time: 'In progress', desc: 'We confirm the amount and your Transaction ID.' },
+        { state: 'todo', title: 'Order confirmed', time: 'Pending', desc: 'You will see your confirmation here and get an SMS.' },
+      ],
+      balance: [
+        { state: 'done', title: 'Payment started', time: 'Just now', desc: `You opened ${m} to pay ${amt}.` },
+        { state: 'fail', title: 'Payment not received', time: 'Failed', desc: `${m} said your balance is too low for ${amt}.` },
+        { state: 'todo', title: 'Order confirmed', time: 'On hold', desc: 'Your order is saved for 24 hours. Pay again to confirm it.' },
+      ],
+      otp: [
+        { state: 'done', title: 'Payment started', time: 'Just now', desc: `You opened ${m} and asked for an OTP.` },
+        { state: 'fail', title: 'Payment not received', time: 'Failed', desc: `The OTP expired before it was entered, so ${m} cancelled it.` },
+        { state: 'todo', title: 'Order confirmed', time: 'On hold', desc: 'Your order is saved for 24 hours. Pay again to confirm it.' },
+      ],
+      timeout: [
+        { state: 'done', title: 'Payment details received', time: 'Just now', desc: `Transaction ID ${esc(trx)} for ${amt}.` },
+        { state: 'late', title: `Checking with ${m}`, time: 'Taking longer', desc: `We have not had an answer from ${m} in time.` },
+        { state: 'todo', title: 'Order confirmed', time: 'On hold', desc: 'We will confirm it by SMS as soon as your payment is matched.' },
+      ],
+    }[v];
+    const next = {
+      balance: ['What to do next', [[`Add money to your ${m} account`, `You need at least ${amt} plus any ${m} charge.`], ['Try the payment again', `Go back to the payment steps and send ${amt} once more.`], ['Or choose another way to pay', 'Switch to another wallet, a card or Cash on Delivery at checkout.']]],
+      otp: ['What to do next', [['Start the payment again', `Open the ${m} app and send ${amt} once more.`], ['Enter the OTP as soon as it arrives', `${m} OTPs only last a short time. Keep the SMS open while you pay.`], ['Or choose another way to pay', 'Switch to another wallet, a card or Cash on Delivery at checkout.']]],
+      timeout: ['What to do next', [['Do not pay again yet', `If you already sent ${amt}, paying twice could charge you twice.`], ['Keep your Transaction ID', `Your ${m} SMS has it. For this payment it is ${esc(trx)}.`], ['We will confirm by SMS', `We keep checking and message ${esc(order.customer.phone.replace(/^\+880(\d{4})(\d{6})$/, '+880 $1 $2'))} as soon as it matches.`]]],
+    }[v];
+    const lower = v === 'verifying'
+      ? `<h2 class="serif">Payment details</h2>
+         <dl class="details-list">
+           <div class="details-row"><dt>Method</dt><dd>${m}</dd></div>
+           <div class="details-row"><dt>Amount</dt><dd>${amt}</dd></div>
+           <div class="details-row"><dt>Transaction ID</dt><dd>${esc(trx)}</dd></div>
+         </dl>
+         <p class="note">Taking longer? You can safely close this page. We will send an SMS to ${esc(order.customer.phone.replace(/^\+880(\d{4})(\d{6})$/, '+880 $1 $2'))} as soon as your payment is verified.</p>`
+      : `<h2 class="serif">${next[0]}</h2>${nsteps(next[1])}
+         <p class="note">${v === 'timeout' ? `You can safely close this page. Your order ${esc(order.id)} stays saved for 24 hours.` : `No money was taken from your ${m} account. Your order ${esc(order.id)} stays saved for 24 hours.`}</p>`;
+    const acts = {
+      verifying: '<button type="button" class="btn btn-outline" data-act="edit">Edit Transaction ID</button><a href="my-plp-screen.html" class="btn btn-outline">Continue shopping</a>',
+      balance: `<button type="button" class="btn btn-accent" data-act="retry">Try ${m} again</button><a href="${checkoutHref()}" class="btn btn-outline">Change payment method</a>`,
+      otp: `<button type="button" class="btn btn-accent" data-act="retry">Try ${m} again</button><a href="${checkoutHref()}" class="btn btn-outline">Change payment method</a>`,
+      timeout: '<button type="button" class="btn btn-accent" data-act="recheck">Check again</button><button type="button" class="btn btn-outline" data-act="edit">Edit Transaction ID</button>',
+    }[v];
+    app.innerHTML = titleRow({
+      icon: t.icon, title: t.title, sub: t.sub,
+      chips: chip('Order number', order.id) + (withTrx ? chip('Transaction ID', trx) : ''),
+      link: t.link[1] ? { href: '#', text: t.link[0], act: t.link[1] } : { href: checkoutHref(), text: t.link[0] },
+    }) + `<div class="main"><div class="details">
+      <h2 class="serif">Payment status</h2>${timeline(rows)}${lower}
+      <div class="actions">${acts}</div>
+      ${wa('Payment not going through?', 'Message us your order number and we will check it for you.')}
+    </div>${summary(v === 'balance' || v === 'otp' ? `Payment of ${amt} not received yet.` : `Waiting for ${m} to confirm ${amt}.`)}</div>`;
+    document.title = 'ELARA — ' + t.title;
+  }
+
+  function render(focus = true) {
+    clearInterval(S.tick);
+    if (S.view === 'pay') { renderPay(); wirePay(); } else { statusPage(); }
+    if (S.view === 'pay') startCountdown();
+    if (focus) { window.scrollTo({ top: 0 }); const h = document.getElementById('h1'); if (h) h.focus({ preventScroll: true }); }
+  }
+
+  // ---------- behaviour ----------
+  function startCountdown() {
+    const el = document.getElementById('timerVal'); if (!el || el.parentNode.classList.contains('out')) return;
+    const tick = () => {
+      const left = Math.max(0, payBy() - Date.now());
+      if (!left) { clearInterval(S.tick); render(false); return; }
+      const s = Math.ceil(left / 1000); el.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+    };
+    tick(); S.tick = setInterval(tick, 1000);
+  }
+
+  function wirePay() {
+    const input = document.getElementById('trx');
+    const clear = () => { document.getElementById('trxBox').classList.remove('invalid'); document.getElementById('trxErr').hidden = true; input.removeAttribute('aria-invalid'); const b = app.querySelector('.banner'); if (b) b.remove(); S.err = null; };
+    input.addEventListener('input', () => { S.trx = input.value; if (S.err) clear(); });
+    document.getElementById('trxBox').addEventListener('click', (e) => { if (e.target === e.currentTarget) input.focus(); });
+    document.getElementById('copyBtn').addEventListener('click', (e) => {
+      const btn = e.currentTarget, txt = M.number.replace(/\s/g, '');
+      (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).catch(() => {}).finally(() => { btn.textContent = 'Copied'; setTimeout(() => { btn.textContent = 'Copy'; }, 1600); });
+    });
+    const form = document.getElementById('trxForm');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const id = input.value.replace(/\s/g, '').toUpperCase(); S.trx = id;
+      if (!/^[A-Z0-9]{10}$/.test(id)) { S.err = 'wrong'; render(false); document.getElementById('trx').focus(); return; }
+      S.err = null; S.slowTries = 0; verify();
+    });
+    const rs = document.getElementById('restartBtn');
+    if (rs) rs.addEventListener('click', () => { order.payBy = Date.now() + WINDOW_MIN * 60000; write(ORDER_KEY, order); render(false); });
+  }
+
+  function verify() {
+    S.view = 'verifying'; render();
+    clearTimeout(S.timer); S.timer = setTimeout(resolve, 3200);
+  }
+  function resolve() {
+    const id = S.trx, taken = used()[id];
+    if (id.startsWith('USED') || (taken && taken !== order.id)) { S.view = 'pay'; S.err = 'duplicate'; render(); return; }
+    if (id.startsWith('FAIL')) { S.view = 'balance'; render(); return; }
+    if (id.startsWith('OTPX')) { S.view = 'otp'; render(); return; }
+    if (id.startsWith('SLOW') && S.slowTries < 1) { S.slowTries++; S.view = 'timeout'; render(); return; }
+    succeed(id);
+  }
+  function succeed(id) {
+    const u = used(); u[id] = order.id; write(USED_KEY, u);
+    order.paid = true; order.trxId = id; order.paidAt = new Date().toISOString();
+    write(ORDER_KEY, order);
+    // The bag is only emptied once the payment has gone through.
+    if (order.buyNow) { try { localStorage.removeItem(BUY_KEY); } catch (e) {} } else { write(CART_KEY, []); }
+    try { localStorage.removeItem(PROMO_KEY); } catch (e) {}
+    if (window.ElaraCart) ElaraCart.refreshBadge();
+    location.href = 'my-order-success.html';
+  }
+
+  app.addEventListener('click', (e) => {
+    const a = e.target.closest('[data-act]'); if (!a) return;
+    e.preventDefault();
+    clearTimeout(S.timer);
+    if (a.dataset.act === 'edit') { S.view = 'pay'; S.err = null; render(); }
+    if (a.dataset.act === 'retry') { S.view = 'pay'; S.err = null; S.trx = ''; render(); }
+    if (a.dataset.act === 'recheck') verify();
+  });
+
+  // ---------- start ----------
+  if (!order || !M || !order.items || !order.items.length || order.paid) {
+    if (order && order.paid) location.replace('my-order-success.html'); else document.getElementById('emptyView').hidden = false;
+  } else {
+    const p = previews[params.get('state')];
+    if (p) { S.view = p[0]; S.err = p[1] || null; S.trx = (S.err === 'duplicate' ? '8N7A6D5EE3' : S.err === 'wrong' ? '8N7A6D5E' : '8N7A6D5EE3'); }
+    render(false);
+    document.getElementById('crumbCheckout').href = checkoutHref();
+  }
+
+  // Nav dropdowns — identical behaviour to the homepage.
+  document.querySelectorAll('.nav-menu-wrap img').forEach((img) => { if (img.decode) img.decode().catch(() => {}); });
+  (function () {
+    const wrap = document.getElementById('navMenuWrap');
+    if (!wrap) return;
+    const items = document.querySelectorAll('.nav-item[data-menu]');
+    const panels = wrap.querySelectorAll('.nav-panel');
+    let closeTimer = null;
+    let openKey = null;
+
+    function showPanel(key, item) {
+      panels.forEach((p) => p.classList.toggle('active', p.dataset.panel === key));
+      const isMega = key !== 'best-sellers';
+      wrap.classList.toggle('mega', isMega);
+      wrap.classList.toggle('light', !isMega);
+      if (isMega) {
+        wrap.style.left = '0px';
+      } else {
+        const itemRect = item.getBoundingClientRect();
+        const navRect = document.querySelector('.nav').getBoundingClientRect();
+        wrap.style.left = Math.round(itemRect.left - navRect.left) + 'px';
+      }
+      const activeEl = wrap.querySelector('.nav-panel.active');
+      wrap.style.height = activeEl ? activeEl.offsetHeight + 'px' : 'auto';
+    }
+    function open(key, item) {
+      clearTimeout(closeTimer);
+      const wasOpen = wrap.classList.contains('open');
+      showPanel(key, item);
+      if (!wasOpen) { wrap.style.transition = 'none'; void wrap.offsetHeight; wrap.style.transition = ''; }
+      wrap.classList.add('open');
+      items.forEach((it) => it.classList.toggle('open', it.dataset.menu === key));
+      openKey = key;
+    }
+    function close() { wrap.classList.remove('open'); items.forEach((it) => it.classList.remove('open')); openKey = null; }
+    function scheduleClose() { clearTimeout(closeTimer); closeTimer = setTimeout(close, 150); }
+
+    items.forEach((item) => {
+      const key = item.dataset.menu;
+      item.addEventListener('mouseenter', () => open(key, item));
+      item.addEventListener('mouseleave', scheduleClose);
+      item.addEventListener('focusin', () => open(key, item));
+      item.querySelector('.nav-link').addEventListener('click', (e) => { e.preventDefault(); openKey === key ? close() : open(key, item); });
+    });
+    wrap.addEventListener('mouseenter', () => clearTimeout(closeTimer));
+    wrap.addEventListener('mouseleave', scheduleClose);
+    wrap.addEventListener('focusin', () => clearTimeout(closeTimer));
+    document.addEventListener('focusin', (e) => { if (openKey && !wrap.contains(e.target) && ![...items].some((it) => it.contains(e.target))) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    document.addEventListener('click', (e) => { if (openKey && !wrap.contains(e.target) && ![...items].some((it) => it.contains(e.target))) close(); });
+  })();
+</script>
+<script src="assets/cart-badge.js"></script>
+<script src="assets/search.js"></script>
+<script src="assets/soon.js"></script>
+</body>
+</html>
