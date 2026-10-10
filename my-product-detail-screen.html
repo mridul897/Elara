@@ -11,14 +11,14 @@
 <meta property="og:locale" content="en_BD">
 <meta property="og:title" content="Bag details | ELARA">
 <meta property="og:description" content="See every photo, colour and size of this ELARA bag, with delivery, exchange and customer reviews.">
-<meta property="og:image" content="/assets/og/elara-og.jpg">
+<meta property="og:image" content="https://elarabags.vercel.app/assets/og/elara-og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="ELARA: a woman carrying a taupe leather tote bag">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Bag details | ELARA">
 <meta name="twitter:description" content="See every photo, colour and size of this ELARA bag, with delivery, exchange and customer reviews.">
-<meta name="twitter:image" content="/assets/og/elara-og.jpg">
+<meta name="twitter:image" content="https://elarabags.vercel.app/assets/og/elara-og.jpg">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/svg+xml" href="/assets/home/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
@@ -698,6 +698,14 @@
 
   // ----- static facts for this bag ---------------------------------------------------------------------------
   document.title = product.name + ' | ELARA';
+  (function () {
+    var url = 'https://elarabags.vercel.app/my-product-detail-screen.html?p=' + encodeURIComponent(product.id);
+    var link = document.createElement('link'); link.rel = 'canonical'; link.href = url; document.head.appendChild(link);
+    function meta(prop, val) { var m = document.querySelector('meta[property="' + prop + '"]'); if (!m) { m = document.createElement('meta'); m.setAttribute('property', prop); document.head.appendChild(m); } m.setAttribute('content', val); }
+    meta('og:url', url); meta('og:title', product.name + ' | ELARA'); meta('og:description', product.name + ': ' + product.desc);
+    meta('og:image', 'https://elarabags.vercel.app/' + product.colours[0].card);
+    var ti = document.querySelector('meta[name="twitter:image"]'); if (ti) ti.setAttribute('content', 'https://elarabags.vercel.app/' + product.colours[0].card);
+  })();
   (function () { var d = document.querySelector('meta[name="description"]'); if (d) d.setAttribute('content', product.name + ': ' + product.desc); })();
   $('crumbCat').textContent = crumb[product.cat] || product.crumb;
   $('crumbCat').href = 'my-plp-screen.html?category=' + product.cat;

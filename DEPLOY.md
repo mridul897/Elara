@@ -34,7 +34,11 @@ Every later `git push` to `main` updates the live site by itself.
 
 If you push the whole `claude-for-designers` course folder instead of only this one, set **Root Directory** in Vercel to `projects/elara-womens-bags`.
 
-## 3. Things to know
+## 3. Live address
+
+The site is live at https://elarabags.vercel.app (canonical address, sitemap and share-preview image all use it). If the address ever changes, update `SITE` in the meta tags of each page, `sitemap.xml` and `robots.txt`.
+
+## 4. Things to know
 
 - **Orders, accounts, reviews and messages are saved in the visitor's own browser** (localStorage). Nothing is sent to a server, so you will not receive orders. A real shop needs a backend.
 - **Placeholders to replace before launch:** phone `+880 1XXX-XXXXXX`, e-mail `hello@elara.bd`, studio address, WhatsApp number, product ratings and review texts, the footer legal pages.
