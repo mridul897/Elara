@@ -3,11 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ELARA — Account</title>
+<title>Your account | ELARA</title>
 <meta name="description" content="Sign in or create your ELARA account to see orders, saved bags and addresses.">
 <meta name="theme-color" content="#FFFDF9">
-<link rel="icon" type="image/svg+xml" href="assets/home/favicon.svg">
-<meta name="robots" content="noindex">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ELARA">
+<meta property="og:locale" content="en_BD">
+<meta property="og:title" content="Your account | ELARA">
+<meta property="og:description" content="Sign in or create your ELARA account to see orders, saved bags and addresses.">
+<meta property="og:image" content="/assets/og/elara-og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ELARA: a woman carrying a taupe leather tote bag">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Your account | ELARA">
+<meta name="twitter:description" content="Sign in or create your ELARA account to see orders, saved bags and addresses.">
+<meta name="twitter:image" content="/assets/og/elara-og.jpg">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/assets/home/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 <!--
   Account flow — build of the Figma frames "Account Page / Login" (262:1494), "Create account" (265:1462),
   "Enter code" (259:1536) and "Dashboard" (259:1641). 1440px artboard, scaled down below 1440 like the other pages.
@@ -507,7 +524,7 @@
         <p class="form-error" id="statusError" role="alert" hidden style="width:100%"></p>
       </div>
     </div></div>${FOOT}`;
-    document.title = 'ELARA — Sign in';
+    document.title = 'Sign in | ELARA';
     wireInputs();
 
     $('signinForm').addEventListener('submit', (e) => {
@@ -557,7 +574,7 @@
           <p class="note">Already have an account? <button type="button" data-go="login">Sign in</button></p>
         </form></div>
       ${tips('What you get', [['Every order in one place', 'Track deliveries without typing an order number.'], ['Save bags for later', 'Keep the pieces you love and come back when you are ready.'], ['Faster checkout', 'Your name and delivery address are filled in for you.']])}</div>`;
-    document.title = 'ELARA — Create account';
+    document.title = 'Create account | ELARA';
     wireInputs();
     const bday = $('crBday');
     bday.addEventListener('input', () => { const d = bday.value.replace(/\D/g, '').slice(0, 4); bday.value = d.length > 2 ? d.slice(0, 2) + ' / ' + d.slice(2) : d; });
@@ -593,7 +610,7 @@
           <button type="button" class="lnk" style="align-self:flex-start" data-go="${isUp ? 'create' : 'login'}">Change ${what}</button>
         </form></div>
       ${tips('Good to know', [['The code is valid for 5 minutes', 'Ask for a new one if it runs out.'], ['No message yet?', `Check the ${what} is right, then wait a moment for it to arrive.`], ['Never share this code', 'ELARA will never call or message you asking for it.']])}</div>`;
-    document.title = 'ELARA — Enter your code';
+    document.title = 'Enter your code | ELARA';
     const boxes = [...app.querySelectorAll('#codeBoxes input')];
     const fail = (msg) => { $('codeBoxes').classList.add('invalid'); $('codeErr').textContent = msg; $('codeErr').hidden = false; };
     const reset = () => { $('codeBoxes').classList.remove('invalid'); $('codeErr').hidden = true; };
@@ -666,7 +683,7 @@
 
     app.innerHTML = crumbs('Account') + titleRow('Hi, ' + esc(first), esc(acc.name) + ' · ' + esc(contact), '<button type="button" class="title-link" id="signOut">Sign out</button>') + `
       <div class="main"><div class="details"><div class="tabs" role="tablist">${tabs.map((t) => `<button type="button" class="tab" role="tab" aria-selected="${t[0] === tab}" data-tab="${t[0]}">${t[1]}</button>`).join('')}</div>${body}</div>${side}</div>`;
-    document.title = 'ELARA — My account';
+    document.title = 'My account | ELARA';
     wireInputs();
     $('signOut').addEventListener('click', () => { try { localStorage.removeItem(SESSION_KEY); } catch (e) {} toast('Signed out.'); S.form = {}; go('login'); });
     app.querySelectorAll('[data-move]').forEach((b) => b.addEventListener('click', () => {

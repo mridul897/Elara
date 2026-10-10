@@ -3,11 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ELARA — Payment</title>
+<title>Payment | ELARA</title>
 <meta name="description" content="Complete your bKash or Nagad payment for your ELARA order.">
 <meta name="theme-color" content="#FFFDF9">
-<link rel="icon" type="image/svg+xml" href="assets/home/favicon.svg">
-<meta name="robots" content="noindex">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ELARA">
+<meta property="og:locale" content="en_BD">
+<meta property="og:title" content="Payment | ELARA">
+<meta property="og:description" content="Complete your bKash or Nagad payment for your ELARA order.">
+<meta property="og:image" content="/assets/og/elara-og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ELARA: a woman carrying a taupe leather tote bag">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Payment | ELARA">
+<meta name="twitter:description" content="Complete your bKash or Nagad payment for your ELARA order.">
+<meta name="twitter:image" content="/assets/og/elara-og.jpg">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/assets/home/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 <!--
   Mobile-money payment flow (bKash / Nagad) — build of the Figma frames
   "Payment Page / bKash / Pay" (249:891), "Verifying" (251:1123) and "Error 1–5" (252:986, 252:1144, 252:1302, 252:1491, 252:1650).
@@ -505,7 +522,7 @@
       </form>
       ${wa(waCopy[0], waCopy[1])}
     </div>${summary(`Pay ${amt} with ${m} to confirm your order.`)}</div>`;
-    document.title = 'ELARA — Pay with ' + m;
+    document.title = 'Pay with ' + m + ' | ELARA';
   }
 
   function statusPage() {
@@ -569,7 +586,7 @@
       <div class="actions">${acts}</div>
       ${wa('Payment not going through?', 'Message us your order number and we will check it for you.')}
     </div>${summary(v === 'balance' || v === 'otp' ? `Payment of ${amt} not received yet.` : `Waiting for ${m} to confirm ${amt}.`)}</div>`;
-    document.title = 'ELARA — ' + t.title;
+    document.title = t.title + ' | ELARA';
   }
 
   function render(focus = true) {

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /my-cart-screen.html
+Disallow: /my-checkout-review.html
+Disallow: /my-payment.html
+Disallow: /my-order-success.html
+Disallow: /my-order-tracking.html
+Disallow: /my-account.html
