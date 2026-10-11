@@ -217,8 +217,8 @@
   .sum-items { display: flex; flex-direction: column; gap: 16px; }
   .sum-item { display: flex; align-items: flex-start; gap: 12px; }
   .sum-photo { position: relative; width: 64px; height: 80px; flex-shrink: 0; border: 1px solid var(--border-soft); border-radius: var(--r-media); overflow: hidden; background: var(--bg-card); }
-  .sum-details { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.5; white-space: nowrap; }
-  .sum-details b { font-weight: 500; font-size: 14px; }
+  .sum-details { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; line-height: 1.5; }
+  .sum-details b { font-weight: 500; font-size: 14px; overflow-wrap: anywhere; }
   .sum-details span { font-size: 12px; color: var(--text-muted); }
   .sum-price { font-weight: 500; font-size: 14px; line-height: 1.5; white-space: nowrap; }
   .divider { height: 1px; border-bottom: 1px solid var(--border-soft); }
@@ -367,9 +367,40 @@
       <div class="steps" id="stepsCol">
 
         <form id="checkoutForm" novalidate>
-          <!-- 1 Contact -->
+          <!-- 1 Payment -->
+          <section class="step" aria-labelledby="h-payment">
+            <div class="step-head"><span class="step-num" aria-hidden="true">1</span><h2 id="h-payment">Payment method</h2></div>
+            <div role="radiogroup" aria-label="Payment method" style="display:flex;flex-direction:column;gap:24px;">
+              <label class="opt is-on" data-pay="cod">
+                <input class="sr-only" type="radio" name="pay" value="cod" checked>
+                <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
+                <span class="opt-text"><b>Cash on Delivery</b><span>Pay in cash when your bag arrives</span></span>
+                <span class="badge">Available</span>
+              </label>
+              <label class="opt" data-pay="bkash">
+                <input class="sr-only" type="radio" name="pay" value="bkash">
+                <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
+                <span class="opt-text"><b>bKash</b><span>You will complete payment in the bKash app, then return here</span></span>
+                <span class="logo"><img class="cover" src="assets/cart/bkash.webp" alt="bKash"></span>
+              </label>
+              <label class="opt" data-pay="nagad">
+                <input class="sr-only" type="radio" name="pay" value="nagad">
+                <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
+                <span class="opt-text"><b>Nagad</b><span>You will complete payment in the Nagad app, then return here</span></span>
+                <span class="logo"><img class="cover" src="assets/cart/nagad.webp" alt="Nagad"></span>
+              </label>
+              <label class="opt" data-pay="card">
+                <input class="sr-only" type="radio" name="pay" value="card">
+                <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
+                <span class="opt-text"><b>Credit or debit card</b><span>Visa and Mastercard, paid securely on the next screen</span></span>
+                <span class="logos"><span class="logo"><img class="cover" src="assets/cart/visa.webp" alt="Visa"></span><span class="logo"><img class="cover" src="assets/checkout/mastercard.webp" alt="Mastercard"></span></span>
+              </label>
+            </div>
+          </section>
+
+          <!-- 2 Contact -->
           <section class="step" aria-labelledby="h-contact">
-            <div class="step-head"><span class="step-num" aria-hidden="true">1</span><h2 id="h-contact">Contact</h2></div>
+            <div class="step-head"><span class="step-num" aria-hidden="true">2</span><h2 id="h-contact">Contact</h2></div>
             <div class="row">
               <div class="field">
                 <div class="label-row"><label for="fName"><span>Full name</span><img class="req" src="assets/checkout/required-dot.svg" alt=""><span class="sr-only">required</span></label></div>
@@ -389,9 +420,9 @@
             </div>
           </section>
 
-          <!-- 2 Shipping address -->
+          <!-- 3 Shipping address -->
           <section class="step" aria-labelledby="h-address">
-            <div class="step-head"><span class="step-num" aria-hidden="true">2</span><h2 id="h-address">Shipping address</h2></div>
+            <div class="step-head"><span class="step-num" aria-hidden="true">3</span><h2 id="h-address">Shipping address</h2></div>
             <div class="row">
               <div class="field">
                 <div class="label-row"><label for="fDivision"><span>Division</span><img class="req" src="assets/checkout/required-dot.svg" alt=""><span class="sr-only">required</span></label></div>
@@ -428,48 +459,6 @@
               <div class="input area" data-for="fAddress2"><textarea id="fAddress2" name="address2" rows="1" placeholder="House, road and landmark" autocomplete="address-line2"></textarea></div>
             </div>
             <p class="note" id="chargeNote">Delivery to Dhaka: Tk. 60 · 1–3 working days. Free on orders over Tk. 3,000.</p>
-          </section>
-
-          <!-- 3 Delivery -->
-          <section class="step" aria-labelledby="h-delivery">
-            <div class="step-head"><span class="step-num" aria-hidden="true">3</span><h2 id="h-delivery">Delivery</h2></div>
-            <div class="opt static is-on">
-              <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
-              <div class="opt-text"><b id="delTitle">Standard delivery · Dhaka</b><span id="delDesc">1–3 working days to Dhaka</span></div>
-              <div class="charge" id="delCharge"><b>Free</b><s>Tk. 60/-</s></div>
-            </div>
-            <p class="note" id="delNote">Your order is over Tk. 3,000, so the Tk. 60 Dhaka charge is waived.</p>
-          </section>
-
-          <!-- 4 Payment -->
-          <section class="step" aria-labelledby="h-payment">
-            <div class="step-head"><span class="step-num" aria-hidden="true">4</span><h2 id="h-payment">Payment method</h2></div>
-            <div role="radiogroup" aria-label="Payment method" style="display:flex;flex-direction:column;gap:24px;">
-              <label class="opt is-on" data-pay="cod">
-                <input class="sr-only" type="radio" name="pay" value="cod" checked>
-                <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
-                <span class="opt-text"><b>Cash on Delivery</b><span>Pay in cash when your bag arrives</span></span>
-                <span class="badge">Available</span>
-              </label>
-              <label class="opt" data-pay="bkash">
-                <input class="sr-only" type="radio" name="pay" value="bkash">
-                <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
-                <span class="opt-text"><b>bKash</b><span>You will complete payment in the bKash app, then return here</span></span>
-                <span class="logo"><img class="cover" src="assets/cart/bkash.webp" alt="bKash"></span>
-              </label>
-              <label class="opt" data-pay="nagad">
-                <input class="sr-only" type="radio" name="pay" value="nagad">
-                <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
-                <span class="opt-text"><b>Nagad</b><span>You will complete payment in the Nagad app, then return here</span></span>
-                <span class="logo"><img class="cover" src="assets/cart/nagad.webp" alt="Nagad"></span>
-              </label>
-              <label class="opt" data-pay="card">
-                <input class="sr-only" type="radio" name="pay" value="card">
-                <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
-                <span class="opt-text"><b>Credit or debit card</b><span>Visa and Mastercard, paid securely on the next screen</span></span>
-                <span class="logos"><span class="logo"><img class="cover" src="assets/cart/visa.webp" alt="Visa"></span><span class="logo"><img class="cover" src="assets/checkout/mastercard.webp" alt="Mastercard"></span></span>
-              </label>
-            </div>
           </section>
 
           <!-- Place order -->
@@ -613,12 +602,7 @@
     $('delValue').classList.add('strong');
     $('totalValue').textContent = money(total);
 
-    const place = [fUpazila.value.trim(), fDistrict.value].filter(Boolean).join(', ') || 'your address';
     $('chargeNote').textContent = (d.dhaka ? 'Delivery to Dhaka: Tk. 60' : 'Delivery outside Dhaka: Tk. 120') + ' · ' + d.days + ' working days. Free on orders over Tk. 3,000.';
-    $('delTitle').textContent = 'Standard delivery · ' + d.zone;
-    $('delDesc').textContent = d.days + ' working days to ' + place;
-    $('delCharge').innerHTML = d.free ? `<b>Free</b><s>${money(d.charge)}</s>` : `<b>${money(d.charge)}</b>`;
-    $('delNote').textContent = d.free ? 'Your order is over Tk. 3,000, so the ' + money(d.charge).replace('/-', '') + ' ' + (d.dhaka ? 'Dhaka' : 'delivery') + ' charge is waived.' : 'Free delivery on orders over Tk. 3,000.';
     const pay = payValue();
     $('sumNote').textContent = pay === 'cod' ? 'Pay ' + money(total) + ' in cash when your order arrives.' : 'You will complete payment of ' + money(total) + ' with ' + PAY[pay].replace('Credit or debit card', 'your card') + ' after placing your order.';
     return { d, total };
