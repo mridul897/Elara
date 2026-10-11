@@ -6,13 +6,13 @@
 
    Test hooks (so every state in the Figma file can be reached):
      verification code 000000  -> "Incorrect verification code" (3 tries, then the session expires)
-     PIN 00000                 -> "Insufficient balance"
+     PIN 00000 (bKash) / 0000 (Nagad) -> "Insufficient balance"
      a window left open for 5 minutes -> "Session expired"
 */
 (function () {
   var BRANDS = {
-    bkash: { name: 'bKash', c: '#E2136E', g1: '#E8266F', g2: '#C9105A', logo: 'assets/checkout/pay-bkash.webp', lw: 113, lh: 64, lx: -3.75, ly: -5, help: '16247' },
-    nagad: { name: 'Nagad', c: '#E8541F', g1: '#F26C28', g2: '#D63A16', logo: 'assets/checkout/pay-nagad.webp', lw: 80, lh: 50, lx: 0, ly: 0, help: '16167' }
+    bkash: { name: 'bKash', c: '#E2136E', g1: '#E8266F', g2: '#C9105A', logo: 'assets/checkout/pay-bkash.webp', lw: 113, lh: 64, lx: -3.75, ly: -5, help: '16247', pinLen: 5 },
+    nagad: { name: 'Nagad', c: '#E8541F', g1: '#F26C28', g2: '#D63A16', logo: 'assets/checkout/pay-nagad.webp', lw: 80, lh: 50, lx: 0, ly: 0, help: '16167', pinLen: 4, layout: 'nagad' }
   };
   var CSS = [
     '.gw-root{position:fixed;inset:0;z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:70px 16px 24px;overflow:auto;font-family:Inter,sans-serif;-webkit-font-smoothing:antialiased}',
@@ -56,8 +56,33 @@
     '.gw-help{display:flex;justify-content:center;align-items:center;gap:8px;padding:14px 0;background:#fff}',
     '.gw-help span{font-size:12px;color:#838280}.gw-help b{font-size:18px;font-weight:700;color:var(--gw-c)}',
     '.gw-b:focus-visible,.gw-note button:focus-visible{outline:2px solid #3184ff;outline-offset:-3px}',
+    '.gw-nagad .gw-pop{border-radius:20px}',
+    '.gw-nagad .gw-head{flex-direction:column;align-items:center;gap:12px;padding:26px 24px 22px;background:linear-gradient(180deg,#F7941D,#EE1C25);color:#fff}',
+    '.gw-tile{width:112px;height:112px;border-radius:26px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}',
+    '.gw-tile img{width:102px;height:64px;object-fit:cover;display:block}',
+    '.gw-pay2{display:flex;flex-direction:column;align-items:center;gap:2px}',
+    '.gw-pay2 span{font-size:14px;font-weight:500}.gw-pay2 b{font-size:30px;font-weight:700;line-height:1.2}.gw-pay2 i{font-style:normal;font-size:12px}',
+    '.gw-nagad .gw-body{background:#fff;color:#4a4741;min-height:210px;padding:26px 24px 22px;gap:16px}',
+    '.gw-nagad .gw-lbl{font-size:15px;line-height:21px}',
+    '.gw-nagad .gw-note{color:#838280;line-height:18px}',
+    '.gw-nagad .gw-field{height:52px;border:1.5px solid #ddd5c6;border-radius:12px;font-size:16px;color:#4a4741}',
+    '.gw-nagad .gw-field:focus{border-color:#EE1C25;box-shadow:none}',
+    '.gw-nagad .gw-boxes{gap:10px}',
+    '.gw-nagad .gw-box{width:44px;height:54px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1.5px #ddd5c6;font-weight:700;color:#4a4741}',
+    '.gw-nagad .gw-box.pin{width:54px}',
+    '.gw-nagad .gw-box.on{box-shadow:inset 0 0 0 2px #EE1C25}',
+    '.gw-nagad .gw-box.bad{background:#FDF1EF;box-shadow:inset 0 0 0 2px #D22C15}',
+    '.gw-nagad .gw-msg{background:#FDF1EF;color:#B3261E;border:1px solid rgba(210,44,21,.4);border-radius:10px;padding:10px 14px}',
+    '.gw-nagad .gw-title{color:#4a4741}',
+    '.gw-nagad .gw-spin{border-color:#ddd5c6;border-top-color:#EE1C25}',
+    '.gw-nagad .gw-btns{gap:12px;padding:0 24px 18px;background:#fff}',
+    '.gw-nagad .gw-b{height:50px;border-radius:999px;font:600 14px Inter,sans-serif;letter-spacing:0;background:#EFEBE4;color:#A8A5A0}',
+    '.gw-nagad .gw-b#gwL{background:transparent;color:#4a4741;border:1px solid #4a4741}',
+    '.gw-nagad .gw-b.go:not(:disabled){background:linear-gradient(90deg,#F7941D,#EE1C25);color:#fff}',
+    '.gw-nagad .gw-help{background:#FAF7F2;padding:12px 0 16px}',
+    '.gw-nagad .gw-help b{font-size:16px;color:#EE1C25}',
     '@keyframes gwFade{from{opacity:0}to{opacity:1}}@keyframes gwUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}@keyframes gwSpin{to{transform:rotate(360deg)}}',
-    '@media(max-width:480px){.gw-root{padding:60px 24px 24px}.gw-head{padding:18px 20px 14px}.gw-merch{padding:12px 16px}.gw-amt{font-size:18px}.gw-body{padding:24px 20px}.gw-box{width:38px}.gw-pay{font-size:24px}}',
+    '@media(max-width:480px){.gw-root{padding:36px 24px 24px}.gw-nagad .gw-box{width:40px}.gw-head{padding:18px 20px 14px}.gw-merch{padding:12px 16px}.gw-amt{font-size:18px}.gw-body{padding:24px 20px}.gw-box{width:38px}.gw-pay{font-size:24px}}',
     '@media(prefers-reduced-motion:reduce){.gw-pop,.gw-scrim,.gw-spin{animation:none}}'
   ].join('');
 
@@ -75,14 +100,16 @@
     var prevFocus = document.activeElement, timers = {}, finished = false;
 
     root = document.createElement('div');
-    root.className = 'gw-root';
+    root.className = 'gw-root' + (B.layout ? ' gw-' + B.layout : '');
     root.style.setProperty('--gw-c', B.c); root.style.setProperty('--gw-g1', B.g1); root.style.setProperty('--gw-g2', B.g2);
     root.innerHTML =
       '<div class="gw-scrim"></div>' +
       '<div class="gw-pop" role="dialog" aria-modal="true" aria-label="' + B.name + ' payment">' +
-        '<div class="gw-head"><div class="gw-logo"><span class="gw-mark"><img src="' + B.logo + '" alt="' + B.name + '" style="width:' + B.lw + 'px;height:' + B.lh + 'px;left:' + B.lx + 'px;top:' + B.ly + 'px"></span><span class="gw-pay">Payment</span></div></div>' +
-        '<div class="gw-line"></div>' +
-        '<div class="gw-merch"><span class="gw-av" aria-hidden="true">E</span><span class="gw-mt"><b>ELARA</b><i>Invoice: ' + esc(o.invoice || '') + '</i></span><span class="gw-amt">' + money(o.amount) + '</span></div>' +
+        (B.layout === 'nagad'
+          ? '<div class="gw-head"><span class="gw-tile"><img src="' + B.logo + '" alt="' + B.name + '"></span><div class="gw-pay2"><span>Pay to ELARA</span><b>' + money(o.amount) + '</b><i>Invoice: ' + esc(o.invoice || '') + '</i></div></div>'
+          : '<div class="gw-head"><div class="gw-logo"><span class="gw-mark"><img src="' + B.logo + '" alt="' + B.name + '" style="width:' + B.lw + 'px;height:' + B.lh + 'px;left:' + B.lx + 'px;top:' + B.ly + 'px"></span><span class="gw-pay">Payment</span></div></div>' +
+            '<div class="gw-line"></div>' +
+            '<div class="gw-merch"><span class="gw-av" aria-hidden="true">E</span><span class="gw-mt"><b>ELARA</b><i>Invoice: ' + esc(o.invoice || '') + '</i></span><span class="gw-amt">' + money(o.amount) + '</span></div>') +
         '<div class="gw-body" id="gwBody" aria-live="polite"></div>' +
         '<div class="gw-btns"><button type="button" class="gw-b" id="gwL">CLOSE</button><button type="button" class="gw-b go" id="gwR">CONFIRM</button></div>' +
         '<div class="gw-help"><span>Helpline</span><b>' + B.help + '</b></div>' +
@@ -93,10 +120,11 @@
     var body = root.querySelector('#gwBody'), L = root.querySelector('#gwL'), R = root.querySelector('#gwR');
 
     function boxes(val, n, mask, bad) {
+      var cls = mask ? ' pin' : '';
       var h = '<div class="gw-boxes">';
       for (var i = 0; i < n; i++) {
         var c = val[i] ? (mask ? '•' : val[i]) : '';
-        h += '<span class="gw-box' + (bad ? ' bad' : (i === val.length && i < n ? ' on' : '')) + '">' + c + '</span>';
+        h += '<span class="gw-box' + cls + (bad ? ' bad' : (i === val.length && i < n ? ' on' : '')) + '">' + c + '</span>';
       }
       return h + '<input id="gwIn" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" maxlength="' + n + '" aria-label="' + (mask ? 'PIN' : 'Verification code') + '"></div>';
     }
@@ -113,14 +141,14 @@
             '<div class="gw-note">By clicking on Confirm, you are agreeing to the <u>terms &amp; conditions</u></div>';
         on = /^01[3-9]\d{8}$/.test(S.phone);
       } else if (S.step === 'otp') {
-        h = '<div class="gw-lbl">Enter the verification code sent to ' + fmtPhone(S.phone) + '</div>' + boxes(S.code, 6, false, S.bad) +
+        h = '<div class="gw-lbl">Enter the verification code sent to ' + fmtPhone(S.phone) + '</div>' + boxes(S.bad ? S.shown : S.code, 6, false, S.bad) +
             (S.bad ? '<div class="gw-msg" role="alert">Incorrect verification code. You have ' + S.tries + ' attempt' + (S.tries === 1 ? '' : 's') + ' left.</div>' : '') +
             '<div class="gw-note" id="gwNote">' + otpNote() + '</div>';
         on = S.code.length === 6;
       } else if (S.step === 'pin') {
-        h = '<div class="gw-lbl">Enter your ' + B.name + ' PIN</div>' + boxes(S.pin, 5, true, false) +
-            '<div class="gw-note">' + B.name + ' will never ask for your PIN outside this window. Do not share it.</div>';
-        on = S.pin.length === 5;
+        h = '<div class="gw-lbl">Enter your ' + B.name + ' PIN</div>' + boxes(S.pin, B.pinLen, true, false) +
+            '<div class="gw-note">' + (B.layout === 'nagad' ? 'Nagad will never ask for your PIN or code over the phone. Do not share it.' : B.name + ' will never ask for your PIN outside this window. Do not share it.') + '</div>';
+        on = S.pin.length === B.pinLen;
       } else if (S.step === 'proc') {
         h = '<div class="gw-spin" aria-hidden="true"></div><div class="gw-lbl">Processing your payment</div><div class="gw-note">Please do not close or refresh this window.</div>';
       } else if (S.step === 'ok') {
@@ -130,11 +158,11 @@
             '<div class="gw-note gw-muted" id="gwRet">Returning to ELARA in ' + S.ret + ' seconds…</div>';
       } else if (S.step === 'bal') {
         right = 'TRY AGAIN'; on = true;
-        h = '<div class="gw-badge" style="background:#fff;color:var(--gw-c)" aria-hidden="true">!</div><div class="gw-title sm">Insufficient balance</div>' +
+        h = '<div class="gw-badge" style="' + (B.layout === 'nagad' ? 'background:#D22C15;color:#fff' : 'background:#fff;color:var(--gw-c)') + '" aria-hidden="true">!</div><div class="gw-title sm">Insufficient balance</div>' +
             '<div class="gw-note">Your ' + B.name + ' balance is lower than ' + money(o.amount) + '. Add money to your account and try again.</div>';
       } else if (S.step === 'exp') {
         right = 'TRY AGAIN'; on = true;
-        h = '<div class="gw-badge" style="background:#fff;color:var(--gw-c)" aria-hidden="true">!</div><div class="gw-title sm">Session expired</div>' +
+        h = '<div class="gw-badge" style="' + (B.layout === 'nagad' ? 'background:#C77D0A;color:#fff' : 'background:#fff;color:var(--gw-c)') + '" aria-hidden="true">!</div><div class="gw-title sm">Session expired</div>' +
             '<div class="gw-note">This payment window timed out. Your order is saved, so you can start again within 15 minutes.</div>';
       }
       body.className = 'gw-body' + (white ? ' gw-white' : '');
@@ -147,7 +175,7 @@
         if (S.step === 'num') {
           inp.addEventListener('input', function () { S.phone = inp.value.replace(/\D/g, '').slice(0, 11); inp.value = S.phone; R.disabled = !/^01[3-9]\d{8}$/.test(S.phone); });
         } else {
-          var key = S.step === 'otp' ? 'code' : 'pin', n = S.step === 'otp' ? 6 : 5;
+          var key = S.step === 'otp' ? 'code' : 'pin', n = S.step === 'otp' ? 6 : B.pinLen;
           inp.value = S[key];
           inp.addEventListener('input', function () {
             S[key] = inp.value.replace(/\D/g, '').slice(0, n); inp.value = S[key];
@@ -174,14 +202,14 @@
       if (S.step === 'num') { S.code = ''; S.left = 120; S.bad = false; S.tries = 3; go('otp'); }
       else if (S.step === 'otp') {
         if (S.code === '000000') {
-          S.tries--; S.bad = true; S.code = '';
+          S.tries--; S.bad = true; S.shown = S.code; S.code = '';
           if (S.tries <= 0) { go('exp'); return; }
           paint(); S.bad = true;
         } else { S.pin = ''; go('pin'); }
       } else if (S.step === 'pin') {
         go('proc');
         timers.proc = setTimeout(function () {
-          if (S.pin === '00000') { go('bal'); return; }
+          if (/^0+$/.test(S.pin)) { go('bal'); return; }
           S.trx = trxId(); S.ret = 5; go('ok');
           timers.ret = setInterval(function () {
             S.ret--;
