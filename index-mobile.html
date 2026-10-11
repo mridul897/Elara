@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ELARA | Leather bags built for every chapter</title>
+<meta name="description" content="ELARA: considered leather bags for the routine you actually have. Totes, shoulder, crossbody, mini and travel bags, with delivery across Bangladesh, cash on delivery, bKash and Nagad.">
+<meta name="theme-color" content="#FFFDF9">
+<link rel="canonical" href="https://elarabags.vercel.app/">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/assets/home/favicon.svg">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ELARA: Home / Mobile (390). Built from the Figma frame "Home / Mobile (390)" on the Mobile Version page.
+     Tokens match the Design System variables: bg/page, bg/card, text/*, accent, radius/*, space/*. */
+  :root {
+    --bg: #FFFDF9; --card: #F7F1E8; --panel: #F8F4EF;
+    --text: #4A4741; --muted: #838280; --faint: #A8A5A0; --inverse: #1C1B1A;
+    --accent: #2A72DE; --accent-soft: #EAF1FC; --focus: #3184FF;
+    --border: #DDD5C6; --star: #D49A1E;
+    --r-md: 12px; --r-lg: 20px; --r-xl: 32px; --r-pill: 999px;
+    --ease: cubic-bezier(.4, 0, .2, 1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  img, video { display: block; max-width: 100%; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+  .serif { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; }
+  .m { max-width: 480px; margin: 0 auto; background: var(--bg); min-height: 100vh; overflow-x: clip; }
+  @media (min-width: 481px) { body { background: #F1ECE4; } .m { box-shadow: 0 0 60px rgba(74,60,40,.12); } }
+
+  /* ---- type scale (text styles) ---- */
+  .t-eyebrow { font: 700 12px/1.5 'Inter', sans-serif; text-transform: uppercase; color: var(--muted); }
+  .t-h3 { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 28px; line-height: 32.2px; letter-spacing: -.8px; }
+  .t-h4 { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 24px; line-height: 26.4px; letter-spacing: -.72px; }
+  .t-title { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 20px; line-height: 25px; letter-spacing: -.4px; }
+  .t-large { font-size: 16px; line-height: 24px; }
+  .t-dflt { font-size: 14px; line-height: 21px; }
+  .t-cap { font-size: 12px; line-height: 18px; }
+  .t-link { font-weight: 500; font-size: 14px; line-height: 21px; }
+
+  /* ---- buttons / chips ---- */
+  .btn { display: flex; align-items: center; justify-content: center; width: 100%; height: 50px; padding: 0 24px; border-radius: var(--r-pill); background: var(--text); color: var(--bg); font-weight: 500; font-size: 15px; line-height: 15px; transition: background-color .25s var(--ease); }
+  .btn:hover, .btn:active { background: #3A3733; }
+  .chip { flex: none; display: flex; align-items: center; height: 36px; padding: 0 16px; border: 1px solid rgba(74,71,65,.25); border-radius: var(--r-pill); font-size: 14px; line-height: 21px; color: var(--text); white-space: nowrap; transition: background-color .25s var(--ease), color .25s var(--ease); }
+  .chip[aria-selected="true"] { background: var(--text); border-color: var(--text); color: var(--bg); }
+
+  /* ---- nav ---- */
+  .nav { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; height: 64px; padding: 8px 12px 8px 20px; background: var(--bg); border-bottom: 1px solid var(--border); }
+  .nav-logo { display: block; width: 112px; height: 50px; }
+  .nav-logo img { width: 100%; height: 100%; object-fit: cover; }
+  .nav-tools { margin-left: auto; display: flex; }
+  .tap { position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+  .tap img { width: auto; height: auto; max-width: none; }
+  .tap svg { width: 20px; height: 20px; }
+
+  /* ---- hero ---- */
+  .hero-img { position: relative; aspect-ratio: 390 / 430; background: url(assets/home/hero-bg.webp) center / cover no-repeat; }
+  .hero-img::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 27.9%; background: linear-gradient(to bottom, rgba(255,253,249,0), var(--bg)); }
+  .hero-thumbs { position: absolute; left: 20px; bottom: 20px; z-index: 1; display: flex; gap: 12px; }
+  .hero-thumbs button { width: 56px; height: 56px; padding: 0; border-radius: var(--r-md); overflow: hidden; border: 2px solid #fff; transition: transform .25s var(--ease); }
+  .hero-thumbs button:active { transform: scale(.94); }
+  .hero-thumbs img { width: 100%; height: 100%; object-fit: cover; }
+  .hero-copy { display: flex; flex-direction: column; gap: 16px; padding: 8px 20px 40px; }
+  .hero-copy h1 { font-weight: 300; font-size: 36px; line-height: 1.1; letter-spacing: -.05em; }
+  .hero-copy p.t-large { color: var(--muted); }
+
+  /* ---- sections ---- */
+  .sec { display: flex; flex-direction: column; gap: 24px; }
+  .px { padding-left: 20px; padding-right: 20px; }
+
+  /* New arrivals */
+  .na { padding: 48px 0; }
+  .chips { display: flex; gap: 8px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; }
+  .chips::-webkit-scrollbar { display: none; }
+  .feature { position: relative; display: block; margin: 0 20px; aspect-ratio: 350 / 420; border-radius: var(--r-lg); overflow: hidden; background: var(--card); }
+  .feature img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease); }
+  .feature:active img { transform: scale(1.03); }
+  .feature::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 45%; background: linear-gradient(to bottom, rgba(28,27,26,0), rgba(28,27,26,.72)); }
+  .feature-text { position: absolute; left: 20px; right: 20px; bottom: 20px; z-index: 1; color: var(--bg); display: flex; flex-direction: column; gap: 4px; }
+  .feature-row { display: flex; align-items: center; justify-content: space-between; }
+  .feature-row .go { display: flex; align-items: center; gap: 6px; }
+  .grid { display: flex; flex-direction: column; gap: 24px; padding: 0 20px; }
+  .grid-row { display: flex; gap: 16px; }
+  .pc { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+  .pc-img { aspect-ratio: 165 / 220; border-radius: var(--r-md); overflow: hidden; background: var(--card); }
+  .pc-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s var(--ease); }
+  .pc:active .pc-img img { transform: scale(1.04); }
+  .pc-info { display: flex; flex-direction: column; gap: 4px; }
+  .pc-price { color: var(--muted); }
+  .swap { transition: opacity .28s var(--ease); }
+  .swap.is-out { opacity: 0; }
+
+  /* Category */
+  .cat { padding: 48px 20px 56px; }
+  .cat-head { display: flex; align-items: center; justify-content: space-between; }
+  .cat-head a { color: var(--accent); }
+  .cat-grid { display: flex; gap: 16px; align-items: flex-start; }
+  .cat-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 24px; }
+  .cat-col.off { padding-top: 32px; }
+  .cat-card { display: flex; flex-direction: column; gap: 12px; }
+  .cat-img { aspect-ratio: 165 / 220; border-radius: var(--r-lg); overflow: hidden; background: var(--card); }
+  .cat-img img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease); }
+  .cat-card:active .cat-img img { transform: scale(1.05); }
+
+  /* Spotlight */
+  .spot { padding: 48px 20px 56px; }
+  .spot-head { display: flex; flex-direction: column; gap: 6px; }
+  .spot-head p { color: var(--muted); }
+  .gal { display: flex; flex-direction: column; gap: 12px; }
+  .gal-main { position: relative; aspect-ratio: 350 / 437; border-radius: var(--r-lg); overflow: hidden; background: var(--card); }
+  .gal-main img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 10%; opacity: 0; transition: opacity .45s var(--ease); }
+  .gal-main img.on { opacity: 1; }
+  .badge { position: absolute; left: 12px; top: 12px; z-index: 1; display: flex; align-items: center; height: 32px; padding: 6px 12px; background: #fff; border: 1px solid var(--accent); border-radius: var(--r-pill); color: var(--accent); font-weight: 500; font-size: 12px; line-height: 18px; }
+  .gal-thumbs { display: flex; gap: 12px; }
+  .gal-thumbs button { width: 80px; height: 100px; padding: 0; border-radius: var(--r-md); overflow: hidden; border: 2px solid transparent; background: var(--card); transition: border-color .25s var(--ease); }
+  .gal-thumbs button[aria-pressed="true"] { border-color: var(--text); }
+  .gal-thumbs img { width: 100%; height: 100%; object-fit: cover; }
+  .info { display: flex; flex-direction: column; gap: 12px; }
+  .rate { display: flex; align-items: center; gap: 6px; }
+  .rate img { width: 16px; height: 16px; }
+  .rate .rv { color: var(--accent); font-size: 14px; line-height: 21px; }
+  .lab { font-weight: 500; font-size: 14px; line-height: 19.6px; }
+  .opt { display: flex; flex-direction: column; gap: 8px; }
+  .dots { display: flex; gap: 12px; }
+  .dots button { width: 36px; height: 36px; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .dots img { width: 36px; height: 36px; }
+  .sizes { display: flex; gap: 8px; }
+  .size { height: 44px; padding: 0 20px; border: 1px solid var(--text); border-radius: var(--r-pill); font-size: 14px; line-height: 21px; }
+  .size[aria-checked="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  .size.off { opacity: .4; cursor: not-allowed; }
+  .note { color: var(--muted); }
+  .pager { display: flex; align-items: center; justify-content: space-between; }
+  .pager-count { display: flex; align-items: baseline; gap: 2px; }
+  .pager-count span { color: var(--muted); font-size: 14px; }
+  .arrows { display: flex; gap: 8px; }
+  .arrows button { width: 44px; height: 44px; border: 1px solid var(--text); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background-color .25s var(--ease); }
+  .arrows button:active { background: var(--card); }
+  .arrows svg { width: 20px; height: 20px; }
+
+  /* Craft story */
+  .story { background: var(--inverse); padding: 56px 20px; color: var(--bg); }
+  .story-video { position: relative; aspect-ratio: 350 / 224; border-radius: var(--r-lg); overflow: hidden; background: #2a2826; }
+  .story-video video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .7s var(--ease); }
+  .story-video video.on { opacity: 1; }
+  .story .t-eyebrow { color: var(--faint); }
+  .story-text { display: flex; flex-direction: column; gap: 24px; transition: opacity .3s var(--ease), translate .45s var(--ease); }
+  .story-text.is-out { opacity: 0; translate: 0 10px; }
+  .story-quote { font-weight: 300; font-style: italic; font-size: 20px; line-height: 1.3; color: var(--bg); min-height: 78px; }
+  .story-cite { color: var(--faint); font-size: 14px; line-height: 21px; }
+  .bars { display: flex; gap: 8px; }
+  .bar { position: relative; flex: 1 1 0; height: 22px; padding: 0; }
+  .bar::before { content: ""; position: absolute; left: 0; right: 0; top: 9.5px; height: 3px; border-radius: 2px; background: var(--muted); }
+  .bar i { position: absolute; left: 0; top: 9.5px; width: 100%; height: 3px; border-radius: 2px; background: var(--bg); transform-origin: left; transform: scaleX(0); }
+  .legend { display: flex; justify-content: space-between; }
+  .legend button { font-size: 14px; line-height: 21px; color: var(--faint); padding: 4px 0; white-space: nowrap; transition: color .25s var(--ease); }
+  .legend button.on { color: var(--bg); }
+
+  /* Reviews */
+  .rev { padding: 56px 0; }
+  .rev-track { display: flex; gap: 16px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x mandatory; scroll-padding-left: 20px; }
+  .rev-track::-webkit-scrollbar { display: none; }
+  .rev-card { flex: none; width: 300px; min-height: 277px; scroll-snap-align: start; display: flex; flex-direction: column; gap: 16px; padding: 24px; background: var(--card); border-radius: var(--r-lg); }
+  .rev-card .q { font-family: 'Fraunces', serif; font-weight: 300; font-size: 36px; line-height: 40px; letter-spacing: -.05em; color: var(--faint); height: 40px; }
+  .rev-card .tx { flex: 1; }
+  .who { display: flex; align-items: center; gap: 12px; }
+  .who img.av { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+  .who .nm { font-weight: 500; font-size: 14px; line-height: 19.6px; }
+  .who .rt { display: flex; align-items: center; gap: 4px; color: var(--muted); font-size: 12px; line-height: 18px; }
+  .who .rt img { width: 14px; height: 14px; }
+
+  /* Newsletter */
+  .nl { padding: 0 20px 56px; }
+  .nl-card { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 40px 24px 32px; background: var(--card); border-radius: var(--r-xl); overflow: hidden; text-align: center; }
+  .nl-photos { display: flex; justify-content: center; align-items: center; gap: 4px; padding: 8px 0 16px; }
+  .nl-photos img { width: 92px; height: 110px; object-fit: cover; border-radius: var(--r-md); }
+  .nl-photos img:nth-child(1) { transform: rotate(-8deg); }
+  .nl-photos img:nth-child(3) { transform: rotate(8deg); }
+  .nl-card p { color: var(--muted); }
+
+  /* Footer */
+  .ft { background: var(--inverse); color: var(--bg); padding: 48px 20px 32px; display: flex; flex-direction: column; gap: 32px; }
+  .ft .wm { letter-spacing: 6px; }
+  .ft-desc { color: var(--faint); }
+  .ft-help { display: flex; flex-direction: column; gap: 8px; }
+  .ft-help .body { color: var(--faint); font-size: 14px; line-height: 21px; }
+  .ft-help .row { display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 21px; }
+  .ft-help svg { width: 18px; height: 18px; flex: none; }
+  .ft-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 32px 16px; }
+  .ft-col { display: flex; flex-direction: column; gap: 12px; }
+  .ft-col h5 { font-weight: 700; font-size: 12px; line-height: 18px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--faint); }
+  .ft-col a { font-size: 14px; line-height: 21px; }
+  .ft-rule { height: 1px; background: var(--muted); border: 0; }
+  .ft-legal { display: flex; flex-direction: column; gap: 8px; color: var(--faint); font-size: 12px; line-height: 18px; }
+
+  /* Menu drawer */
+  .drawer { position: fixed; inset: 0; z-index: 100; visibility: hidden; }
+  .drawer.open { visibility: visible; }
+  .drawer .scrim { position: absolute; inset: 0; background: rgba(28,27,26,.5); opacity: 0; transition: opacity .3s var(--ease); }
+  .drawer.open .scrim { opacity: 1; }
+  .drawer nav { position: absolute; top: 0; right: 0; bottom: 0; width: min(320px, 86vw); background: var(--bg); padding: 12px 20px 32px; display: flex; flex-direction: column; transform: translateX(100%); transition: transform .35s var(--ease); }
+  .drawer.open nav { transform: none; }
+  .drawer .close { align-self: flex-end; width: 44px; height: 44px; font-size: 28px; line-height: 1; }
+  .drawer nav a { padding: 14px 0; border-bottom: 1px solid var(--border); font-family: 'Fraunces', serif; font-size: 24px; letter-spacing: -.72px; }
+  @media (prefers-reduced-motion: reduce) { * { transition-duration: .01s !important; } }
+</style>
+</head>
+<body>
+<div class="m" id="top">
+
+  <!-- NAV -->
+  <header class="nav">
+    <a href="index-mobile.html" class="nav-logo" aria-label="ELARA home"><img src="assets/home/logo.webp" alt="ELARA"></a>
+    <div class="nav-tools">
+      <button class="tap" aria-label="Search"><img src="assets/home/icon-search.svg" alt=""></button>
+      <a class="tap" href="my-account.html" aria-label="Account"><img src="assets/home/icon-account.svg" alt=""></a>
+      <a class="tap icon-btn" href="my-cart-screen.html" aria-label="Bag"><img src="assets/home/icon-cart.svg" alt=""></a>
+      <button class="tap" id="menuBtn" aria-label="Menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 6.5h18M3 12h18M3 17.5h18" stroke="#4A4741" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" aria-label="The Everyday Collection">
+    <div class="hero-img" role="img" aria-label="A woman carrying a taupe leather tote bag">
+      <div class="hero-thumbs">
+        <button type="button" aria-label="Look 1"><img src="assets/home/hero-thumb-1.webp" alt=""></button>
+        <button type="button" aria-label="Look 2"><img src="assets/home/hero-thumb-2.webp" alt=""></button>
+        <button type="button" aria-label="Look 3"><img src="assets/home/hero-thumb-3.webp" alt=""></button>
+      </div>
+    </div>
+    <div class="hero-copy">
+      <p class="t-eyebrow">The everyday collection</p>
+      <h1 class="serif">Bags built for every chapter.</h1>
+      <p class="t-large">Premium leather, considered detail, made for the routine you actually have: work, weekend, and everything between.</p>
+      <a class="btn" href="my-plp-screen.html?collection=new">Shop New Collection</a>
+    </div>
+  </section>
+
+  <!-- NEW ARRIVALS -->
+  <section class="sec na" aria-labelledby="naTitle">
+    <h2 class="t-h3 px" id="naTitle">New Arrivals</h2>
+    <div class="chips" role="tablist" aria-label="Collections">
+      <button class="chip" role="tab" aria-selected="false" data-tab="best">Best Sellers</button>
+      <button class="chip" role="tab" aria-selected="true" data-tab="new">New Arrivals</button>
+      <button class="chip" role="tab" aria-selected="false" data-tab="limited">Limited Edition</button>
+      <button class="chip" role="tab" aria-selected="false" data-tab="acc">Accessories</button>
+    </div>
+    <div class="sec swap" id="naBody" style="gap:24px"></div>
+  </section>
+
+  <!-- SHOP BY CATEGORY -->
+  <section class="sec cat" aria-labelledby="catTitle">
+    <div class="cat-head">
+      <h2 class="t-h3" id="catTitle">Shop by Category</h2>
+      <a class="t-link" href="my-plp-screen.html">See all</a>
+    </div>
+    <div class="cat-grid">
+      <div class="cat-col">
+        <a class="cat-card" href="my-plp-screen.html?category=tote"><div class="cat-img"><img src="assets/home/cat-tote.webp" alt="" loading="lazy"></div><span class="t-h4">Tote</span></a>
+        <a class="cat-card" href="my-plp-screen.html?category=crossbody"><div class="cat-img"><img src="assets/home/cat-crossbody.webp" alt="" loading="lazy"></div><span class="t-h4">Cross body</span></a>
+      </div>
+      <div class="cat-col off">
+        <a class="cat-card" href="my-plp-screen.html?category=shoulder"><div class="cat-img"><img src="assets/home/cat-shoulder.webp" alt="" loading="lazy"></div><span class="t-h4">Shoulder</span></a>
+        <a class="cat-card" href="my-plp-screen.html?category=mini"><div class="cat-img"><img src="assets/home/cat-mini.webp" alt="" loading="lazy"></div><span class="t-h4">Mini</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SPOTLIGHT -->
+  <section class="sec spot" aria-labelledby="spTitle">
+    <div class="spot-head">
+      <h2 class="t-h3" id="spTitle">Spotlight</h2>
+      <p class="t-dflt">A closer look at one piece this season</p>
+    </div>
+    <div class="gal">
+      <div class="gal-main" id="spMain"><span class="badge" id="spBadge" hidden>20% OFF</span></div>
+      <div class="gal-thumbs" id="spThumbs"></div>
+    </div>
+    <div class="info" id="spInfo" aria-live="polite">
+      <p class="t-eyebrow" id="spCat"></p>
+      <h3 class="t-h3" id="spName"></h3>
+      <div class="rate"><img src="assets/home/icon-star-18.svg" alt=""><span class="t-dflt" id="spRate"></span><a class="rv" id="spRev" href="my-product-detail-screen.html"></a></div>
+      <p class="t-title" style="font-size:24px;line-height:26.4px;letter-spacing:-.72px" id="spPrice"></p>
+      <div class="opt"><span class="lab">Colour</span><div class="dots" id="spDots" role="radiogroup" aria-label="Colour"></div></div>
+      <div class="opt"><span class="lab">Size</span>
+        <div class="sizes" role="radiogroup" aria-label="Size">
+          <button class="size" role="radio" aria-checked="false">Small</button>
+          <button class="size" role="radio" aria-checked="true">Medium</button>
+          <button class="size off" role="radio" aria-checked="false" aria-disabled="true">Large</button>
+        </div>
+        <p class="note t-cap" id="spNote"></p>
+      </div>
+    </div>
+    <div class="pager">
+      <div class="pager-count"><b class="t-h3" id="spCount">3</b><span>/5</span></div>
+      <div class="arrows">
+        <button type="button" aria-label="Previous product" data-d="-1"><svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="#4A4741" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button type="button" aria-label="Next product" data-d="1"><svg viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="#4A4741" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </div>
+    <a class="btn" id="spCta" href="my-product-detail-screen.html">View Details</a>
+  </section>
+
+  <!-- CRAFT STORY -->
+  <section class="sec story" id="story" aria-label="How an ELARA bag is made">
+    <div class="story-video">
+      <video class="on" data-i="0" muted playsinline preload="metadata" poster="assets/home/story/step-1-cut.jpg" src="assets/home/story/step-1-cut.mp4" aria-label="Leather being cut by hand"></video>
+      <video data-i="1" muted playsinline preload="none" poster="assets/home/story/step-2-stitch.jpg" src="assets/home/story/step-2-stitch.mp4" aria-label="Leather being stitched by hand"></video>
+      <video data-i="2" muted playsinline preload="none" poster="assets/home/story/step-3-hardware.jpg" src="assets/home/story/step-3-hardware.mp4" aria-label="A clasp being fitted"></video>
+      <video data-i="3" muted playsinline preload="none" poster="assets/home/story/step-4-finish.jpg" src="assets/home/story/step-4-finish.mp4" aria-label="The finished bag being polished"></video>
+    </div>
+    <div class="story-text" id="stText" aria-live="polite">
+      <p class="t-eyebrow" id="stStep">01 · Hand-cut leather</p>
+      <p class="story-quote serif" id="stQuote">“Every panel is cut from a single hide, so grain and colour match.”</p>
+      <p class="story-cite">- ELARA design studio</p>
+    </div>
+    <div class="bars" role="tablist" aria-label="Craft steps">
+      <button class="bar" role="tab" aria-label="Step 1: Hand-cut leather"><i></i></button>
+      <button class="bar" role="tab" aria-label="Step 2: Stitched by hand"><i></i></button>
+      <button class="bar" role="tab" aria-label="Step 3: Hardware fitted"><i></i></button>
+      <button class="bar" role="tab" aria-label="Step 4: Finished"><i></i></button>
+    </div>
+    <div class="legend" id="stLegend">
+      <button type="button" class="on">01 Cut</button><button type="button">02 Stitch</button><button type="button">03 Hardware</button><button type="button">04 Finish</button>
+    </div>
+  </section>
+
+  <!-- CUSTOMER REVIEWS -->
+  <section class="sec rev" aria-labelledby="rvTitle">
+    <h2 class="t-h3 px" id="rvTitle">From our Customers</h2>
+    <div class="rev-track" tabindex="0" aria-label="Customer reviews">
+      <article class="rev-card"><span class="q" aria-hidden="true">“</span><p class="tx t-large">Came exactly as pictured — the tan is even richer in person. Fits my 13-inch laptop with room to spare.</p><div class="who"><img class="av" src="assets/home/avatar-israt.webp" alt=""><div><p class="nm">Israt Jahan Eva</p><p class="rt"><img src="assets/home/icon-star-18.svg" alt="">4.5</p></div></div></article>
+      <article class="rev-card"><span class="q" aria-hidden="true">“</span><p class="tx t-large">Was nervous ordering a bag online without touching it first. The size guide matched exactly What I need.</p><div class="who"><img class="av" src="assets/home/avatar-farzana.webp" alt=""><div><p class="nm">Farzana Akter Mim</p><p class="rt"><img src="assets/home/icon-star-18.svg" alt="">4.7</p></div></div></article>
+      <article class="rev-card"><span class="q" aria-hidden="true">“</span><p class="tx t-large">Delivery to Chattogram took 4 days as promised. Packaging was careful, bag arrived in perfect shape.</p><div class="who"><img class="av" src="assets/home/avatar-tahiya.webp" alt=""><div><p class="nm">Tahiya Islam</p><p class="rt"><img src="assets/home/icon-star-18.svg" alt="">4.7</p></div></div></article>
+      <article class="rev-card"><span class="q" aria-hidden="true">“</span><p class="tx t-large">Messaged them on WhatsApp before ordering with a few questions — they replied the same day.</p><div class="who"><img class="av" src="assets/home/avatar-adiba.webp" alt=""><div><p class="nm">Adiba Rahman</p><p class="rt"><img src="assets/home/icon-star-18.svg" alt="">4.5</p></div></div></article>
+      <article class="rev-card"><span class="q" aria-hidden="true">“</span><p class="tx t-large">The leather feels much better in person than in the photos. Stitching is neat, no loose threads.</p><div class="who"><img class="av" src="assets/home/avatar-tasnia.webp" alt=""><div><p class="nm">Tasnia Farin</p><p class="rt"><img src="assets/home/icon-star-18.svg" alt="">4.5</p></div></div></article>
+    </div>
+  </section>
+
+  <!-- NEWSLETTER -->
+  <section class="nl" aria-label="Newsletter">
+    <div class="nl-card">
+      <div class="nl-photos" aria-hidden="true">
+        <img src="assets/home/nl-left-1.webp" alt=""><img src="assets/home/nl-left-2.webp" alt=""><img src="assets/home/nl-left-3.webp" alt="">
+      </div>
+      <h2 class="t-h3">A little luxury in your inbox.</h2>
+      <p class="t-large">New arrivals and collection stories, no more than twice a month.</p>
+      <a class="btn" href="my-plp-screen.html">Shop Now</a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="ft" id="siteFooter">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <span class="t-title wm">ELARA</span>
+      <p class="ft-desc t-dflt">Premium leather bags for the routine you actually have: work, weekend, and everything between. Designed in Bangladesh.</p>
+    </div>
+    <div class="ft-help">
+      <span class="lab">Need help deciding?</span>
+      <p class="body">Message us on WhatsApp or email: we reply within 1 business day.</p>
+      <a class="row" href="my-contact-screen.html"><svg viewBox="0 0 24 24" fill="none" stroke="#A8A5A0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 20.5l1.3-4.6A8.5 8.5 0 1 1 8.2 19.3L3.5 20.5z"/><path d="M9 8.8c0 3.3 2.9 6.2 6.2 6.2l1.3-1.5-2-1-1 .8c-1-.4-2-1.4-2.4-2.4l.8-1-1-2L9 8.8z"/></svg>WhatsApp: +880 1320575476</a>
+      <a class="row" href="my-contact-screen.html"><svg viewBox="0 0 24 24" fill="none" stroke="#A8A5A0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></svg>hello@elara.com.bd</a>
+    </div>
+    <div class="ft-cols">
+      <div class="ft-col"><h5>Shop</h5><a href="my-plp-screen.html?collection=new">New Arrivals</a><a href="#" data-soon="Best Sellers">Best Sellers</a><a href="#" data-soon="Collections">Collections</a><a href="my-plp-screen.html">All Bags</a></div>
+      <div class="ft-col"><h5>Customer Service</h5><a href="#" data-soon="Shipping &amp; Delivery" data-soon-page>Shipping &amp; Delivery</a><a href="#" data-soon="Returns &amp; Exchange" data-soon-page>Returns &amp; Exchange</a><a href="my-order-tracking.html">Order Tracking</a><a href="my-contact-screen.html">Contact Us</a></div>
+      <div class="ft-col"><h5>About</h5><a href="#" data-soon="Our Story" data-soon-page>Our Story</a><a href="my-contact-screen.html">Contact</a></div>
+      <div class="ft-col"><h5>Legal</h5><a href="#" data-soon="Privacy Policy" data-soon-page>Privacy Policy</a><a href="#" data-soon="Terms of Service" data-soon-page>Terms of Service</a></div>
+    </div>
+    <hr class="ft-rule">
+    <div class="ft-legal"><span>© 2026 ELARA. All rights reserved.</span><span>Dhaka Tk. 60/- (1–3 days) · Outside Dhaka Tk. 120/- (3–5 days) · Free over Tk. 3,000/-</span></div>
+  </footer>
+</div>
+
+<!-- MENU DRAWER -->
+<div class="drawer" id="drawer" aria-hidden="true">
+  <div class="scrim" data-close></div>
+  <nav aria-label="Main menu">
+    <button class="close" data-close aria-label="Close menu">×</button>
+    <a href="my-plp-screen.html?collection=new">New Arrivals</a>
+    <a href="my-plp-screen.html">Bags</a>
+    <a href="#" data-soon="Collections">Collections</a>
+    <a href="#" data-soon="Best Sellers">Best Sellers</a>
+    <a href="my-contact-screen.html">Contact Us</a>
+  </nav>
+</div>
+
+<script src="assets/products.js"></script>
+<script src="assets/catalog.js"></script>
+<script src="assets/search.js"></script>
+<script src="assets/soon.js"></script>
+<script src="assets/cart-badge.js"></script>
+<script>
+(function () {
+  const $ = (s, r = document) => r.querySelector(s);
+  const money = (n) => 'Tk. ' + Number(n).toLocaleString('en-US') + '/-';
+  const prods = () => window.ELARA_PRODUCTS || [];
+  const pdpFor = (name) => {
+    const n = String(name).replace(/\s+/g, ' ').trim().toLowerCase();
+    const hit = prods().find((x) => x.name.toLowerCase() === n);
+    return 'my-product-detail-screen.html' + (hit ? '?p=' + hit.id : '');
+  };
+  const priceFor = (name, fb) => {
+    const n = String(name).replace(/\s+/g, ' ').trim().toLowerCase();
+    const hit = prods().find((x) => x.name.toLowerCase() === n);
+    return hit ? hit.price : fb;
+  };
+
+  // ---------- menu drawer ----------
+  const drawer = $('#drawer'), menuBtn = $('#menuBtn');
+  const setMenu = (open) => { drawer.classList.toggle('open', open); drawer.setAttribute('aria-hidden', !open); menuBtn.setAttribute('aria-expanded', open); };
+  menuBtn.addEventListener('click', () => setMenu(true));
+  drawer.addEventListener('click', (e) => { if (e.target.closest('[data-close]') || e.target.closest('a')) setMenu(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false); });
+
+  // ---------- New Arrivals tabs (same data as the desktop homepage) ----------
+  const NA = {
+    best: { feature: { img: 'assets/home/na/best-feature.webp', name: 'Nafisa Tote — Camel', price: 4200 },
+            cards: [['Kors Gilly Shoulder', 7000], ['Coach Crossbody', 7000], ['St Gtau Mint', 4200], ['Travello Cream', 7000]] },
+    new: { feature: { img: 'assets/home/na/new-feature.webp', name: 'Playful Greenish', price: 4200 },
+            cards: [['Elara Verona Tote', 4200], ['Isla Bags', 3900], ['Michael Kors Shoulder', 6500], ['Astro Travel bag', 4200]] },
+    limited: { feature: { img: 'assets/home/na/limited-feature.webp', name: 'Cozy Fazcoq Handbag', price: 8500 },
+            cards: [['Woven Bucket Bag', 5500], ['Bellora Tote', 5500], ['Novella Tote', 4999], ['Roseau Leather Tote', 7890]] },
+    acc: { feature: { img: 'assets/home/na/acc-feature.webp', name: 'Black Panther', price: 5550 },
+            cards: [['Toauf Sky', 4200], ['Charm Shoulder', 3390], ['Charm Hobo Shoulder', 5200], ['Vuitton Lockit Tote', 4500]] },
+  };
+  const body = $('#naBody');
+  function naHTML(k) {
+    const t = NA[k], f = t.feature;
+    const card = (c, i) => '<a class="pc" href="' + pdpFor(c[0]) + '"><div class="pc-img"><img src="assets/home/na/' + k + '-' + (i + 1) + '.webp" alt="' + c[0] + '" loading="lazy"></div>' +
+      '<div class="pc-info"><p class="t-title">' + c[0] + '</p><p class="t-dflt pc-price">' + money(priceFor(c[0], c[1])) + '</p></div></a>';
+    return '<a class="feature" href="' + pdpFor(f.name) + '"><img src="' + f.img + '" alt="' + f.name + '">' +
+      '<div class="feature-text"><p class="t-h4">' + f.name + '</p><div class="feature-row"><span class="t-large">' + money(priceFor(f.name, f.price)) + '</span>' +
+      '<span class="go t-link">Shop this <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12h15M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div></a>' +
+      '<div class="grid"><div class="grid-row">' + t.cards.slice(0, 2).map((c, i) => card(c, i)).join('') + '</div><div class="grid-row">' + t.cards.slice(2, 4).map((c, i) => card(c, i + 2)).join('') + '</div></div>';
+  }
+  function showTab(k, animate) {
+    document.querySelectorAll('.chips .chip').forEach((c) => c.setAttribute('aria-selected', c.dataset.tab === k));
+    const paint = () => { body.innerHTML = naHTML(k); body.classList.remove('is-out'); };
+    if (!animate) { paint(); return; }
+    body.classList.add('is-out'); setTimeout(paint, 280);
+  }
+  document.querySelectorAll('.chips .chip').forEach((c) => c.addEventListener('click', () => { if (c.getAttribute('aria-selected') !== 'true') showTab(c.dataset.tab, true); }));
+  showTab('new', false);
+
+  // ---------- Spotlight (same five products as the desktop carousel) ----------
+  const A = 'assets/home/spot/', OPEN = 'my-product-detail-screen.html';
+  const SW = (n) => A + n + '-on.svg';
+  const P = [
+    { name: 'Selene Bow Tote', cat: 'TOTE BAGS', rating: '4.6', reviews: '58 reviews', price: 'Tk. 3,900/-', badge: '', note: '30 × 22 × 11 cm, a slim everyday tote',
+      colours: [{ label: 'Cream', sw: SW('swatch-beige'), img: A + 'main-selene-cream.jpg', href: OPEN + '?p=selene-bow-tote&colour=cream' }, { label: 'Espresso', sw: SW('selene-espresso'), img: A + 'main-selene-espresso.jpg', href: OPEN + '?p=selene-bow-tote&colour=espresso' }] },
+    { name: 'Marlowe Satchel', cat: 'SHOULDER BAGS', rating: '4.7', reviews: '41 reviews', price: 'Tk. 4,800/-', badge: '', note: '28 × 21 × 12 cm, fits a phone, wallet and keys',
+      colours: [{ label: 'Taupe', sw: SW('marlowe-taupe'), img: A + 'main-marlowe-taupe.jpg', href: OPEN + '?p=marlowe-satchel&colour=taupe' }, { label: 'Rust', sw: SW('swatch-brown'), img: A + 'main-marlowe-rust.jpg', href: OPEN + '?p=marlowe-satchel&colour=rust' }] },
+    { name: 'Aurelia Structured', cat: 'TOTE BAGS', rating: '4.8', reviews: '126 reviews', price: 'Tk. 4,500/-', badge: '20% OFF', note: '31 × 24 × 12 cm, about the width of an A4 notebook',
+      colours: [{ label: 'Brown', sw: SW('swatch-brown'), img: A + 'main-brown.jpg', href: OPEN + '?p=aurelia-structured&colour=brown' }, { label: 'Black', sw: SW('swatch-black'), img: A + 'main-black.jpg', href: OPEN + '?p=aurelia-structured&colour=black' }, { label: 'Beige', sw: SW('swatch-beige'), img: A + 'main-beige.jpg', href: OPEN + '?p=aurelia-structured&colour=beige' }] },
+    { name: 'Rosalind Pocket Tote', cat: 'TOTE BAGS', rating: '4.7', reviews: '84 reviews', price: 'Tk. 5,200/-', badge: '', note: '36 × 25 × 13 cm, fits a 13" laptop comfortably',
+      colours: [{ label: 'Blush', sw: SW('rosalind-pink'), img: A + 'main-rosalind-pink.jpg', href: OPEN + '?p=rosalind-pocket-tote&colour=blush' }, { label: 'Brown', sw: SW('rosalind-brown'), img: A + 'main-rosalind-brown.jpg', href: OPEN + '?p=rosalind-pocket-tote&colour=brown' }, { label: 'Beige', sw: SW('rosalind-beige'), img: A + 'main-rosalind-beige.jpg', href: OPEN + '?p=rosalind-pocket-tote&colour=beige' }] },
+    { name: 'Cognac Everyday Tote', cat: 'TOTE BAGS', rating: '4.5', reviews: '73 reviews', price: 'Tk. 4,200/-', badge: '', note: '32 × 26 × 13 cm, room for a small laptop',
+      colours: [{ label: 'Cognac', sw: SW('swatch-brown'), img: 'assets/home/spot-thumb-4.webp', href: OPEN + '?p=cognac-everyday-tote&colour=cognac' }] },
+  ];
+  let sp = 2, col = 0;
+  const main = $('#spMain'), thumbs = $('#spThumbs'), dots = $('#spDots');
+  function paintSpot(full) {
+    const p = P[sp], c = p.colours[col];
+    if (full) {
+      main.querySelectorAll('img').forEach((i) => i.remove());
+      p.colours.forEach((k, i) => { const im = document.createElement('img'); im.src = k.img; im.alt = p.name + ' in ' + k.label.toLowerCase(); if (i === col) im.className = 'on'; main.appendChild(im); });
+      thumbs.innerHTML = p.colours.map((k, i) => '<button type="button" aria-label="' + k.label + ' photo" aria-pressed="' + (i === col) + '" data-k="' + i + '"><img src="' + k.img + '" alt=""></button>').join('');
+      dots.innerHTML = p.colours.map((k, i) => '<button type="button" role="radio" aria-checked="' + (i === col) + '" aria-label="' + k.label + '" data-k="' + i + '"><img src="' + (i === col ? k.sw : k.sw.replace('-on.svg', '-off.svg')) + '" alt=""></button>').join('');
+      $('#spCat').textContent = p.cat + ' · PREMIUM LEATHER';
+      $('#spName').textContent = p.name;
+      $('#spRate').textContent = p.rating;
+      $('#spRev').textContent = p.reviews;
+      $('#spPrice').textContent = p.price;
+      $('#spNote').textContent = p.note;
+      $('#spCount').textContent = sp + 1;
+      const b = $('#spBadge'); b.hidden = !p.badge; b.textContent = p.badge;
+    } else {
+      main.querySelectorAll('img').forEach((i, n) => i.classList.toggle('on', n === col));
+      thumbs.querySelectorAll('button').forEach((b, n) => b.setAttribute('aria-pressed', n === col));
+      dots.querySelectorAll('button').forEach((b, n) => { b.setAttribute('aria-checked', n === col); const k = p.colours[n]; b.firstElementChild.src = n === col ? k.sw : k.sw.replace('-on.svg', '-off.svg'); });
+    }
+    $('#spCta').href = c.href; $('#spRev').href = c.href;
+  }
+  document.querySelectorAll('.arrows button').forEach((b) => b.addEventListener('click', () => { sp = (sp + +b.dataset.d + P.length) % P.length; col = 0; paintSpot(true); }));
+  [thumbs, dots].forEach((el) => el.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; col = +b.dataset.k; paintSpot(false); }));
+  paintSpot(true);
+
+  // ---------- craft story: four videos, one after another ----------
+  (function () {
+    const root = $('#story'); if (!root) return;
+    const vids = [...root.querySelectorAll('video')], bars = [...root.querySelectorAll('.bar')], legend = [...root.querySelectorAll('#stLegend button')];
+    const text = $('#stText'), stepEl = $('#stStep'), quoteEl = $('#stQuote');
+    const STEPS = [
+      { step: '01 · Hand-cut leather', quote: '“Every panel is cut from a single hide, so grain and colour match.”' },
+      { step: '02 · Stitched by hand', quote: '“Two needles, one waxed thread, every seam pulled tight.”' },
+      { step: '03 · Hardware fitted', quote: '“Clasps and fittings are set and tested one by one.”' },
+      { step: '04 · Finished', quote: '“Edges burnished, handles checked, then the bag is packed.”' },
+    ];
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let cur = 0, inView = false, userPaused = false, swap = 0;
+    const progress = () => { const v = vids[cur]; return v.duration ? Math.min(1, v.currentTime / v.duration) : 0; };
+    const paintBars = () => bars.forEach((b, i) => { b.firstElementChild.style.transform = 'scaleX(' + (i < cur ? 1 : i === cur ? progress() : 0) + ')'; b.setAttribute('aria-selected', i === cur); });
+    function setText(i) {
+      text.classList.add('is-out'); clearTimeout(swap);
+      swap = setTimeout(() => { stepEl.textContent = STEPS[i].step; quoteEl.textContent = STEPS[i].quote; text.classList.remove('is-out'); }, 280);
+    }
+    function go(i, autoplay) {
+      i = (i + vids.length) % vids.length;
+      const changed = i !== cur;
+      vids.forEach((v, k) => {
+        if (k === i) { v.classList.add('on'); v.currentTime = 0; v.preload = 'auto'; }
+        else { v.classList.remove('on'); if (k === cur || changed) setTimeout(() => { if (!v.classList.contains('on')) { v.pause(); v.currentTime = 0; } }, 750); }
+      });
+      cur = i;
+      legend.forEach((b, k) => b.classList.toggle('on', k === i));
+      setText(i);
+      vids[(i + 1) % vids.length].preload = 'auto';
+      paintBars();
+      if (autoplay && inView && !userPaused) vids[i].play().catch(() => {});
+    }
+    vids.forEach((v, i) => {
+      v.addEventListener('timeupdate', () => { if (i === cur) paintBars(); });
+      v.addEventListener('ended', () => { if (i === cur) go(cur + 1, true); });
+      v.addEventListener('click', () => { if (i !== cur) return; if (v.paused) { userPaused = false; v.play().catch(() => {}); } else { userPaused = true; v.pause(); } });
+    });
+    const jump = (i) => { userPaused = false; go(i, true); inView = true; vids[i].play().catch(() => {}); };
+    bars.forEach((b, i) => b.addEventListener('click', () => jump(i)));
+    legend.forEach((b, i) => b.addEventListener('click', () => jump(i)));
+    new IntersectionObserver((es) => es.forEach((e) => {
+      inView = e.isIntersecting;
+      const v = vids[cur];
+      if (inView && !reduce && !userPaused) v.play().catch(() => {}); else v.pause();
+    }), { threshold: 0.45 }).observe(root);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) vids[cur].pause(); else if (inView && !reduce && !userPaused) vids[cur].play().catch(() => {}); });
+    paintBars();
+  })();
+})();
+</script>
+</body>
+</html>

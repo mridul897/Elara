@@ -3,6 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1440">
+<link rel="alternate" media="only screen and (max-width: 767px)" href="https://elarabags.vercel.app/index-mobile.html">
+<script>
+  /* Phones get the mobile home page (index-mobile.html). Add ?desktop=1 to stay on this page. screen.* is the device size,
+     so a narrow desktop window keeps the desktop page; it must also be a touch device. replace() keeps the Back button from bouncing between the two. */
+  (function () {
+    try {
+      if (/[?&]desktop=1(&|$)/.test(location.search)) return;
+      var touch = navigator.maxTouchPoints > 0 || /Mobi|Android|iPhone|iPod/i.test(navigator.userAgent);
+      if (touch && Math.min(screen.width, screen.height) < 768) location.replace('index-mobile.html' + location.search + location.hash);
+    } catch (e) {}
+  })();
+</script>
 <title>ELARA | Leather bags built for every chapter</title>
 <meta name="description" content="ELARA: considered leather bags for the routine you actually have. Totes, shoulder, crossbody, mini and travel bags, with delivery across Bangladesh, cash on delivery, bKash and Nagad.">
 <meta name="theme-color" content="#FFFDF9">
