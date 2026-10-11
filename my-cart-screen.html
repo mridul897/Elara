@@ -219,14 +219,6 @@
   .btn { display: flex; align-items: center; justify-content: center; height: 50px; width: 100%; padding: 0 24px; border-radius: var(--r-pill); font-weight: 500; font-size: 15px; line-height: 1; white-space: nowrap; transition: background-color .15s var(--ease); }
   .btn-accent { background: var(--accent); color: #fff; }
   .btn-accent:hover { background: #2056a6; }
-  .alt-pay { display: flex; flex-direction: column; gap: 8px; }
-  .alt-pay-title { display: flex; align-items: center; gap: 11px; }
-  .alt-pay-title img { width: 92px; height: 1px; flex-shrink: 0; }
-  .alt-pay-title span { font-size: 16px; line-height: 1.4; letter-spacing: -0.4px; white-space: nowrap; }
-  .alt-pay-logos { display: flex; gap: 6px; }
-  .alt-pay-logos a { position: relative; width: 78px; height: 51px; flex-shrink: 0; border: 0.5px solid var(--text); border-radius: 4px; overflow: hidden; background: #fff; transition: transform .15s var(--ease); }
-  .alt-pay-logos a:hover { transform: translateY(-2px); }
-  .alt-pay-logos a:last-child img { object-position: bottom; }
   .promo { display: flex; flex-direction: column; gap: 8px; }
   .promo label { font-size: 14px; line-height: 1.5; }
   .promo-row { display: flex; align-items: center; gap: 8px; }
@@ -457,15 +449,6 @@
         <div class="divider"></div>
         <div class="total"><span class="label">Total</span><span class="value" id="totalValue">Tk. 8,400/-</span></div>
         <a href="my-checkout-review.html" class="btn btn-accent">Proceed to Checkout</a>
-        <div class="alt-pay">
-          <div class="alt-pay-title"><img src="assets/cart/line.svg" alt=""><span>Or checkout with</span><img src="assets/cart/line.svg" alt=""></div>
-          <div class="alt-pay-logos">
-            <a href="my-checkout-review.html" aria-label="Checkout with bKash"><img class="cover" src="assets/cart/bkash.webp" alt="bKash"></a>
-            <a href="my-checkout-review.html" aria-label="Checkout with Nagad"><img class="cover" src="assets/cart/nagad.webp" alt="Nagad"></a>
-            <a href="my-checkout-review.html" aria-label="Checkout with Visa"><img class="cover" src="assets/cart/visa.webp" alt="Visa"></a>
-            <a href="my-checkout-review.html" aria-label="Checkout with Mastercard"><img class="cover" src="assets/cart/mastercard.webp" alt="Mastercard"></a>
-          </div>
-        </div>
         <div class="divider"></div>
         <form class="promo" id="promoForm" novalidate>
           <label for="promoInput">Promo code</label>
