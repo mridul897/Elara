@@ -513,13 +513,7 @@
 
   // ---------- views ----------
   function renderPay() {
-    const m = M.name, amt = money(total()), err = S.err;
-    const banners = {
-      wrong: ['We could not verify this payment', `No ${m} payment matches this Transaction ID. Check the SMS from ${m} and enter the ID exactly as it appears.`],
-      duplicate: ['This Transaction ID was already used', `It is linked to another order, so we cannot apply it to ${esc(order.id)}. If you paid for this order, message us and we will fix it.`],
-    };
-    const fieldErr = { wrong: 'Transaction ID not found. It has 10 letters and numbers, like 8N7A6D5EE3.', duplicate: 'Already used for another order.' };
-    const waCopy = { wrong: ['Sure you paid?', `Send us the ${m} SMS and we will check it.`], duplicate: ['Paid for this order?', 'Send us your Transaction ID and we will fix it.'] }[err] || ['Payment not going through?', 'Message us your order number and we will check it for you.'];
+    const m = M.name, amt = money(total());
     const out = Date.now() >= payBy();
     app.innerHTML = titleRow({
       title: `Complete your ${m} payment`,
@@ -527,28 +521,19 @@
       chips: chip('Order number', order.id) + chip(out ? 'Payment window' : 'Pay within', out ? 'Ended' : '15:00', 'timer' + (out ? ' out' : ''), 'timerVal'),
       link: { href: checkoutHref(), text: '← Back to checkout' },
     }) + `<div class="main"><div class="details">
-      <h2 class="serif">How to pay with ${m}</h2>
-      ${err ? `<div class="banner" role="alert">${ICON.alert}<div><b>${banners[err][0]}</b><span>${banners[err][1]}</span></div></div>` : ''}
+      <h2 class="serif">Pay with ${m}</h2>
       <div class="payto">
         <div class="payto-row"><span>Amount to pay</span><span class="amount serif">${amt}</span></div><hr>
-        <div class="payto-row"><span>${m} merchant number</span><div class="num"><b>${esc(M.number)}</b><button type="button" id="copyBtn">Copy</button></div></div>
+        <div class="payto-row"><span>Order</span><b>${esc(order.id)}</b></div>
       </div>
       ${nsteps([
-        [`Open the ${m} app`, 'Choose Payment, then enter the merchant number above.'],
-        [`Send ${amt.replace('Tk. ', 'Tk. ')}`, `Enter the exact amount and your PIN. ${m} sends you an OTP by SMS, enter it to confirm.`],
-        ['Copy your Transaction ID', `It is on the ${m} success screen and in the SMS, like 8N7A6D5EE3.`],
-        ['Paste it below and verify', `We match your payment by Transaction ID, so it is fine to pay from any ${m} number.`],
+        [`Open the ${m} window`, `A secure ${m} payment window opens on top of this page.`],
+        ['Enter your number and the verification code', `${m} sends a code by SMS to the number you enter.`],
+        [`Confirm with your ${m} PIN`, 'You come straight back here and your order is confirmed.'],
       ])}
-      <form id="trxForm" class="details" style="width:auto;gap:32px" novalidate>
-        <div class="field">
-          <label for="trx">Transaction ID (TrxID) <img src="assets/checkout/required-dot.svg" alt="required"></label>
-          <div class="input${err ? ' invalid' : ''}" id="trxBox"><input id="trx" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="14" placeholder="For example 8N7A6D5EE3" value="${esc(S.trx)}"${err ? ' aria-invalid="true"' : ''}></div>
-          <p class="err" id="trxErr"${err ? '' : ' hidden'}>${err ? fieldErr[err] : ''}</p>
-        </div>
-        ${out ? `<p class="note">The payment window has ended. Start a new one to get 15 more minutes.</p><div class="actions"><button type="button" class="btn btn-accent" id="restartBtn">Start a new payment</button></div>`
-              : `<div class="actions"><button type="submit" class="btn btn-accent">Verify payment</button></div>`}
-      </form>
-      ${wa(waCopy[0], waCopy[1])}
+      ${out ? `<p class="note">The payment window has ended. Start a new one to get 15 more minutes.</p><div class="actions"><button type="button" class="btn btn-accent" id="restartBtn">Start a new payment</button></div>`
+            : `<div class="actions"><button type="button" class="btn btn-accent" id="gwBtn">Pay ${amt} with ${m}</button></div>`}
+      ${wa('Payment not going through?', 'Message us your order number and we will check it for you.')}
     </div>${summary(`Pay ${amt} with ${m} to confirm your order.`)}</div>`;
     document.title = 'Pay with ' + m + ' | ELARA';
   }
@@ -635,22 +620,14 @@
     tick(); S.tick = setInterval(tick, 1000);
   }
 
+  function openGateway() {
+    if (window.ElaraGateway.isOpen()) return;
+    ElaraGateway.open({ brand: order.payment, amount: order.total, invoice: order.id, onSuccess: (trx) => succeed(trx) });
+  }
+
   function wirePay() {
-    const input = document.getElementById('trx');
-    const clear = () => { document.getElementById('trxBox').classList.remove('invalid'); document.getElementById('trxErr').hidden = true; input.removeAttribute('aria-invalid'); const b = app.querySelector('.banner'); if (b) b.remove(); S.err = null; };
-    input.addEventListener('input', () => { S.trx = input.value; if (S.err) clear(); });
-    document.getElementById('trxBox').addEventListener('click', (e) => { if (e.target === e.currentTarget) input.focus(); });
-    document.getElementById('copyBtn').addEventListener('click', (e) => {
-      const btn = e.currentTarget, txt = M.number.replace(/\s/g, '');
-      (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).catch(() => {}).finally(() => { btn.textContent = 'Copied'; setTimeout(() => { btn.textContent = 'Copy'; }, 1600); });
-    });
-    const form = document.getElementById('trxForm');
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const id = input.value.replace(/\s/g, '').toUpperCase(); S.trx = id;
-      if (!/^[A-Z0-9]{10}$/.test(id)) { S.err = 'wrong'; render(false); document.getElementById('trx').focus(); return; }
-      S.err = null; S.slowTries = 0; verify();
-    });
+    const go = document.getElementById('gwBtn');
+    if (go) go.addEventListener('click', openGateway);
     const rs = document.getElementById('restartBtn');
     if (rs) rs.addEventListener('click', () => { order.payBy = Date.now() + WINDOW_MIN * 60000; write(ORDER_KEY, order); render(false); });
   }
@@ -695,6 +672,7 @@
     if (p) { S.view = p[0]; S.err = p[1] || null; S.trx = (S.err === 'duplicate' ? '8N7A6D5EE3' : S.err === 'wrong' ? '8N7A6D5E' : '8N7A6D5EE3'); }
     render(false);
     document.getElementById('crumbCheckout').href = checkoutHref();
+    if (!p && Date.now() < payBy()) window.addEventListener('load', openGateway);
   }
 
   // Nav dropdowns — identical behaviour to the homepage.
@@ -749,6 +727,7 @@
     document.addEventListener('click', (e) => { if (openKey && !wrap.contains(e.target) && ![...items].some((it) => it.contains(e.target))) close(); });
   })();
 </script>
+<script src="assets/gateway.js"></script>
 <script src="assets/cart-badge.js"></script>
 <script src="assets/search.js"></script>
 <script src="assets/soon.js"></script>

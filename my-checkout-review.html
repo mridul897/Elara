@@ -690,8 +690,8 @@
   });
   const NEXT = {
     cod: [['Place your order', 'We confirm it with your address.'], ['Delivery', 'Your delivery person calls before arriving.'], ['Pay in cash', 'Pay when the bag is in your hands.']],
-    bkash: [['Place your order', 'We save it for you.'], ['Pay in the bKash app', 'Send the exact amount.'], ['Enter your Transaction ID', 'We confirm within a minute.']],
-    nagad: [['Place your order', 'We save it for you.'], ['Pay in the Nagad app', 'Send the exact amount.'], ['Enter your Transaction ID', 'We confirm within a minute.']],
+    bkash: [['Place your order', 'We save it for you.'], ['Pay in the bKash window', 'Enter your number, code and PIN.'], ['Order confirmed', 'You come straight back here.']],
+    nagad: [['Place your order', 'We save it for you.'], ['Pay in the Nagad window', 'Enter your number, code and PIN.'], ['Order confirmed', 'You come straight back here.']],
     card: [['Place your order', 'We save it for you.'], ['Pay securely', 'Enter your card on the next screen.'], ['Order confirmed', 'You see your confirmation right away.']],
   };
   function paintNext() {
@@ -764,11 +764,22 @@
       customer: { name: $('fName').value.trim(), phone: '+880' + normalisePhone($('fPhone').value), email: $('fEmail').value.trim() || null },
       address: { division: fDivision.value, district: fDistrict.value, upazila: fUpazila.value.trim(), area: fArea.value.trim(), line1: $('fAddress1').value.trim(), line2: $('fAddress2').value.trim() || null },
     };
-    // bKash / Nagad: the order is saved but the bag stays until the payment actually goes through (my-payment.html).
+    // bKash / Nagad: the order is saved, then the wallet's gateway popup opens over this page. The bag stays until the
+    // payment actually goes through; closing the popup leaves the shopper here with everything still filled in.
     if (order.payment === 'bkash' || order.payment === 'nagad') {
       order.payBy = Date.now() + 15 * 60000;
       write(ORDER_KEY, order);
-      location.href = 'my-payment.html';
+      ElaraGateway.open({
+        brand: order.payment, amount: order.total, invoice: order.id,
+        onSuccess: (trx) => {
+          order.paid = true; order.trxId = trx; order.paidAt = new Date().toISOString();
+          write(ORDER_KEY, order);
+          if (buyNow) { try { localStorage.removeItem(BUY_KEY); } catch (err) {} } else { write(CART_KEY, []); }
+          try { localStorage.removeItem(PROMO_KEY); } catch (err) {}
+          if (window.ElaraCart) ElaraCart.refreshBadge();
+          location.href = 'my-order-success.html';
+        },
+      });
       return;
     }
     write(ORDER_KEY, order);
@@ -850,6 +861,7 @@
     document.addEventListener('click', (e) => { if (openKey && !wrap.contains(e.target) && ![...items].some((it) => it.contains(e.target))) close(); });
   })();
 </script>
+<script src="assets/gateway.js"></script>
 <script src="assets/cart-badge.js"></script>
 <script src="assets/search.js"></script>
 <script src="assets/soon.js"></script>
