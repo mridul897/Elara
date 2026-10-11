@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=1440">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preload" as="image" href="assets/home/logo.webp">
 <link rel="preload" as="image" href="assets/home/hero-bg.webp" fetchpriority="high">
 <link rel="alternate" media="only screen and (max-width: 1023px)" href="https://elarabags.vercel.app/index-mobile.html">
@@ -14,8 +14,10 @@
     try {
       if (/[?&]desktop=1(&|$)/.test(location.search)) return;
       var go = function () { location.replace('index-mobile.html' + location.search + location.hash); };
-      if (window.innerWidth < 1024) { go(); return; }
-      var t; window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(function () { if (window.innerWidth < 1024) go(); }, 200); });
+      // screen.width guards a browser that stretches the layout viewport (e.g. "Desktop site"): a phone is never wider than 1024
+      var narrow = function () { return Math.min(window.innerWidth, window.screen && screen.width ? screen.width : 99999) < 1024; };
+      if (narrow()) { go(); return; }
+      var t; window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(function () { if (narrow()) go(); }, 200); });
     } catch (e) {}
   })();
 </script>
