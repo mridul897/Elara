@@ -43,6 +43,7 @@
 <link rel="preload" href="assets/fonts/fraunces-normal-latin-fe3a28.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/inter-normal-latin-567244.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="assets/mobile.css" media="(max-width: 767.98px)">
 <style>
   :root {
     --bg-page: #fffdf9;
@@ -275,9 +276,36 @@
   .empty h1 { font-size: 36px; font-weight: 300; line-height: 1.1; letter-spacing: -1.8px; }
   .empty p { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
   .empty .btn { flex: none; width: 260px; }
+
+  /* ===== Phone layout (< 768px) ===== */
+  @media (max-width: 767.98px) {
+
+    .breadcrumb { display: none; }
+    .title-row { flex-direction: column; align-items: flex-start; gap: 12px; padding: 20px 20px 0; }
+    .title-text h1 { font-size: 30px; letter-spacing: -1.3px; }
+    .chips { flex-wrap: wrap; gap: 8px; }
+    .title-link { font-size: 15px; }
+    .main { flex-direction: column; align-items: stretch; gap: 28px; padding: 24px 20px 40px; }
+    .details { width: 100%; gap: 28px; }
+    .side { width: 100%; padding: 20px; }
+    .payto { padding: 16px; }
+    .payto-row { flex-wrap: wrap; gap: 6px 16px; }
+    .input input { font-size: 16px; }
+    .actions { flex-direction: column; gap: 12px; }
+    .actions .btn { flex: none; width: 100%; }
+    .details-row { flex-direction: column; gap: 4px; }
+    .details-row dt { width: auto; }
+    .wa { flex-direction: column; align-items: flex-start; padding: 16px; }
+    .wa-link { white-space: normal; }
+    .empty { padding: 32px 20px 64px; }
+    .empty h1 { font-size: 30px; }
+    .empty .btn { width: 100%; }
+
+  }
 </style>
 </head>
-<body>
+<body data-m-back="my-checkout-review.html" data-m-title="Payment" data-m-nofooter>
+<script src="assets/mobile.js"></script>
 
 <div class="page">
 

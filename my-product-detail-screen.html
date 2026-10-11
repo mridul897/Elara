@@ -33,6 +33,7 @@
 <link rel="preload" href="assets/fonts/fraunces-normal-latin-fe3a28.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/inter-normal-latin-567244.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="assets/mobile.css" media="(max-width: 767.98px)">
 <script>
   // The markup below is a Nafisa Tote template that the script at the bottom fills with the bag from ?p=.
   // Keep it hidden until that has happened, so the template never flashes before the right bag.
@@ -368,9 +369,67 @@
   .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
   .toast a { font-weight: 500; text-decoration: underline; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+
+  /* ===== Phone layout (< 768px) ===== */
+  @media (max-width: 767.98px) {
+
+    .breadcrumb { padding: 12px 20px 0; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+    .breadcrumb::-webkit-scrollbar { display: none; }
+    .pdp-main { flex-direction: column; gap: 20px; padding: 16px 20px 0; }
+    .gallery { width: 100%; }
+    .gallery-main { width: 100%; height: auto; aspect-ratio: 4 / 5; }
+    .gallery-arrow { width: 36px; height: 36px; margin-top: -18px; }
+    .gallery-arrow.prev { left: 10px; } .gallery-arrow.next { right: 10px; }
+    .thumbs { width: 100%; padding: 10px 0 0; overflow-x: auto; scrollbar-width: none; }
+    .thumbs::-webkit-scrollbar { display: none; }
+    .info { width: 100%; }
+    .eyebrow { white-space: normal; }
+    .product-name { font-size: 30px; letter-spacing: -1.4px; }
+    .product-name.long { font-size: 26px; letter-spacing: -1.1px; }
+    .title-row { gap: 12px; }
+    .option-label { white-space: normal; gap: 12px; flex-wrap: wrap; }
+    .option-label .value { text-align: right; }
+    .option-label:has(#sizeNote) { flex-direction: column; gap: 2px; }
+    .option-label:has(#sizeNote) .value { text-align: left; }
+    .swatches { flex-wrap: wrap; }
+    .chips { flex-wrap: wrap; }
+    .actions { padding-top: 4px; }
+    .details-wrap { padding: 28px 20px 0; }
+    .details { width: 100%; padding: 8px 0 0; }
+    .acc { width: 100%; }
+    .rv { padding: 48px 20px 0; }
+    .rv-head { flex-direction: column; align-items: stretch; gap: 16px; }
+    .rv-title { font-size: 32px; letter-spacing: -1.2px; }
+    .rv-head .rv-btn { width: 100%; }
+    .rv-summary { grid-template-columns: minmax(0, 1fr); gap: 28px; padding: 28px 0; }
+    .rv-score { font-size: 64px; }
+    .rv-form { padding: 20px; }
+    .rv-grid2 { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    .rv-form-actions { flex-direction: column; }
+    .rv-form-actions .rv-btn { width: 100%; }
+    .rv-tools { flex-direction: column; align-items: stretch; gap: 14px; padding-top: 20px; }
+    .rv-sort { justify-content: space-between; }
+    .rv-item { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 22px 0; }
+    .rv-who { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+    .rv-avatar { margin-bottom: 0; }
+    .rv-headline { font-size: 18px; }
+    .rv-more .rv-btn { width: 100%; }
+    .contact-wrap { padding: 40px 20px 0; }
+    .contact { flex-direction: column; align-items: flex-start; gap: 16px; padding: 24px 20px; }
+    .contact-text strong { font-size: 22px; }
+    .contact-link { width: 100%; justify-content: center; }
+    .related { padding: 40px 0 0 20px; }
+    .related-cards { overflow-x: auto; padding-right: 20px; scrollbar-width: none; }
+    .related-cards::-webkit-scrollbar { display: none; }
+    .rcard { flex: none; width: 150px; }
+    .rcard-media { height: 188px; }
+    .toast { bottom: 16px; max-width: calc(100% - 32px); width: max-content; }
+
+  }
 </style>
 </head>
 <body>
+<script src="assets/mobile.js"></script>
 
 <div class="page">
 

@@ -34,6 +34,7 @@
 <link rel="preload" href="assets/fonts/fraunces-normal-latin-fe3a28.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/inter-normal-latin-567244.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="assets/mobile.css" media="(max-width: 767.98px)">
 <link rel="stylesheet" href="assets/fonts/fonts-italic.css" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="assets/fonts/fonts-italic.css"></noscript>
 <style>
@@ -309,9 +310,47 @@
   .rcard:hover .rcard-media img { transform: scale(1.04); }
   .rcard-meta { display: flex; flex-direction: column; gap: 2px; font-size: 13px; line-height: 20px; white-space: nowrap; }
   .rcard-meta b { font-weight: 500; }
+
+  /* ===== Phone layout (< 768px) ===== */
+  @media (max-width: 767.98px) {
+
+    .breadcrumb { padding: 12px 20px 0; }
+    .title-row { padding: 16px 20px 0; flex-direction: column; align-items: flex-start; gap: 10px; white-space: normal; }
+    .title-block h1 { font-size: 32px; letter-spacing: -1.4px; }
+    .continue { font-size: 15px; }
+    .cart-main { flex-direction: column; align-items: stretch; gap: 24px; padding: 20px 20px 40px; }
+    #itemsCol { width: 100% !important; }
+    .items { width: 100%; }
+    .item { gap: 14px; padding: 18px 0; }
+    .item-photo { width: 96px; height: 120px; }
+    .item-details { height: auto; min-height: 120px; gap: 10px; }
+    .item-name-row { flex-wrap: wrap; white-space: normal; gap: 2px 10px; }
+    .item-name { font-size: 19px; letter-spacing: -.5px; }
+    .item-price { font-size: 15px; }
+    .item-meta { white-space: normal; font-size: 13px; }
+    .item-bottom { flex-wrap: wrap; gap: 8px 12px; }
+    .actions { gap: 16px; }
+    .stepper button { width: 36px; height: 36px; }
+    .stepper output { height: 36px; }
+    .side { width: 100%; }
+    .summary { width: 100%; padding: 20px; }
+    .promo-input { font-size: 16px; }
+    .related { padding: 32px 0 40px 20px; }
+    .related h2 { white-space: normal; }
+    .related-cards { overflow-x: auto; padding-right: 20px; scrollbar-width: none; }
+    .related-cards::-webkit-scrollbar { display: none; }
+    .rcard { flex: none; width: 150px; }
+    .rcard-media { height: 188px; }
+    .modal { padding: 16px; }
+    .fd-body { padding: 24px 22px 26px; }
+    .modal-card h2 { font-size: 30px; letter-spacing: -1.1px; }
+    .fd-ticket { flex-wrap: wrap; }
+
+  }
 </style>
 </head>
 <body>
+<script src="assets/mobile.js"></script>
 
 <div class="page">
 

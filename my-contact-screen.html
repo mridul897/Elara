@@ -33,6 +33,7 @@
 <link rel="preload" href="assets/fonts/fraunces-normal-latin-fe3a28.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/inter-normal-latin-567244.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="assets/mobile.css" media="(max-width: 767.98px)">
 <style>
   :root {
     --bg-page: #fffdf9;
@@ -172,9 +173,30 @@
   .c-link { flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 24px; border: 1px solid var(--border-soft); border-radius: var(--r-media); font-size: 15px; font-weight: 500; transition: background-color .15s var(--ease); }
   .c-link:hover { background: var(--bg-card); }
   .c-link span { color: var(--text-muted); font-weight: 400; font-size: 13px; display: block; margin-top: 2px; }
+
+  /* ===== Phone layout (< 768px) ===== */
+  @media (max-width: 767.98px) {
+
+    .breadcrumb { display: none; }
+    .c-head { padding: 24px 20px 0; }
+    .c-head h1 { font-size: 40px; letter-spacing: -1.6px; }
+    .c-head p { font-size: 15px; }
+    .c-main { flex-direction: column; align-items: stretch; gap: 28px; padding: 28px 20px 0; }
+    .c-cards { flex: none; width: 100%; }
+    .c-card { padding: 18px 16px; }
+    .c-hours { padding: 16px; }
+    .c-form { width: 100%; flex: none; padding: 22px 18px; }
+    .c-form h2 { font-size: 24px; }
+    .f-row { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    .in { font-size: 16px; }
+    .c-send { width: 100%; }
+    .c-links { flex-direction: column; padding: 32px 20px 0; }
+
+  }
 </style>
 </head>
 <body>
+<script src="assets/mobile.js"></script>
 <div class="page">
 
   <header class="abs nav">

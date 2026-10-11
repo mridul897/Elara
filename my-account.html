@@ -39,6 +39,7 @@
 <link rel="preload" href="assets/fonts/fraunces-normal-latin-fe3a28.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/inter-normal-latin-567244.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="assets/mobile.css" media="(max-width: 767.98px)">
 <style>
   :root {
     --bg-page: #fffdf9;
@@ -296,9 +297,53 @@
   .saved button:hover { text-decoration: underline; }
   .toast { position: fixed; left: 50%; bottom: 32px; transform: translate(-50%, 20px); padding: 12px 20px; background: var(--text); color: #fff; border-radius: var(--r-pill); font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .25s var(--ease); z-index: 60; }
   .toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ===== Phone layout (< 768px) ===== */
+  @media (max-width: 767.98px) {
+
+    .breadcrumb { display: none; }
+    .lg-body { padding: 24px 20px 40px; }
+    .lg-col { width: 100%; gap: 20px; }
+    .lg-row { flex-direction: column; gap: 20px; }
+    .sign-card { padding: 24px 20px; }
+    .join-card { width: 100%; min-height: 0; padding: 24px 20px; }
+    .banner > img { height: 180px; }
+    .banner-text { padding: 28px 20px 32px; }
+    .banner-steps { flex-direction: column; gap: 10px; width: 100%; }
+    .banner-steps img { transform: rotate(90deg); }
+    .step-box { width: 100%; padding: 14px 20px; }
+    .status-card { padding: 24px 20px; }
+    .status-card .fields { align-items: stretch; }
+    .status-card .btn { width: 100%; }
+    .foot { display: none; }
+    .title-row { flex-direction: column; align-items: flex-start; gap: 12px; padding: 24px 20px 0; }
+    .title-text h1 { font-size: 32px; letter-spacing: -1.4px; }
+    .title-link { font-size: 15px; }
+    .main { flex-direction: column; align-items: stretch; gap: 28px; padding: 24px 20px 40px; }
+    .details { width: 100%; gap: 24px; }
+    .side { width: 100%; padding: 20px; }
+    .form { gap: 24px; }
+    .fields { flex-direction: column; gap: 20px; }
+    .input input { font-size: 16px; }
+    .code { gap: 8px; }
+    .code input { height: 52px; font-size: 20px; }
+    .actions { flex-direction: column; gap: 12px; }
+    .actions .btn { flex: none; width: 100%; }
+    .tabs { gap: 20px; overflow-x: auto; scrollbar-width: none; }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab { white-space: nowrap; font-size: 15px; }
+    .order { padding: 16px; }
+    .order-top { flex-wrap: wrap; }
+    .order-id { flex-wrap: wrap; gap: 4px 10px; }
+    .empty-box .btn { width: 100%; }
+    .saved { flex-wrap: wrap; }
+    .toast { bottom: 16px; max-width: calc(100% - 32px); }
+
+  }
 </style>
 </head>
 <body>
+<script src="assets/mobile.js"></script>
 
 <div class="page">
 
