@@ -533,6 +533,14 @@
     .m-menu nav a { padding: 14px 0; border-bottom: 1px solid #ddd5c6; font-family: var(--font-display); font-size: 24px; letter-spacing: -.72px; }
   }
   @media (min-width: 1024px) { .m-footer { display: none; } }
+  /* Tablet: three product columns, content held to a comfortable width, roomier side padding */
+  @media (min-width: 768px) and (max-width: 1023.98px) {
+    .site-header { padding-left: 40px; padding-right: 28px; }
+    .product-grid { grid-template-columns: repeat(3, 1fr); gap: 28px 20px; }
+    .plp-right .grid-wrap, .filter-sort-row, .cat-chips, .active-chips, .breadcrumb, .plp-head { padding-left: 40px; padding-right: 40px; }
+    .m-footer { padding-left: 40px; padding-right: 40px; }
+    .mf-cols { grid-template-columns: repeat(4, 1fr); }
+  }
 </style>
 </head>
 <body>

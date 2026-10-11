@@ -1,9 +1,12 @@
-/* ELARA mobile shell: on phones (< 768px) adds the compact header, the menu drawer and the footer to the my-*.html pages.
-   Load it with a plain <script src="assets/mobile.js"></script> right after <body>. Desktop is untouched. */
+/* ELARA mobile shell: adds the compact header, the menu drawer and the footer to the my-*.html pages.
+   Load it with a plain <script src="assets/mobile.js"></script> right after <body>.
+   It is always injected and shown only below 1024px (phones and tablets) by assets/mobile.css, which is linked with a
+   media query, so resizing a window across the breakpoint swaps layouts without a reload (nothing typed is lost). */
 (function () {
-  if (!window.matchMedia('(max-width: 767.98px)').matches) return;
   var b = document.body;
-  b.classList.add('is-mobile');
+  var hide = document.createElement('style');
+  hide.textContent = '@media (min-width: 1024px) { .mh, .mh-menu, .mf { display: none !important; } }';
+  document.head.appendChild(hide);
   var noFooter = b.hasAttribute('data-m-nofooter');
   var back = b.getAttribute('data-m-back');   // e.g. "my-plp-screen.html": shows a back arrow instead of the logo
   var title = b.getAttribute('data-m-title'); // e.g. "Checkout"

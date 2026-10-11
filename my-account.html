@@ -39,7 +39,7 @@
 <link rel="preload" href="assets/fonts/fraunces-normal-latin-fe3a28.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/inter-normal-latin-567244.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/fonts/fonts.css">
-<link rel="stylesheet" href="assets/mobile.css" media="(max-width: 767.98px)">
+<link rel="stylesheet" href="assets/mobile.css" media="(max-width: 1023.98px)">
 <style>
   :root {
     --bg-page: #fffdf9;
@@ -298,8 +298,8 @@
   .toast { position: fixed; left: 50%; bottom: 32px; transform: translate(-50%, 20px); padding: 12px 20px; background: var(--text); color: #fff; border-radius: var(--r-pill); font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .25s var(--ease); z-index: 60; }
   .toast.on { opacity: 1; transform: translate(-50%, 0); }
 
-  /* ===== Phone layout (< 768px) ===== */
-  @media (max-width: 767.98px) {
+  /* ===== Phone + tablet layout (< 1024px) ===== */
+  @media (max-width: 1023.98px) {
 
     .breadcrumb { display: none; }
     .lg-body { padding: 24px 20px 40px; }

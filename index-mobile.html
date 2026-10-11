@@ -8,6 +8,17 @@
 <meta name="theme-color" content="#FFFDF9">
 <link rel="canonical" href="https://elarabags.vercel.app/">
 <link rel="preload" as="image" href="assets/home/hero-bg.webp" fetchpriority="high">
+<script>
+  /* Wide windows belong on the desktop page. Add ?mobile=1 to stay here. */
+  (function () {
+    try {
+      if (/[?&]mobile=1(&|$)/.test(location.search)) return;
+      var go = function () { location.replace('index.html' + location.search + location.hash); };
+      if (window.innerWidth >= 1024) { go(); return; }
+      var t; window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(function () { if (window.innerWidth >= 1024) go(); }, 200); });
+    } catch (e) {}
+  })();
+</script>
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/svg+xml" href="/assets/home/favicon.svg">
 <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
@@ -211,6 +222,42 @@
   .drawer.open nav { transform: none; }
   .drawer .close { align-self: flex-end; width: 44px; height: 44px; font-size: 28px; line-height: 1; }
   .drawer nav a { padding: 14px 0; border-bottom: 1px solid var(--border); font-family: 'Fraunces', serif; font-size: 24px; letter-spacing: -.72px; }
+
+  /* ---- tablet (768 to 1023): the same page, laid out in columns instead of one long strip ---- */
+  @media (min-width: 768px) {
+    body { background: var(--bg); }
+    .m { max-width: none; box-shadow: none; }
+    .nav { padding: 8px 28px 8px 40px; }
+    .hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); align-items: center; }
+    .hero-thumbs { left: 40px; }
+    .hero-copy { padding: 8px 40px 8px 24px; gap: 20px; }
+    .hero-copy h1 { font-size: 48px; }
+    .na { padding: 64px 0; }
+    .chips, .px { padding-left: 40px; padding-right: 40px; }
+    .na > .sec-head, .na > h2, .na > .px { padding-left: 40px; padding-right: 40px; }
+    #naBody { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 20px; align-items: start; padding: 0 40px; }
+    #naBody .feature { margin: 0; align-self: stretch; aspect-ratio: auto; min-height: 420px; }
+    #naBody .grid { padding: 0; gap: 20px; }
+    .cat { padding: 56px 40px 64px; }
+    .cat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+    .cat-col { display: contents; }
+    .cat-col.off { padding-top: 0; }
+    .spot { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px 40px; padding: 56px 40px 64px; align-items: start; }
+    .spot-head { grid-column: 1 / -1; }
+    .spot .gal { grid-column: 1; grid-row: 2 / 4; }
+    .spot .info { grid-column: 2; grid-row: 2; }
+    .spot .pager { grid-column: 2; grid-row: 3; align-self: end; }
+    .story { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 32px 40px; align-items: center; padding: 64px 40px; }
+    .story-quote { font-size: 24px; }
+    .rev { padding: 64px 0; }
+    .rev > :not(.rev-track) { padding-left: 40px; padding-right: 40px; }
+    .rev-track { padding: 0 40px; scroll-padding-left: 40px; }
+    .rev-card { width: 340px; }
+    .nl { padding: 0 40px 64px; }
+    .nl-card { max-width: 720px; margin: 0 auto; }
+    .ft { padding: 56px 40px 40px; }
+    .ft-cols { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
   @media (prefers-reduced-motion: reduce) { * { transition-duration: .01s !important; } }
 </style>
 </head>

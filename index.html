@@ -5,15 +5,17 @@
 <meta name="viewport" content="width=1440">
 <link rel="preload" as="image" href="assets/home/logo.webp">
 <link rel="preload" as="image" href="assets/home/hero-bg.webp" fetchpriority="high">
-<link rel="alternate" media="only screen and (max-width: 767px)" href="https://elarabags.vercel.app/index-mobile.html">
+<link rel="alternate" media="only screen and (max-width: 1023px)" href="https://elarabags.vercel.app/index-mobile.html">
 <script>
-  /* Phones get the mobile home page (index-mobile.html). Add ?desktop=1 to stay on this page. screen.* is the device size,
-     so a narrow desktop window keeps the desktop page; it must also be a touch device. replace() keeps the Back button from bouncing between the two. */
+  /* Anything narrower than 1024px (phones, tablets, a narrow window) gets the mobile/tablet home page, index-mobile.html.
+     Decided by the viewport width, not the device, so responsive testers and resized windows behave the same.
+     Add ?desktop=1 to stay on this page. replace() keeps the Back button from bouncing between the two pages. */
   (function () {
     try {
       if (/[?&]desktop=1(&|$)/.test(location.search)) return;
-      var touch = navigator.maxTouchPoints > 0 || /Mobi|Android|iPhone|iPod/i.test(navigator.userAgent);
-      if (touch && Math.min(screen.width, screen.height) < 768) location.replace('index-mobile.html' + location.search + location.hash);
+      var go = function () { location.replace('index-mobile.html' + location.search + location.hash); };
+      if (window.innerWidth < 1024) { go(); return; }
+      var t; window.addEventListener('resize', function () { clearTimeout(t); t = setTimeout(function () { if (window.innerWidth < 1024) go(); }, 200); });
     } catch (e) {}
   })();
 </script>
