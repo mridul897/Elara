@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1440">
+<link rel="preload" as="image" href="assets/home/logo.webp">
+<link rel="preload" as="image" href="assets/home/hero-bg.webp" fetchpriority="high">
 <link rel="alternate" media="only screen and (max-width: 767px)" href="https://elarabags.vercel.app/index-mobile.html">
 <script>
   /* Phones get the mobile home page (index-mobile.html). Add ?desktop=1 to stay on this page. screen.* is the device size,
@@ -86,7 +88,7 @@
   html.pl-lock { overflow: hidden; }
   #preloader { position: fixed; inset: 0; z-index: 9999; }
   html.pl-skip #preloader { display: none; }
-  .pl-panel { position: absolute; top: 0; width: 50%; height: 100%; background: var(--bg-page); overflow: hidden; transform: translateX(0); transition: transform 750ms var(--ease); }
+  .pl-panel { position: absolute; top: 0; width: 50%; height: 100%; background: var(--bg-page); overflow: hidden; transform: translateX(0); transition: transform 750ms var(--ease); will-change: transform; contain: layout paint; }
   .pl-panel-l { left: 0; }
   .pl-panel-r { right: 0; }
   #preloader.pl-split .pl-panel-l { transform: translateX(-100%); }
@@ -100,8 +102,8 @@
   /* The real logo (assets/home/logo.webp, same file the nav uses). */
   .pl-logo { display: block; width: 220px; height: auto; margin: -38px 0; /* logo.png has ~38px of empty canvas above and below the letters */ opacity: 0; translate: 0 16px; transition: opacity 550ms var(--ease), translate 550ms var(--ease); }
   #preloader.pl-in .pl-logo { opacity: 1; translate: 0 0; }
-  .pl-rule { width: 0; height: 1px; background: var(--text-faint); transition: width 650ms var(--ease) 480ms; }
-  #preloader.pl-in .pl-rule { width: 120px; }
+  .pl-rule { width: 120px; height: 1px; background: var(--text-faint); transform: scaleX(0); transform-origin: center; transition: transform 650ms var(--ease) 480ms; will-change: transform; }
+  #preloader.pl-in .pl-rule { transform: scaleX(1); }
 
   /* 1440px safe area: every piece of content stays inside it, at its Figma size.
      On wider screens only backgrounds extend past it, edge to edge (the Oura pattern).
@@ -584,7 +586,7 @@
   <div class="bleed bleed-footer" aria-hidden="true"></div>
 
   <!-- ===== HERO ===== -->
-  <div class="abs hero-bg"><img class="cover" src="assets/home/hero-bg.webp" alt=""></div>
+  <div class="abs hero-bg"><img class="cover" src="assets/home/hero-bg.webp" alt="" fetchpriority="high" decoding="async"></div>
 
   <header class="abs nav">
     <div class="nav-inner">
@@ -719,19 +721,19 @@
       </div>
       <div class="cat-grid stagger">
         <a href="my-plp-screen.html?category=tote" class="cat-item" style="left:0;top:116px;" aria-label="Shop Tote bags">
-          <div class="cat-img"><img class="crop" src="assets/home/cat-tote.webp" alt="" style="left:-45px;top:-216px;width:423px;height:566px;"><span class="cat-shade"></span><span class="cat-go" aria-hidden="true"><svg viewBox="0 0 22 22" fill="none"><path d="M4 11h13M12 5.5 17.5 11 12 16.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="cat-img"><img loading="lazy" decoding="async" class="crop" src="assets/home/cat-tote.webp" alt="" style="left:-45px;top:-216px;width:423px;height:566px;"><span class="cat-shade"></span><span class="cat-go" aria-hidden="true"><svg viewBox="0 0 22 22" fill="none"><path d="M4 11h13M12 5.5 17.5 11 12 16.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
           <p class="cat-label serif">Tote</p>
         </a>
         <a href="my-plp-screen.html?category=shoulder" class="cat-item" style="left:344px;top:0;" aria-label="Shop Shoulder bags">
-          <div class="cat-img"><img class="crop" src="assets/home/cat-shoulder.webp" alt="" style="left:-5px;top:-83px;width:324px;height:433px;"><span class="cat-shade"></span><span class="cat-go" aria-hidden="true"><svg viewBox="0 0 22 22" fill="none"><path d="M4 11h13M12 5.5 17.5 11 12 16.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="cat-img"><img loading="lazy" decoding="async" class="crop" src="assets/home/cat-shoulder.webp" alt="" style="left:-5px;top:-83px;width:324px;height:433px;"><span class="cat-shade"></span><span class="cat-go" aria-hidden="true"><svg viewBox="0 0 22 22" fill="none"><path d="M4 11h13M12 5.5 17.5 11 12 16.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
           <p class="cat-label serif">Shoulder</p>
         </a>
         <a href="my-plp-screen.html?category=crossbody" class="cat-item" style="left:688px;top:123px;" aria-label="Shop Crossbody bags">
-          <div class="cat-img"><img class="crop" src="assets/home/cat-crossbody.webp" alt="" style="left:-16px;top:-75px;width:402px;height:538px;"><span class="cat-shade"></span><span class="cat-go" aria-hidden="true"><svg viewBox="0 0 22 22" fill="none"><path d="M4 11h13M12 5.5 17.5 11 12 16.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="cat-img"><img loading="lazy" decoding="async" class="crop" src="assets/home/cat-crossbody.webp" alt="" style="left:-16px;top:-75px;width:402px;height:538px;"><span class="cat-shade"></span><span class="cat-go" aria-hidden="true"><svg viewBox="0 0 22 22" fill="none"><path d="M4 11h13M12 5.5 17.5 11 12 16.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
           <p class="cat-label serif">Cross body</p>
         </a>
         <a href="my-plp-screen.html?category=mini" class="cat-item" style="left:1032px;top:0;" aria-label="Shop Mini bags">
-          <div class="cat-img"><img class="crop" src="assets/home/cat-mini.webp" alt="" style="left:-44px;top:-124px;width:363px;height:486px;"><span class="cat-shade"></span><span class="cat-go" aria-hidden="true"><svg viewBox="0 0 22 22" fill="none"><path d="M4 11h13M12 5.5 17.5 11 12 16.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="cat-img"><img loading="lazy" decoding="async" class="crop" src="assets/home/cat-mini.webp" alt="" style="left:-44px;top:-124px;width:363px;height:486px;"><span class="cat-shade"></span><span class="cat-go" aria-hidden="true"><svg viewBox="0 0 22 22" fill="none"><path d="M4 11h13M12 5.5 17.5 11 12 16.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
           <p class="cat-label serif">Mini</p>
         </a>
       </div>
@@ -780,22 +782,22 @@
   <div class="abs rev-row rev-row-1 stagger">
     <article class="rev-card"><div class="abs rev-inner">
       <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">Came exactly as pictured — the tan is even richer in person. Fits my 13-inch laptop with room to spare.</p></div>
-      <div class="rev-person"><div class="avatar"><img class="crop" src="assets/home/avatar-israt.webp" alt="" style="left:-31.56%;top:0.23%;width:227.74%;height:128.11%;"></div>
+      <div class="rev-person"><div class="avatar"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-israt.webp" alt="" style="left:-31.56%;top:0.23%;width:227.74%;height:128.11%;"></div>
         <div><p class="rev-name">Israt Jahan Eva</p><p class="rev-rate"><span class="rev-star"><img src="assets/home/icon-star-18.svg" alt=""></span>4.5</p></div></div>
     </div></article>
     <article class="rev-card"><div class="abs rev-inner">
       <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">Came exactly as pictured — the tan is even richer in person. Fits my 13-inch laptop with room to spare.</p></div>
-      <div class="rev-person"><div class="avatar"><img class="crop" src="assets/home/avatar-israt.webp" alt="" style="left:-31.56%;top:0.23%;width:227.74%;height:128.11%;"></div>
+      <div class="rev-person"><div class="avatar"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-israt.webp" alt="" style="left:-31.56%;top:0.23%;width:227.74%;height:128.11%;"></div>
         <div><p class="rev-name">Israt Jahan Eva</p><p class="rev-rate"><span class="rev-star"><img src="assets/home/icon-star-18.svg" alt=""></span>4.5</p></div></div>
     </div></article>
     <article class="rev-card"><div class="abs rev-inner">
       <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">Was nervous ordering a bag online without touching it first. The size guide matched exactly What I need.</p></div>
-      <div class="rev-person"><div class="avatar"><img class="crop" src="assets/home/avatar-farzana.webp" alt="" style="left:-64.33%;top:0.23%;width:227.74%;height:128.11%;"></div>
+      <div class="rev-person"><div class="avatar"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-farzana.webp" alt="" style="left:-64.33%;top:0.23%;width:227.74%;height:128.11%;"></div>
         <div><p class="rev-name">Farzana Akter Mim</p><p class="rev-rate"><span class="rev-star"><img src="assets/home/icon-star-18.svg" alt=""></span>4.7</p></div></div>
     </div></article>
     <article class="rev-card"><div class="abs rev-inner">
       <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">Delivery to Chattogram took 4 days as promised. Packaging was careful, bag arrived in perfect shape.</p></div>
-      <div class="rev-person"><div class="avatar"><img class="crop" src="assets/home/avatar-tahiya.webp" alt="" style="left:-15px;top:-2px;width:76px;height:76px;"></div>
+      <div class="rev-person"><div class="avatar"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-tahiya.webp" alt="" style="left:-15px;top:-2px;width:76px;height:76px;"></div>
         <div><p class="rev-name">Tahiya Islam</p><p class="rev-rate"><span class="rev-star"><img src="assets/home/icon-star-18.svg" alt=""></span>4.7</p></div></div>
     </div></article>
   </div>
@@ -803,22 +805,22 @@
   <div class="abs rev-row rev-row-2 stagger">
     <article class="rev-card"><div class="abs rev-inner">
       <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">Messaged them on WhatsApp before ordering with a few questions — they replied the same day.</p></div>
-      <div class="rev-person"><div class="avatar"><div class="abs" style="left:-15px;top:-2px;width:76px;height:76px;overflow:hidden;"><img class="crop" src="assets/home/avatar-adiba.webp" alt="" style="left:6.31%;top:3.21%;width:129.98%;height:86.65%;"></div></div>
+      <div class="rev-person"><div class="avatar"><div class="abs" style="left:-15px;top:-2px;width:76px;height:76px;overflow:hidden;"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-adiba.webp" alt="" style="left:6.31%;top:3.21%;width:129.98%;height:86.65%;"></div></div>
         <div><p class="rev-name">Adiba Rahman</p><p class="rev-rate"><span class="rev-star"><img src="assets/home/icon-star-18.svg" alt=""></span>4.5</p></div></div>
     </div></article>
     <article class="rev-card"><div class="abs rev-inner">
       <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">The leather feels much better in person than in the photos. Stitching is neat, no loose threads.</p></div>
-      <div class="rev-person"><div class="avatar"><div class="abs" style="left:-15px;top:-2px;width:76px;height:76px;overflow:hidden;"><img class="crop" src="assets/home/avatar-tasnia.webp" alt="" style="left:5.08%;top:0.43%;width:129.98%;height:86.65%;"></div></div>
+      <div class="rev-person"><div class="avatar"><div class="abs" style="left:-15px;top:-2px;width:76px;height:76px;overflow:hidden;"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-tasnia.webp" alt="" style="left:5.08%;top:0.43%;width:129.98%;height:86.65%;"></div></div>
         <div><p class="rev-name">Tasnia Farin</p><p class="rev-rate"><span class="rev-star"><img src="assets/home/icon-star-18.svg" alt=""></span>4.5</p></div></div>
     </div></article>
     <article class="rev-card"><div class="abs rev-inner">
       <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">Paid Cash on Delivery since it was my first order here. The bag matched the photos exactly — ordering again.</p></div>
-      <div class="rev-person"><div class="avatar"><img class="crop" src="assets/home/avatar-zayma.webp" alt="" style="left:-33px;top:0;width:139px;height:73px;"></div>
+      <div class="rev-person"><div class="avatar"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-zayma.webp" alt="" style="left:-33px;top:0;width:139px;height:73px;"></div>
         <div><p class="rev-name">Zayma Chowdhury</p><p class="rev-rate"><span class="rev-star"><img src="assets/home/icon-star-18.svg" alt=""></span>4.5</p></div></div>
     </div></article>
     <article class="rev-card"><div class="abs rev-inner">
       <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">Delivery to Chattogram took 4 days as promised. Packaging was careful, bag arrived in perfect shape.</p></div>
-      <div class="rev-person"><div class="avatar"><img class="crop" src="assets/home/avatar-tahiya.webp" alt="" style="left:-15px;top:-2px;width:76px;height:76px;"></div>
+      <div class="rev-person"><div class="avatar"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-tahiya.webp" alt="" style="left:-15px;top:-2px;width:76px;height:76px;"></div>
         <div><p class="rev-name">Tahiya Islam</p><p class="rev-rate"><span class="rev-star"><img src="assets/home/icon-star-18.svg" alt=""></span>4.7</p></div></div>
     </div></article>
   </div>
@@ -830,14 +832,14 @@
   <!-- ===== NEWSLETTER ===== -->
   <section class="abs nl reveal">
     <div class="nl-stack l">
-    <div class="tilt-wrap" style="left:-20px;top:36.24px;"><div class="tilt l"><img class="cover" src="assets/home/nl-left-1.webp" alt=""></div></div>
-    <div class="tilt-wrap" style="left:43.72px;top:6px;"><div class="tilt l edge shadow-l"><img class="cover" src="assets/home/nl-left-2.webp" alt=""></div></div>
-    <div class="tilt-wrap" style="left:96.72px;top:-43px;"><div class="tilt l edge shadow-l"><img class="cover" src="assets/home/nl-left-3.webp" alt=""></div></div>
+    <div class="tilt-wrap" style="left:-20px;top:36.24px;"><div class="tilt l"><img loading="lazy" decoding="async" class="cover" src="assets/home/nl-left-1.webp" alt=""></div></div>
+    <div class="tilt-wrap" style="left:43.72px;top:6px;"><div class="tilt l edge shadow-l"><img loading="lazy" decoding="async" class="cover" src="assets/home/nl-left-2.webp" alt=""></div></div>
+    <div class="tilt-wrap" style="left:96.72px;top:-43px;"><div class="tilt l edge shadow-l"><img loading="lazy" decoding="async" class="cover" src="assets/home/nl-left-3.webp" alt=""></div></div>
     </div>
     <div class="nl-stack r">
-    <div class="tilt-wrap" style="left:180.72px;top:28.24px;"><div class="tilt r"><img class="cover" src="assets/home/nl-right-1.webp" alt=""></div></div>
-    <div class="tilt-wrap" style="left:117px;top:-2px;"><div class="tilt r edge shadow-r"><img class="cover" src="assets/home/nl-right-2.webp" alt=""></div></div>
-    <div class="tilt-wrap" style="left:64px;top:-51px;"><div class="tilt r edge shadow-r"><img class="cover" src="assets/home/nl-right-3.webp" alt=""></div></div>
+    <div class="tilt-wrap" style="left:180.72px;top:28.24px;"><div class="tilt r"><img loading="lazy" decoding="async" class="cover" src="assets/home/nl-right-1.webp" alt=""></div></div>
+    <div class="tilt-wrap" style="left:117px;top:-2px;"><div class="tilt r edge shadow-r"><img loading="lazy" decoding="async" class="cover" src="assets/home/nl-right-2.webp" alt=""></div></div>
+    <div class="tilt-wrap" style="left:64px;top:-51px;"><div class="tilt r edge shadow-r"><img loading="lazy" decoding="async" class="cover" src="assets/home/nl-right-3.webp" alt=""></div></div>
     </div>
     <div class="abs nl-copy">
       <div class="nl-text">
@@ -887,27 +889,48 @@
 <script src="assets/products.js"></script>
 <script>
   // Preloader: fade the logo in, draw the rule under it, hold briefly, then split the screen open.
+  // The split waits until the hero photo is decoded and the page has gone quiet (so the slide never has to
+  // share the main thread with image decoding), and the page stays scroll-locked until the panels are gone
+  // (unlocking mid-slide could add a scrollbar and re-layout the whole artboard).
   (function () {
     const pl = document.getElementById('preloader');
+    const ready = [];
+    const idle = (fn) => { if (window.requestIdleCallback) requestIdleCallback(fn, { timeout: 1500 }); else setTimeout(fn, 200); };
+    window.afterPreloader = function (fn) {          // run heavy warm-up work only once the preloader is gone
+      if (!document.getElementById('preloader')) { idle(fn); return; }
+      ready.push(fn);
+    };
+    function done() {
+      const fns = ready.splice(0);
+      idle(() => fns.forEach((f) => { try { f(); } catch (e) {} }));
+    }
     if (!pl) return;
-    if (document.documentElement.classList.contains('pl-skip')) { pl.remove(); return; }
+    if (document.documentElement.classList.contains('pl-skip')) { pl.remove(); done(); return; }
     document.documentElement.classList.add('pl-lock');
+    const quiet = () => new Promise((res) => { if (window.requestIdleCallback) requestIdleCallback(() => res(), { timeout: 700 }); else setTimeout(res, 120); });
+    function split() {
+      pl.classList.add('pl-split');
+      let panelsDone = 0;
+      const finish = () => { document.documentElement.classList.remove('pl-lock'); pl.remove(); done(); };
+      pl.querySelectorAll('.pl-panel').forEach((panel) => {
+        panel.addEventListener('transitionend', function end(e) {
+          if (e.propertyName !== 'transform') return;
+          panel.removeEventListener('transitionend', end);
+          if (++panelsDone === 2) finish();
+        });
+      });
+      setTimeout(() => { if (document.getElementById('preloader')) finish(); }, 1600);   // safety net
+    }
     function play() {
       requestAnimationFrame(() => pl.classList.add('pl-in'));
-      setTimeout(() => {
-        pl.classList.add('pl-split');
-        document.documentElement.classList.remove('pl-lock');
-        let panelsDone = 0;
-        pl.querySelectorAll('.pl-panel').forEach((panel) => {
-          panel.addEventListener('transitionend', function done(e) {
-            if (e.propertyName !== 'transform') return;
-            panel.removeEventListener('transitionend', done);
-            if (++panelsDone === 2) pl.remove();
-          });
-        });
-      }, 1430); // logo fade (550ms) + rule (480ms delay + 650ms, finishes at 1130ms) + a short hold
+      const hold = new Promise((r) => setTimeout(r, 1430));   // logo fade (550ms) + rule (480ms delay + 650ms, ends at 1130ms) + a short hold
+      const cap = (pr, ms) => Promise.race([pr, new Promise((r) => setTimeout(r, ms))]);
+      const hero = document.querySelector('.hero-bg img');
+      const decoded = hero && hero.decode ? cap(hero.decode().catch(() => {}), 2200) : Promise.resolve();
+      const fonts = document.fonts && document.fonts.ready ? cap(document.fonts.ready, 2500) : Promise.resolve();
+      Promise.all([hold, decoded, fonts]).then(quiet).then(() => requestAnimationFrame(split));
     }
-    if (document.fonts && document.fonts.ready) { document.fonts.ready.then(play); } else { play(); }
+    play();   // the logo is an image, so the animation starts at once; only the split waits for fonts + hero
   })();
 
   // Warm up the dropdown panels' images ahead of the first hover. The panels
@@ -970,7 +993,7 @@
   const naBody = document.getElementById('naBody'), naTitle = document.getElementById('naTitle');
   naBody.innerHTML = naHTML(NA['new'], true);
   let naNow = 'new', naBusy = false;
-  Object.values(NA).forEach((t) => [t.feature.img, t.feature.alt, ...t.cards.flatMap((c) => [c[2], ...(c[3] || [])])].forEach((u) => { const i = new Image(); i.src = u; }));
+  afterPreloader(() => Object.values(NA).forEach((t) => [t.feature.img, t.feature.alt, ...t.cards.flatMap((c) => [c[2], ...(c[3] || [])])].forEach((u) => { const i = new Image(); i.src = u; })));
   // Slide to photo j inside a multi-photo card. The new photo enters from the side it is on (higher index from the right).
   function naSlide(card, j) {
     const imgs = [...card.querySelectorAll('img.slide')], i = +card.dataset.i;
@@ -1137,7 +1160,7 @@
       const d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0; if (!d) return;
       e.preventDefault(); const n = P[order[2]].colours.length; setColour((pick[order[2]] + d + n) % n); info.querySelectorAll('.swatches button')[pick[order[2]]].focus();
     });
-    [...P.flatMap((p) => p.colours.flatMap((c) => [c.img, c.sw.on, c.sw.off]))].forEach((u) => { new Image().src = u; });
+    afterPreloader(() => [...P.flatMap((p) => p.colours.flatMap((c) => [c.img, c.sw.on, c.sw.off]))].forEach((u) => { new Image().src = u; }));
   })();
 
   // Story player: 4 videos in a row, the text on the right follows whichever one is on screen.
