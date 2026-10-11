@@ -472,6 +472,67 @@
     .sticky-fs-bar, .drawer, .drawer-backdrop { display: none; }
     body { padding-bottom: 0; }
   }
+
+  /* ======================================================================
+     Mobile listing (phones + small tablets): matches the Figma "PLP / Mobile (390)" frame.
+     Everything here is scoped to < 1024px; the desktop layout is untouched.
+     ====================================================================== */
+  .m-menu, .cat-chips, .more-wrap, .m-footer { display: none; }
+  @media (max-width: 1023.98px) {
+    .site-header { height: 64px; padding: 8px 12px 8px 20px; background: #fffdf9; backdrop-filter: none; border-bottom: 1px solid #ddd5c6; }
+    .m-logo { display: block; width: 112px; height: 50px; }
+    .m-logo img { width: 100%; height: 100%; object-fit: cover; }
+    .m-tools { display: flex; }
+    .tap { position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: none; border: 0; padding: 0; color: inherit; }
+    .tap img { width: auto; height: auto; max-width: none; }
+    .icon-btn.tap { border-radius: 0; }
+
+    .breadcrumb { padding-top: 16px; }
+    .plp-head { padding-top: 16px; }
+    .filter-sort-row { padding: 20px 20px 0; gap: 12px; }
+    .fs-btn { position: relative; min-height: 44px; border-radius: 999px; font-weight: 500; font-size: 14px; border-color: #4a4741; }
+    .fs-btn .count { background: #4a4741; color: #fffdf9; }
+    .fs-sort select, .fs-sort-b select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
+    .active-chips { padding-top: 14px; padding-bottom: 0; }
+    .cat-chips { display: flex; gap: 8px; padding: 16px 20px 0; overflow-x: auto; scrollbar-width: none; }
+    .cat-chips::-webkit-scrollbar { display: none; }
+    .cat-chip { flex: none; display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 16px; border: 1px solid rgba(74,71,65,.25); border-radius: 999px; background: none; color: #4a4741; font-size: 14px; white-space: nowrap; transition: background-color .25s, color .25s; }
+    .cat-chip .n { font-size: 12px; opacity: .6; }
+    .cat-chip[aria-pressed="true"] { background: #4a4741; border-color: #4a4741; color: #fffdf9; }
+    .plp-right .grid-wrap { padding-top: 24px; }
+
+    .more-wrap { display: block; padding: 32px 0 8px; }
+    .more-wrap[hidden] { display: none; }
+    .btn-more { width: 100%; height: 50px; border-radius: 999px; border: 1px solid #4a4741; background: none; color: #4a4741; font-weight: 500; font-size: 15px; }
+    .btn-more:active { background: #f7f1e8; }
+
+    /* the bottom filter bar only appears once the top row has scrolled away */
+    .sticky-fs-bar { transform: translateY(110%); transition: transform .3s var(--ease-default, cubic-bezier(.4,0,.2,1)); }
+    body.fs-stuck .sticky-fs-bar { transform: none; }
+    .sticky-fs-bar button, .fs-sort-b { position: relative; flex: 1; min-height: 46px; border-radius: 999px; border: 1px solid #4a4741; background: transparent; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: inherit; }
+    body { padding-bottom: 0; }
+
+    .m-footer { display: flex; flex-direction: column; gap: 28px; margin-top: 40px; padding: 48px 20px calc(32px + 70px); background: #1c1b1a; color: #fffdf9; }
+    .m-footer a { color: #fffdf9; font-size: 14px; line-height: 21px; }
+    .mf-wm { font-family: var(--font-display); font-size: 20px; letter-spacing: 6px; }
+    .mf-brand p, .mf-help p { margin: 10px 0 0; color: #a8a5a0; font-size: 14px; line-height: 21px; }
+    .mf-help { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+    .mf-help p { margin: 0 0 4px; }
+    .mf-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 16px; }
+    .mf-cols > div { display: flex; flex-direction: column; gap: 12px; }
+    .mf-cols h5 { margin: 0; font-weight: 700; font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #a8a5a0; }
+    .mf-legal { display: flex; flex-direction: column; gap: 8px; padding-top: 20px; border-top: 1px solid #838280; color: #a8a5a0; font-size: 12px; line-height: 18px; }
+
+    .m-menu { display: block; position: fixed; inset: 0; z-index: 100; visibility: hidden; }
+    .m-menu.open { visibility: visible; }
+    .m-scrim { position: absolute; inset: 0; background: rgba(28,27,26,.5); opacity: 0; transition: opacity .3s; }
+    .m-menu.open .m-scrim { opacity: 1; }
+    .m-menu nav { position: absolute; top: 0; right: 0; bottom: 0; width: min(320px, 86vw); background: #fffdf9; padding: 12px 20px 32px; display: flex; flex-direction: column; transform: translateX(100%); transition: transform .35s cubic-bezier(.4,0,.2,1); }
+    .m-menu.open nav { transform: none; }
+    .m-close { align-self: flex-end; width: 44px; height: 44px; font-size: 28px; line-height: 1; background: none; border: 0; }
+    .m-menu nav a { padding: 14px 0; border-bottom: 1px solid #ddd5c6; font-family: var(--font-display); font-size: 24px; letter-spacing: -.72px; }
+  }
+  @media (min-width: 1024px) { .m-footer { display: none; } }
 </style>
 </head>
 <body>
@@ -578,13 +639,28 @@
   </div>
 
   <header class="site-header">
-    <a href="index.html" class="logo-mark" aria-label="ELARA home">ELARA</a>
-    <div style="display:flex; gap:2px;">
-      <button class="icon-btn" aria-label="Search"><svg width="18" height="18" viewBox="0 0 19 19" fill="none"><circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M13 13l4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
-      <button class="icon-btn" aria-label="Wishlist"><svg width="18" height="18" viewBox="0 0 19 19" fill="none"><path d="M9.5 16s-6.5-4.1-6.5-8.9C3 4.3 5.1 2.5 7.4 2.5c1 0 2 .4 2.6 1.2.6-.8 1.6-1.2 2.6-1.2 2.3 0 4.4 1.8 4.4 4.6 0 4.8-6.5 8.9-6.5 8.9z" stroke="currentColor" stroke-width="1.3"/></svg></button>
-      <a href="my-cart-screen.html" class="icon-btn" aria-label="Bag"><img src="assets/home/icon-cart.svg" alt="" width="20" height="20"></a>
+    <a href="index.html" class="m-logo" aria-label="ELARA home"><img src="assets/home/logo.webp" alt="ELARA"></a>
+    <div class="m-tools">
+      <button class="tap" aria-label="Search"><img src="assets/home/icon-search.svg" alt=""></button>
+      <a class="tap" href="my-account.html" aria-label="Account"><img src="assets/home/icon-account.svg" alt=""></a>
+      <a class="tap icon-btn" href="my-cart-screen.html" aria-label="Bag"><img src="assets/home/icon-cart.svg" alt=""></a>
+      <button class="tap" id="mMenuBtn" aria-label="Menu" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M3 6.5h18M3 12h18M3 17.5h18" stroke="#4A4741" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
     </div>
   </header>
+
+  <div class="m-menu" id="mMenu" aria-hidden="true">
+    <div class="m-scrim" data-close></div>
+    <nav aria-label="Main menu">
+      <button class="m-close" data-close aria-label="Close menu">×</button>
+      <a href="my-plp-screen.html?collection=new">New Arrivals</a>
+      <a href="my-plp-screen.html">Bags</a>
+      <a href="#" data-soon="Collections">Collections</a>
+      <a href="#" data-soon="Best Sellers">Best Sellers</a>
+      <a href="my-contact-screen.html">Contact Us</a>
+    </nav>
+  </div>
 
   <main class="plp-layout">
     <div class="plp-left" id="plpLeft">
@@ -615,18 +691,27 @@
       <div class="filter-sort-row">
         <button class="fs-btn" onclick="openDrawer()">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-          Filter <span class="count" id="mobileFilterCount">1</span>
+          Filters <span class="count" id="mobileFilterCount">0</span>
         </button>
-        <button class="fs-btn" onclick="openDrawer()">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 5h10M5 8h6M7 11h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-          Sort: Featured
-        </button>
+        <label class="fs-btn fs-sort">
+          <span class="sort-label">Sort: Featured</span>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <select class="sort-native" aria-label="Sort by">
+            <option value="featured">Featured</option>
+            <option value="newest">Newest</option>
+            <option value="price-asc">Price: low to high</option>
+            <option value="price-desc">Price: high to low</option>
+          </select>
+        </label>
       </div>
+
+      <div class="cat-chips" id="catChips" role="group" aria-label="Category"></div>
 
       <div class="active-chips" id="activeChips"></div>
 
       <div class="grid-wrap">
         <div class="product-grid" id="productGrid"></div>
+        <div class="more-wrap" id="moreWrap" hidden><button type="button" class="btn-more" id="loadMore">Load more</button></div>
         <div class="empty-state" id="emptyState">
           <div class="mark" aria-hidden="true">🔍</div>
           <h2>No products match these filters</h2>
@@ -639,15 +724,33 @@
     </div>
   </main>
 
+  <footer class="m-footer">
+    <div class="mf-brand"><span class="mf-wm">ELARA</span><p>Premium leather bags for the routine you actually have: work, weekend, and everything between. Designed in Bangladesh.</p></div>
+    <div class="mf-help"><b>Need help deciding?</b><p>Message us on WhatsApp or email: we reply within 1 business day.</p><a href="my-contact-screen.html">WhatsApp: +880 1320575476</a><a href="my-contact-screen.html">hello@elara.com.bd</a></div>
+    <div class="mf-cols">
+      <div><h5>Shop</h5><a href="my-plp-screen.html?collection=new">New Arrivals</a><a href="#" data-soon="Best Sellers">Best Sellers</a><a href="#" data-soon="Collections">Collections</a><a href="my-plp-screen.html">All Bags</a></div>
+      <div><h5>Customer Service</h5><a href="#" data-soon="Shipping &amp; Delivery" data-soon-page>Shipping &amp; Delivery</a><a href="#" data-soon="Returns &amp; Exchange" data-soon-page>Returns &amp; Exchange</a><a href="my-order-tracking.html">Order Tracking</a><a href="my-contact-screen.html">Contact Us</a></div>
+      <div><h5>About</h5><a href="#" data-soon="Our Story" data-soon-page>Our Story</a><a href="my-contact-screen.html">Contact</a></div>
+      <div><h5>Legal</h5><a href="#" data-soon="Privacy Policy" data-soon-page>Privacy Policy</a><a href="#" data-soon="Terms of Service" data-soon-page>Terms of Service</a></div>
+    </div>
+    <div class="mf-legal"><span>© 2026 ELARA. All rights reserved.</span><span>Dhaka Tk. 60/- (1–3 days) · Outside Dhaka Tk. 120/- (3–5 days) · Free over Tk. 3,000/-</span></div>
+  </footer>
+
   <div class="sticky-fs-bar">
     <button onclick="openDrawer()">
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-      Filter (<span id="mobileFilterCount2">1</span>)
+      <span>Filters (<span id="mobileFilterCount2">0</span>)</span>
     </button>
-    <button onclick="openDrawer()">
+    <label class="fs-sort-b">
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 5h10M5 8h6M7 11h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-      Sort
-    </button>
+      <span class="sort-label">Sort</span>
+      <select class="sort-native" aria-label="Sort by">
+        <option value="featured">Featured</option>
+        <option value="newest">Newest</option>
+        <option value="price-asc">Price: low to high</option>
+        <option value="price-desc">Price: high to low</option>
+      </select>
+    </label>
   </div>
 
   <div class="drawer-backdrop" onclick="closeDrawer()"></div>
@@ -1257,7 +1360,48 @@
     });
   }
 
+  // ---- small-screen listing: paging, category chips, sort, sticky bar, menu ----
+  const MOBILE = window.matchMedia('(max-width: 1023.98px)');
+  const PAGE = 12;
+  let shown = PAGE, lastSig = '';
+  const SORT_LABEL = { featured: 'Featured', newest: 'Newest', 'price-asc': 'Low to high', 'price-desc': 'High to low' };
+  function renderCatChips() {
+    const box = document.getElementById('catChips');
+    if (!box) return;
+    const none = state.categories.size === 0;
+    box.innerHTML = `<button type="button" class="cat-chip" aria-pressed="${none}" data-cat="">All</button>` +
+      CATEGORIES.map((c) => `<button type="button" class="cat-chip" aria-pressed="${state.categories.has(c.id)}" data-cat="${c.id}">${c.label}<span class="n">${categoryCount(c.id)}</span></button>`).join('');
+  }
+  document.getElementById('catChips').addEventListener('click', (e) => {
+    const b = e.target.closest('.cat-chip'); if (!b) return;
+    state.categories = new Set(b.dataset.cat ? [b.dataset.cat] : []);
+    render();
+  });
+  function syncSort() {
+    document.querySelectorAll('.sort-native').forEach((sel) => { sel.value = state.sort; });
+    document.getElementById('sortSelect').value = state.sort;
+    document.querySelectorAll('.fs-sort .sort-label').forEach((l) => { l.textContent = 'Sort: ' + SORT_LABEL[state.sort]; });
+  }
+  document.querySelectorAll('.sort-native').forEach((sel) => sel.addEventListener('change', (e) => { state.sort = e.target.value; syncSort(); render(); }));
+  document.getElementById('sortSelect').addEventListener('change', syncSort);
+  document.getElementById('loadMore').addEventListener('click', () => { shown += PAGE; render(); });
+  (function () {
+    const row = document.querySelector('.filter-sort-row');
+    if (!row || !('IntersectionObserver' in window)) return;
+    new IntersectionObserver(([en]) => document.body.classList.toggle('fs-stuck', !en.isIntersecting && en.boundingClientRect.top < 0), { threshold: 0 }).observe(row);
+  })();
+  (function () {
+    const menu = document.getElementById('mMenu'), btn = document.getElementById('mMenuBtn');
+    const set = (o) => { menu.classList.toggle('open', o); menu.setAttribute('aria-hidden', !o); btn.setAttribute('aria-expanded', o); };
+    btn.addEventListener('click', () => set(true));
+    menu.addEventListener('click', (e) => { if (e.target.closest('[data-close]') || e.target.closest('a')) set(false); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') set(false); });
+  })();
+
   function render() {
+    // a new filter / category / sort starts the list from the first page again
+    const sig = JSON.stringify([[...state.categories], [...state.colours], [...state.materials], [...state.sizes], [...state.avail], state.priceMin, state.priceMax, state.sort]);
+    if (sig !== lastSig) { shown = PAGE; lastSig = sig; }
     const selected = CATEGORIES.filter((c) => state.categories.has(c.id));
     let titleText, crumbText;
     if (selected.length === 0) {
@@ -1290,16 +1434,22 @@
       empty.classList.add('show');
     } else {
       empty.classList.remove('show');
-      grid.innerHTML = filtered.map(cardHTML).join('');
+      const lim = MOBILE.matches ? shown : Infinity;
+      grid.innerHTML = filtered.slice(0, lim).map(cardHTML).join('');
+      const left = filtered.length - Math.min(filtered.length, lim);
+      document.getElementById('moreWrap').hidden = !(MOBILE.matches && left > 0);
+      document.getElementById('loadMore').textContent = 'Load more (' + left + ' more)';
     }
+    if (filtered.length === 0) document.getElementById('moreWrap').hidden = true;
 
+    renderCatChips();
     renderChips();
     syncSidebarInputs();
   }
 
   function renderChips() {
     const box = document.getElementById('activeChips');
-    const chips = CATEGORIES.filter((c) => state.categories.has(c.id)).map((c) =>
+    const chips = CATEGORIES.filter((c) => !MOBILE.matches && state.categories.has(c.id)).map((c) =>
       `<span class="chip">${c.label} <button aria-label="Remove ${c.label} filter" onclick="toggleCategory('${c.id}')">×</button></span>`);
     if (state.priceMin > PRICE_BOUND.min || state.priceMax < PRICE_BOUND.max) {
       chips.push(`<span class="chip">${fmtPrice(state.priceMin)} – ${fmtPrice(state.priceMax)} <button aria-label="Reset price filter" onclick="resetPriceFilter()">×</button></span>`);
@@ -1309,7 +1459,7 @@
     state.materials.forEach((id) => chips.push(facetChip('material', id, MATERIALS.find((x) => x[0] === id)[1])));
     state.sizes.forEach((id) => chips.push(facetChip('size', id, SIZES.find((x) => x[0] === id)[1])));
     state.avail.forEach((id) => chips.push(facetChip('avail', id, AVAIL.find((x) => x[0] === id)[1])));
-    chips.push(`<button class="clear-all" onclick="resetAllFilters()">Clear all</button>`);
+    if (chips.length) chips.push(`<button class="clear-all" onclick="resetAllFilters()">Clear all</button>`);
     box.innerHTML = chips.join('');
   }
 
@@ -1448,6 +1598,7 @@
   function closeDrawer() { document.body.classList.remove('drawer-open'); }
 
   render();
+  syncSort();
 
   const gridEl = document.getElementById('productGrid');
   function warm(e) {
@@ -1478,6 +1629,7 @@
   });
   gridEl.addEventListener('click', (e) => { if (swiped) { e.preventDefault(); swiped = false; } }, true);
 
+  MOBILE.addEventListener('change', render);
   if (document.readyState === 'complete') runPeek(); else window.addEventListener('load', runPeek);
 
   // Desktop nav: shrink the 1440 artboard to the viewport (never scales up), then the dropdown behaviour.
