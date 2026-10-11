@@ -618,8 +618,9 @@
       const hold = new Promise((r) => setTimeout(r, 1000));   // logo fade (450ms) + rule (220ms delay + 500ms, ends at 720ms) + a short hold
       const cap = (pr, ms) => Promise.race([pr, new Promise((r) => setTimeout(r, ms))]);
       const hero = document.querySelector('.hero-bg img');
-      const decoded = hero && hero.decode ? cap(hero.decode().catch(() => {}), 2200) : Promise.resolve();
-      const fonts = document.fonts && document.fonts.ready ? cap(document.fonts.ready, 2500) : Promise.resolve();
+      const decoded = hero && hero.decode ? cap(hero.decode().catch(() => {}), 1200) : Promise.resolve();
+      // only the two faces the first screen uses; document.fonts.ready would also wait for the (late, low-priority) italic
+      const fonts = document.fonts && document.fonts.load ? cap(Promise.all([document.fonts.load('300 40px Fraunces'), document.fonts.load('400 14px Inter')]).catch(() => {}), 1200) : Promise.resolve();
       const mk = (n, pr) => pr.then((v) => { try { performance.mark(n); } catch (e) {} return v; });
       Promise.all([mk('pl-hold', hold), mk('pl-hero-decoded', decoded), mk('pl-fonts', fonts)]).then(quiet).then(() => { try { performance.mark('pl-quiet'); } catch (e) {} requestAnimationFrame(() => { try { performance.mark('pl-split'); } catch (e) {} split(); }); });
     }
