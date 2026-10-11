@@ -52,9 +52,11 @@
   are added later, one section at a time.
   Mobile/tablet: not built yet — desktop first, per the designer.
 -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="assets/fonts/fraunces-normal-latin-fe3a28.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/inter-normal-latin-567244.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="assets/fonts/fonts-italic.css" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="assets/fonts/fonts-italic.css"></noscript>
 <style>
   :root {
     --ease-io: cubic-bezier(.65, 0, .25, 1);
@@ -88,7 +90,7 @@
   html.pl-lock { overflow: hidden; }
   #preloader { position: fixed; inset: 0; z-index: 9999; }
   html.pl-skip #preloader { display: none; }
-  .pl-panel { position: absolute; top: 0; width: 50%; height: 100%; background: var(--bg-page); overflow: hidden; transform: translateX(0); transition: transform 750ms var(--ease); will-change: transform; contain: layout paint; }
+  .pl-panel { position: absolute; top: 0; width: 50%; height: 100%; background: var(--bg-page); overflow: hidden; transform: translateX(0); transition: transform 650ms var(--ease); will-change: transform; contain: layout paint; }
   .pl-panel-l { left: 0; }
   .pl-panel-r { right: 0; }
   #preloader.pl-split .pl-panel-l { transform: translateX(-100%); }
@@ -100,9 +102,9 @@
   .pl-panel-l .pl-inner { left: 0; }
   .pl-panel-r .pl-inner { left: -50vw; }
   /* The real logo (assets/home/logo.webp, same file the nav uses). */
-  .pl-logo { display: block; width: 220px; height: auto; margin: -38px 0; /* logo.png has ~38px of empty canvas above and below the letters */ opacity: 0; translate: 0 16px; transition: opacity 550ms var(--ease), translate 550ms var(--ease); }
+  .pl-logo { display: block; width: 220px; height: auto; margin: -38px 0; /* logo.png has ~38px of empty canvas above and below the letters */ opacity: 0; translate: 0 16px; transition: opacity 450ms var(--ease), translate 450ms var(--ease); }
   #preloader.pl-in .pl-logo { opacity: 1; translate: 0 0; }
-  .pl-rule { width: 120px; height: 1px; background: var(--text-faint); transform: scaleX(0); transform-origin: center; transition: transform 650ms var(--ease) 480ms; will-change: transform; }
+  .pl-rule { width: 120px; height: 1px; background: var(--text-faint); transform: scaleX(0); transform-origin: center; transition: transform 500ms var(--ease) 220ms; will-change: transform; }
   #preloader.pl-in .pl-rule { transform: scaleX(1); }
 
   /* 1440px safe area: every piece of content stays inside it, at its Figma size.
@@ -577,6 +579,53 @@
     </div>
   </div>
 </div>
+<script>
+  // Preloader: fade the logo in, draw the rule under it, hold briefly, then split the screen open.
+  // The split waits until the hero photo is decoded and the page has gone quiet (so the slide never has to
+  // share the main thread with image decoding), and the page stays scroll-locked until the panels are gone
+  // (unlocking mid-slide could add a scrollbar and re-layout the whole artboard).
+  (function () {
+    const pl = document.getElementById('preloader');
+    const ready = [];
+    const idle = (fn) => { if (window.requestIdleCallback) requestIdleCallback(fn, { timeout: 1500 }); else setTimeout(fn, 200); };
+    window.afterPreloader = function (fn) {          // run heavy warm-up work only once the preloader is gone
+      if (!document.getElementById('preloader')) { idle(fn); return; }
+      ready.push(fn);
+    };
+    function done() {
+      const fns = ready.splice(0);
+      idle(() => fns.forEach((f) => { try { f(); } catch (e) {} }));
+    }
+    if (!pl) return;
+    if (document.documentElement.classList.contains('pl-skip')) { pl.remove(); done(); return; }
+    document.documentElement.classList.add('pl-lock');
+    const quiet = () => new Promise((res) => { if (window.requestIdleCallback) requestIdleCallback(() => res(), { timeout: 250 }); else setTimeout(res, 120); });
+    function split() {
+      pl.classList.add('pl-split');
+      let panelsDone = 0;
+      const finish = () => { document.documentElement.classList.remove('pl-lock'); pl.remove(); done(); };
+      pl.querySelectorAll('.pl-panel').forEach((panel) => {
+        panel.addEventListener('transitionend', function end(e) {
+          if (e.propertyName !== 'transform') return;
+          panel.removeEventListener('transitionend', end);
+          if (++panelsDone === 2) finish();
+        });
+      });
+      setTimeout(() => { if (document.getElementById('preloader')) finish(); }, 1400);   // safety net
+    }
+    function play() {
+      requestAnimationFrame(() => pl.classList.add('pl-in'));
+      const hold = new Promise((r) => setTimeout(r, 1000));   // logo fade (450ms) + rule (220ms delay + 500ms, ends at 720ms) + a short hold
+      const cap = (pr, ms) => Promise.race([pr, new Promise((r) => setTimeout(r, ms))]);
+      const hero = document.querySelector('.hero-bg img');
+      const decoded = hero && hero.decode ? cap(hero.decode().catch(() => {}), 2200) : Promise.resolve();
+      const fonts = document.fonts && document.fonts.ready ? cap(document.fonts.ready, 2500) : Promise.resolve();
+      const mk = (n, pr) => pr.then((v) => { try { performance.mark(n); } catch (e) {} return v; });
+      Promise.all([mk('pl-hold', hold), mk('pl-hero-decoded', decoded), mk('pl-fonts', fonts)]).then(quiet).then(() => { try { performance.mark('pl-quiet'); } catch (e) {} requestAnimationFrame(() => { try { performance.mark('pl-split'); } catch (e) {} split(); }); });
+    }
+    play();   // the logo is an image, so the animation starts at once; only the split waits for fonts + hero
+  })();
+</script>
 
 <div class="page">
 
@@ -615,20 +664,20 @@
       <div class="nav-panel" data-panel="new-arrivals">
         <div class="dd-panel">
           <a href="my-product-detail-screen.html?p=leather-tote-bag" class="dd-card">
-            <img class="cover" src="assets/home/dd-na-card-1.webp" alt="Leather Tote Bag">
+            <img class="cover" data-src="assets/home/dd-na-card-1.webp" alt="Leather Tote Bag">
             <div class="dd-card-fade"><i></i><i></i></div>
             <div class="dd-card-label"><span>Leather Tote Bag</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
           </a>
           <a href="my-product-detail-screen.html?p=aveline-convertible-tote" class="dd-card" style="left:454px;">
-            <img class="cover" src="assets/home/dd-na-card-2.webp" alt="Aveline Convertible Tote">
+            <img class="cover" data-src="assets/home/dd-na-card-2.webp" alt="Aveline Convertible Tote">
             <div class="dd-card-fade"><i></i><i></i></div>
             <div class="dd-card-label"><span>Aveline Convertible Tote</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
           </a>
           <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
           <div class="dd-list">
-            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-1.webp" alt=""></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
-            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-2.webp" alt=""></span><span class="dd-row-title">Sienna Structured Purse</span></a>
-            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-3.webp" alt=""></span><span class="dd-row-title">Isla Bags</span></a>
+            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-na-thumb-1.webp" alt=""></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
+            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-na-thumb-2.webp" alt=""></span><span class="dd-row-title">Sienna Structured Purse</span></a>
+            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-na-thumb-3.webp" alt=""></span><span class="dd-row-title">Isla Bags</span></a>
             <a href="my-plp-screen.html?collection=new" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All New Arrivals</span></a>
           </div>
         </div>
@@ -636,20 +685,20 @@
       <div class="nav-panel" data-panel="bags">
         <div class="dd-panel">
           <a href="my-product-detail-screen.html?p=suede-crossbody" class="dd-card">
-            <img class="cover" src="assets/home/dd-bags-card-1.webp" alt="Cross Body Bags">
+            <img class="cover" data-src="assets/home/dd-bags-card-1.webp" alt="Cross Body Bags">
             <div class="dd-card-fade"><i></i><i></i></div>
             <div class="dd-card-label"><span>Cross Body Bags</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
           </a>
           <a href="my-product-detail-screen.html?p=structured-work-satchel" class="dd-card" style="left:454px;">
-            <img class="cover" src="assets/home/dd-bags-card-2.webp" alt="Work &amp; Travel">
+            <img class="cover" data-src="assets/home/dd-bags-card-2.webp" alt="Work &amp; Travel">
             <div class="dd-card-fade"><i></i><i></i></div>
             <div class="dd-card-label"><span>Work &amp; Travel</span><img src="assets/home/icon-dd-arrow.svg" alt=""></div>
           </a>
           <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
           <div class="dd-list">
-            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-1.webp" alt=""></span><span class="dd-row-title">Tote</span></a>
-            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-2.webp" alt=""></span><span class="dd-row-title">Shoulder</span></a>
-            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-3.webp" alt=""></span><span class="dd-row-title">Mini</span></a>
+            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-bags-thumb-1.webp" alt=""></span><span class="dd-row-title">Tote</span></a>
+            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-bags-thumb-2.webp" alt=""></span><span class="dd-row-title">Shoulder</span></a>
+            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-bags-thumb-3.webp" alt=""></span><span class="dd-row-title">Mini</span></a>
             <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All Category Bags</span></a>
           </div>
         </div>
@@ -657,20 +706,20 @@
       <div class="nav-panel" data-panel="collections">
         <div class="dd-panel">
           <a href="#coming-soon" data-soon="Our Signature Pieces" class="dd-card">
-            <img class="cover" src="assets/home/dd-coll-card-1.webp" alt="Our Signature Pieces">
+            <img class="cover" data-src="assets/home/dd-coll-card-1.webp" alt="Our Signature Pieces">
             <div class="dd-card-fade"><i></i><i></i></div>
             <div class="dd-card-label two-line"><span class="dd-card-eyebrow">Signature</span><span class="dd-card-title">Our Signature Pieces</span></div>
           </a>
           <a href="#coming-soon" data-soon="Everyday Essentials" class="dd-card" style="left:454px;">
-            <img class="cover" src="assets/home/dd-coll-card-2.webp" alt="Everyday Essentials">
+            <img class="cover" data-src="assets/home/dd-coll-card-2.webp" alt="Everyday Essentials">
             <div class="dd-card-fade"><i></i><i></i></div>
             <div class="dd-card-label two-line"><span class="dd-card-eyebrow">Everyday</span><span class="dd-card-title">Everyday Essentials</span></div>
           </a>
           <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="" style="left:826px;">
           <div class="dd-list dd-list-coll" style="left:850px; top:92px;">
             <div class="dd-list-group">
-              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-1.webp" alt=""></span><span class="dd-row-title">The Evening Edit</span></a>
-              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-2.webp" alt=""></span><span class="dd-row-title">Designed for Work</span></a>
+              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-coll-thumb-1.webp" alt=""></span><span class="dd-row-title">The Evening Edit</span></a>
+              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-coll-thumb-2.webp" alt=""></span><span class="dd-row-title">Designed for Work</span></a>
             </div>
             <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-see-all.svg" alt=""></span><span class="dd-row-title">See All Collections</span></a>
           </div>
@@ -753,9 +802,9 @@
   <section class="abs story" id="story" aria-label="How an ELARA bag is made">
     <div class="story-img story-player reveal">
       <video class="sv on" data-i="0" muted playsinline preload="metadata" poster="assets/home/story/step-1-cut.jpg" src="assets/home/story/step-1-cut.mp4" aria-label="Leather being cut by hand"></video>
-      <video class="sv" data-i="1" muted playsinline preload="none" poster="assets/home/story/step-2-stitch.jpg" src="assets/home/story/step-2-stitch.mp4" aria-label="Leather being stitched by hand"></video>
-      <video class="sv" data-i="2" muted playsinline preload="none" poster="assets/home/story/step-3-hardware.jpg" src="assets/home/story/step-3-hardware.mp4" aria-label="A clasp being fitted"></video>
-      <video class="sv" data-i="3" muted playsinline preload="none" poster="assets/home/story/step-4-finish.jpg" src="assets/home/story/step-4-finish.mp4" aria-label="The finished bag being polished"></video>
+      <video class="sv" data-i="1" muted playsinline preload="none" data-poster="assets/home/story/step-2-stitch.jpg" src="assets/home/story/step-2-stitch.mp4" aria-label="Leather being stitched by hand"></video>
+      <video class="sv" data-i="2" muted playsinline preload="none" data-poster="assets/home/story/step-3-hardware.jpg" src="assets/home/story/step-3-hardware.mp4" aria-label="A clasp being fitted"></video>
+      <video class="sv" data-i="3" muted playsinline preload="none" data-poster="assets/home/story/step-4-finish.jpg" src="assets/home/story/step-4-finish.mp4" aria-label="The finished bag being polished"></video>
       <div class="story-bars" role="tablist" aria-label="Craft steps">
         <button class="sb" type="button" role="tab" aria-label="Step 1: Hand-cut leather"><i></i></button>
         <button class="sb" type="button" role="tab" aria-label="Step 2: Stitched by hand"><i></i></button>
@@ -888,50 +937,7 @@
 
 <script src="assets/products.js"></script>
 <script>
-  // Preloader: fade the logo in, draw the rule under it, hold briefly, then split the screen open.
-  // The split waits until the hero photo is decoded and the page has gone quiet (so the slide never has to
-  // share the main thread with image decoding), and the page stays scroll-locked until the panels are gone
-  // (unlocking mid-slide could add a scrollbar and re-layout the whole artboard).
-  (function () {
-    const pl = document.getElementById('preloader');
-    const ready = [];
-    const idle = (fn) => { if (window.requestIdleCallback) requestIdleCallback(fn, { timeout: 1500 }); else setTimeout(fn, 200); };
-    window.afterPreloader = function (fn) {          // run heavy warm-up work only once the preloader is gone
-      if (!document.getElementById('preloader')) { idle(fn); return; }
-      ready.push(fn);
-    };
-    function done() {
-      const fns = ready.splice(0);
-      idle(() => fns.forEach((f) => { try { f(); } catch (e) {} }));
-    }
-    if (!pl) return;
-    if (document.documentElement.classList.contains('pl-skip')) { pl.remove(); done(); return; }
-    document.documentElement.classList.add('pl-lock');
-    const quiet = () => new Promise((res) => { if (window.requestIdleCallback) requestIdleCallback(() => res(), { timeout: 700 }); else setTimeout(res, 120); });
-    function split() {
-      pl.classList.add('pl-split');
-      let panelsDone = 0;
-      const finish = () => { document.documentElement.classList.remove('pl-lock'); pl.remove(); done(); };
-      pl.querySelectorAll('.pl-panel').forEach((panel) => {
-        panel.addEventListener('transitionend', function end(e) {
-          if (e.propertyName !== 'transform') return;
-          panel.removeEventListener('transitionend', end);
-          if (++panelsDone === 2) finish();
-        });
-      });
-      setTimeout(() => { if (document.getElementById('preloader')) finish(); }, 1600);   // safety net
-    }
-    function play() {
-      requestAnimationFrame(() => pl.classList.add('pl-in'));
-      const hold = new Promise((r) => setTimeout(r, 1430));   // logo fade (550ms) + rule (480ms delay + 650ms, ends at 1130ms) + a short hold
-      const cap = (pr, ms) => Promise.race([pr, new Promise((r) => setTimeout(r, ms))]);
-      const hero = document.querySelector('.hero-bg img');
-      const decoded = hero && hero.decode ? cap(hero.decode().catch(() => {}), 2200) : Promise.resolve();
-      const fonts = document.fonts && document.fonts.ready ? cap(document.fonts.ready, 2500) : Promise.resolve();
-      Promise.all([hold, decoded, fonts]).then(quiet).then(() => requestAnimationFrame(split));
-    }
-    play();   // the logo is an image, so the animation starts at once; only the split waits for fonts + hero
-  })();
+
 
   // Warm up the dropdown panels' images ahead of the first hover. The panels
   // start at display:none, so the browser defers decoding the large product
@@ -1045,24 +1051,24 @@
       { name: 'Selene Bow Tote', cat: 'TOTE BAGS', sub: 'Premium leather', rating: '4.6', reviews: '58 reviews', price: 'Tk. 3,900/-', badge: '', note: '30 x 22 x 11 cm — a slim everyday tote',
         thumb: { src: 'assets/home/spot-thumb-1.webp', css: 'left:-9.27%;top:-0.37%;width:117.6%;height:100%;' },
         colours: [
-          { id: 'cream', label: 'Cream', sw: SW('swatch-beige'), img: A + 'main-selene-cream.jpg', href: OPEN + '?p=selene-bow-tote&colour=cream' },
-          { id: 'espresso', label: 'Espresso', sw: SW('selene-espresso'), img: A + 'main-selene-espresso.jpg', href: OPEN + '?p=selene-bow-tote&colour=espresso' }] },
+          { id: 'cream', label: 'Cream', sw: SW('swatch-beige'), img: A + 'main-selene-cream.webp', href: OPEN + '?p=selene-bow-tote&colour=cream' },
+          { id: 'espresso', label: 'Espresso', sw: SW('selene-espresso'), img: A + 'main-selene-espresso.webp', href: OPEN + '?p=selene-bow-tote&colour=espresso' }] },
       { name: 'Marlowe Satchel', cat: 'SHOULDER BAGS', sub: 'Premium leather', rating: '4.7', reviews: '41 reviews', price: 'Tk. 4,800/-', badge: '', note: '28 x 21 x 12 cm — fits a phone, wallet and keys',
         thumb: { src: 'assets/home/spot-thumb-2.webp', css: 'left:-69.27%;top:-72.59%;width:237.07%;height:180%;' },
         colours: [
-          { id: 'taupe', label: 'Taupe', sw: SW('marlowe-taupe'), img: A + 'main-marlowe-taupe.jpg', href: OPEN + '?p=marlowe-satchel&colour=taupe' },
-          { id: 'rust', label: 'Rust', sw: SW('swatch-brown'), img: A + 'main-marlowe-rust.jpg', href: OPEN + '?p=marlowe-satchel&colour=rust' }] },
+          { id: 'taupe', label: 'Taupe', sw: SW('marlowe-taupe'), img: A + 'main-marlowe-taupe.webp', href: OPEN + '?p=marlowe-satchel&colour=taupe' },
+          { id: 'rust', label: 'Rust', sw: SW('swatch-brown'), img: A + 'main-marlowe-rust.webp', href: OPEN + '?p=marlowe-satchel&colour=rust' }] },
       { name: 'Aurelia Structured', cat: 'TOTE BAGS', sub: 'Premium leather', rating: '4.8', reviews: '126 reviews', price: 'Tk. 4,500/-', badge: '20% OFF', note: '31 x 24 x 12 cm — about the width of an A4 notebook',
         colours: [
-          { id: 'brown', label: 'Brown', sw: SW('swatch-brown'), img: A + 'main-brown.jpg', href: OPEN + '?p=aurelia-structured&colour=brown' },
-          { id: 'black', label: 'Black', sw: SW('swatch-black'), img: A + 'main-black.jpg', href: OPEN + '?p=aurelia-structured&colour=black' },
-          { id: 'beige', label: 'Beige', sw: SW('swatch-beige'), img: A + 'main-beige.jpg', href: OPEN + '?p=aurelia-structured&colour=beige' }] },
+          { id: 'brown', label: 'Brown', sw: SW('swatch-brown'), img: A + 'main-brown.webp', href: OPEN + '?p=aurelia-structured&colour=brown' },
+          { id: 'black', label: 'Black', sw: SW('swatch-black'), img: A + 'main-black.webp', href: OPEN + '?p=aurelia-structured&colour=black' },
+          { id: 'beige', label: 'Beige', sw: SW('swatch-beige'), img: A + 'main-beige.webp', href: OPEN + '?p=aurelia-structured&colour=beige' }] },
       { name: 'Rosalind Pocket Tote', cat: 'TOTE BAGS', sub: 'Premium leather', rating: '4.7', reviews: '84 reviews', price: 'Tk. 5,200/-', badge: '', note: '36 × 25 × 13 cm — fits a 13" laptop comfortably',
         thumb: { src: 'assets/home/spot-thumb-3.webp', css: 'left:-28.29%;top:-19.63%;width:129%;height:131.11%;' },
         colours: [
-          { id: 'pink', label: 'Blush', sw: SW('rosalind-pink'), img: A + 'main-rosalind-pink.jpg', href: OPEN + '?p=rosalind-pocket-tote&colour=blush' },
-          { id: 'brown', label: 'Brown', sw: SW('rosalind-brown'), img: A + 'main-rosalind-brown.jpg', href: OPEN + '?p=rosalind-pocket-tote&colour=brown' },
-          { id: 'beige', label: 'Beige', sw: SW('rosalind-beige'), img: A + 'main-rosalind-beige.jpg', href: OPEN + '?p=rosalind-pocket-tote&colour=beige' }] },
+          { id: 'pink', label: 'Blush', sw: SW('rosalind-pink'), img: A + 'main-rosalind-pink.webp', href: OPEN + '?p=rosalind-pocket-tote&colour=blush' },
+          { id: 'brown', label: 'Brown', sw: SW('rosalind-brown'), img: A + 'main-rosalind-brown.webp', href: OPEN + '?p=rosalind-pocket-tote&colour=brown' },
+          { id: 'beige', label: 'Beige', sw: SW('rosalind-beige'), img: A + 'main-rosalind-beige.webp', href: OPEN + '?p=rosalind-pocket-tote&colour=beige' }] },
       { name: 'Cognac Everyday Tote', cat: 'TOTE BAGS', sub: 'Premium leather', rating: '4.5', reviews: '73 reviews', price: 'Tk. 4,200/-', badge: '', note: '32 x 26 x 13 cm — room for a small laptop',
         thumb: { src: 'assets/home/spot-thumb-4.webp', css: 'left:-19.02%;top:-20%;width:137.07%;height:139.26%;' },
         colours: [{ id: 'cognac', label: 'Cognac', sw: SW('swatch-brown'), img: 'assets/home/spot-thumb-4.webp', href: OPEN + '?p=cognac-everyday-tote&colour=cognac' }] },
@@ -1077,7 +1083,9 @@
     const pick = P.map(() => 0);   // chosen colour per product
 
     function mainHTML(p, i) {
-      const imgs = p.colours.map((c, k) => '<img class="cover spot-photo' + (k === 0 ? ' is-on' : '') + '" data-c="' + c.id + '" src="' + c.img + '" alt="' + p.name + ' in ' + c.label.toLowerCase() + '">').join('');
+      // Only the big card's first colour loads up front; every other photo waits (data-src) until the preloader is
+      // gone or the visitor touches the spotlight, so the hero and fonts get the bandwidth first.
+      const imgs = p.colours.map((c, k) => '<img class="cover spot-photo' + (k === 0 ? ' is-on' : '') + '" data-c="' + c.id + '" ' + (i === 2 && k === 0 ? 'src' : 'data-src') + '="' + c.img + '" decoding="async" alt="' + p.name + ' in ' + c.label.toLowerCase() + '">').join('');
       return imgs + '<a href="' + p.colours[0].href + '" class="abs spot-cta" tabindex="-1"><span class="btn-pill btn-dark">View Details</span><span class="abs spot-cta-circle"><img class="rot-90" src="assets/home/icon-arrow-view.svg" alt=""></span></a>' +
         (p.badge ? '<span class="abs spot-badge">' + p.badge + '</span>' : '');
     }
@@ -1090,6 +1098,9 @@
       '<button type="button" aria-label="Next product" data-d="1"><img class="flip" src="' + A + 'arrow-next.svg" alt=""></button></div></div>' +
       '<div class="spot-info" aria-live="polite"></div>';
     const tiles = [...stage.querySelectorAll('.st')], info = stage.querySelector('.spot-info'), count = stage.querySelector('.spot-count b');
+    const hydrate = () => stage.querySelectorAll('img[data-src]').forEach((im) => { im.src = im.dataset.src; im.removeAttribute('data-src'); });
+    ['pointerover', 'pointerdown', 'focusin'].forEach((ev) => stage.addEventListener(ev, hydrate, { capture: true, once: true }));
+    afterPreloader(hydrate);
 
     function infoHTML(i) {
       const p = P[i], cur = pick[i];
@@ -1161,6 +1172,17 @@
       e.preventDefault(); const n = P[order[2]].colours.length; setColour((pick[order[2]] + d + n) % n); info.querySelectorAll('.swatches button')[pick[order[2]]].focus();
     });
     afterPreloader(() => [...P.flatMap((p) => p.colours.flatMap((c) => [c.img, c.sw.on, c.sw.off]))].forEach((u) => { new Image().src = u; }));
+  })();
+
+  // Nav dropdown photos and the story posters are not needed for the first paint: load them once the preloader is gone,
+  // or as soon as the visitor reaches for the menu.
+  (function () {
+    const go = () => {
+      document.querySelectorAll('img[data-src]').forEach((i) => { if (/assets\/home\/dd-/.test(i.dataset.src)) { i.src = i.dataset.src; i.removeAttribute('data-src'); } });
+      document.querySelectorAll('video[data-poster]').forEach((v) => { v.poster = v.dataset.poster; v.removeAttribute('data-poster'); });
+    };
+    afterPreloader(go);
+    const nav = document.querySelector('.nav'); if (nav) nav.addEventListener('pointerenter', go, { once: true });
   })();
 
   // Story player: 4 videos in a row, the text on the right follows whichever one is on screen.

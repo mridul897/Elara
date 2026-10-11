@@ -7,12 +7,15 @@
 <meta name="description" content="ELARA: considered leather bags for the routine you actually have. Totes, shoulder, crossbody, mini and travel bags, with delivery across Bangladesh, cash on delivery, bKash and Nagad.">
 <meta name="theme-color" content="#FFFDF9">
 <link rel="canonical" href="https://elarabags.vercel.app/">
+<link rel="preload" as="image" href="assets/home/hero-bg.webp" fetchpriority="high">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/svg+xml" href="/assets/home/favicon.svg">
 <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..700,0..100,0..1;1,9..144,300..700,0..100,0..1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="assets/fonts/fraunces-normal-latin-fe3a28.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/inter-normal-latin-567244.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="assets/fonts/fonts-italic.css" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="assets/fonts/fonts-italic.css"></noscript>
 <style>
   /* ELARA: Home / Mobile (390). Built from the Figma frame "Home / Mobile (390)" on the Mobile Version page.
      Tokens match the Design System variables: bg/page, bg/card, text/*, accent, radius/*, space/*. */
@@ -456,13 +459,13 @@
   const SW = (n) => A + n + '-on.svg';
   const P = [
     { name: 'Selene Bow Tote', cat: 'TOTE BAGS', rating: '4.6', reviews: '58 reviews', price: 'Tk. 3,900/-', badge: '', note: '30 × 22 × 11 cm, a slim everyday tote',
-      colours: [{ label: 'Cream', sw: SW('swatch-beige'), img: A + 'main-selene-cream.jpg', href: OPEN + '?p=selene-bow-tote&colour=cream' }, { label: 'Espresso', sw: SW('selene-espresso'), img: A + 'main-selene-espresso.jpg', href: OPEN + '?p=selene-bow-tote&colour=espresso' }] },
+      colours: [{ label: 'Cream', sw: SW('swatch-beige'), img: A + 'main-selene-cream.webp', href: OPEN + '?p=selene-bow-tote&colour=cream' }, { label: 'Espresso', sw: SW('selene-espresso'), img: A + 'main-selene-espresso.webp', href: OPEN + '?p=selene-bow-tote&colour=espresso' }] },
     { name: 'Marlowe Satchel', cat: 'SHOULDER BAGS', rating: '4.7', reviews: '41 reviews', price: 'Tk. 4,800/-', badge: '', note: '28 × 21 × 12 cm, fits a phone, wallet and keys',
-      colours: [{ label: 'Taupe', sw: SW('marlowe-taupe'), img: A + 'main-marlowe-taupe.jpg', href: OPEN + '?p=marlowe-satchel&colour=taupe' }, { label: 'Rust', sw: SW('swatch-brown'), img: A + 'main-marlowe-rust.jpg', href: OPEN + '?p=marlowe-satchel&colour=rust' }] },
+      colours: [{ label: 'Taupe', sw: SW('marlowe-taupe'), img: A + 'main-marlowe-taupe.webp', href: OPEN + '?p=marlowe-satchel&colour=taupe' }, { label: 'Rust', sw: SW('swatch-brown'), img: A + 'main-marlowe-rust.webp', href: OPEN + '?p=marlowe-satchel&colour=rust' }] },
     { name: 'Aurelia Structured', cat: 'TOTE BAGS', rating: '4.8', reviews: '126 reviews', price: 'Tk. 4,500/-', badge: '20% OFF', note: '31 × 24 × 12 cm, about the width of an A4 notebook',
-      colours: [{ label: 'Brown', sw: SW('swatch-brown'), img: A + 'main-brown.jpg', href: OPEN + '?p=aurelia-structured&colour=brown' }, { label: 'Black', sw: SW('swatch-black'), img: A + 'main-black.jpg', href: OPEN + '?p=aurelia-structured&colour=black' }, { label: 'Beige', sw: SW('swatch-beige'), img: A + 'main-beige.jpg', href: OPEN + '?p=aurelia-structured&colour=beige' }] },
+      colours: [{ label: 'Brown', sw: SW('swatch-brown'), img: A + 'main-brown.webp', href: OPEN + '?p=aurelia-structured&colour=brown' }, { label: 'Black', sw: SW('swatch-black'), img: A + 'main-black.webp', href: OPEN + '?p=aurelia-structured&colour=black' }, { label: 'Beige', sw: SW('swatch-beige'), img: A + 'main-beige.webp', href: OPEN + '?p=aurelia-structured&colour=beige' }] },
     { name: 'Rosalind Pocket Tote', cat: 'TOTE BAGS', rating: '4.7', reviews: '84 reviews', price: 'Tk. 5,200/-', badge: '', note: '36 × 25 × 13 cm, fits a 13" laptop comfortably',
-      colours: [{ label: 'Blush', sw: SW('rosalind-pink'), img: A + 'main-rosalind-pink.jpg', href: OPEN + '?p=rosalind-pocket-tote&colour=blush' }, { label: 'Brown', sw: SW('rosalind-brown'), img: A + 'main-rosalind-brown.jpg', href: OPEN + '?p=rosalind-pocket-tote&colour=brown' }, { label: 'Beige', sw: SW('rosalind-beige'), img: A + 'main-rosalind-beige.jpg', href: OPEN + '?p=rosalind-pocket-tote&colour=beige' }] },
+      colours: [{ label: 'Blush', sw: SW('rosalind-pink'), img: A + 'main-rosalind-pink.webp', href: OPEN + '?p=rosalind-pocket-tote&colour=blush' }, { label: 'Brown', sw: SW('rosalind-brown'), img: A + 'main-rosalind-brown.webp', href: OPEN + '?p=rosalind-pocket-tote&colour=brown' }, { label: 'Beige', sw: SW('rosalind-beige'), img: A + 'main-rosalind-beige.webp', href: OPEN + '?p=rosalind-pocket-tote&colour=beige' }] },
     { name: 'Cognac Everyday Tote', cat: 'TOTE BAGS', rating: '4.5', reviews: '73 reviews', price: 'Tk. 4,200/-', badge: '', note: '32 × 26 × 13 cm, room for a small laptop',
       colours: [{ label: 'Cognac', sw: SW('swatch-brown'), img: 'assets/home/spot-thumb-4.webp', href: OPEN + '?p=cognac-everyday-tote&colour=cognac' }] },
   ];
@@ -472,8 +475,9 @@
     const p = P[sp], c = p.colours[col];
     if (full) {
       main.querySelectorAll('img').forEach((i) => i.remove());
-      p.colours.forEach((k, i) => { const im = document.createElement('img'); im.src = k.img; im.alt = p.name + ' in ' + k.label.toLowerCase(); if (i === col) im.className = 'on'; main.appendChild(im); });
-      thumbs.innerHTML = p.colours.map((k, i) => '<button type="button" aria-label="' + k.label + ' photo" aria-pressed="' + (i === col) + '" data-k="' + i + '"><img src="' + k.img + '" alt=""></button>').join('');
+      p.colours.forEach((k, i) => { const im = document.createElement('img'); im.decoding = 'async'; if (i === col) { im.src = k.img; im.className = 'on'; } else { im.dataset.src = k.img; } im.alt = p.name + ' in ' + k.label.toLowerCase(); main.appendChild(im); });
+      setTimeout(() => main.querySelectorAll('img[data-src]').forEach((im) => { im.src = im.dataset.src; im.removeAttribute('data-src'); }), 1500);
+      thumbs.innerHTML = p.colours.map((k, i) => '<button type="button" aria-label="' + k.label + ' photo" aria-pressed="' + (i === col) + '" data-k="' + i + '"><img loading="lazy" decoding="async" fetchpriority="low" src="' + k.img + '" alt=""></button>').join('');
       dots.innerHTML = p.colours.map((k, i) => '<button type="button" role="radio" aria-checked="' + (i === col) + '" aria-label="' + k.label + '" data-k="' + i + '"><img src="' + (i === col ? k.sw : k.sw.replace('-on.svg', '-off.svg')) + '" alt=""></button>').join('');
       $('#spCat').textContent = p.cat + ' · PREMIUM LEATHER';
       $('#spName').textContent = p.name;
@@ -484,7 +488,7 @@
       $('#spCount').textContent = sp + 1;
       const b = $('#spBadge'); b.hidden = !p.badge; b.textContent = p.badge;
     } else {
-      main.querySelectorAll('img').forEach((i, n) => i.classList.toggle('on', n === col));
+      main.querySelectorAll('img').forEach((i, n) => { if (n === col && i.dataset.src) { i.src = i.dataset.src; i.removeAttribute('data-src'); } i.classList.toggle('on', n === col); });
       thumbs.querySelectorAll('button').forEach((b, n) => b.setAttribute('aria-pressed', n === col));
       dots.querySelectorAll('button').forEach((b, n) => { b.setAttribute('aria-checked', n === col); const k = p.colours[n]; b.firstElementChild.src = n === col ? k.sw : k.sw.replace('-on.svg', '-off.svg'); });
     }
