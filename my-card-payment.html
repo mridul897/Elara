@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pay by card | ELARA</title>
+<meta name="description" content="Pay for your ELARA order with a Visa or Mastercard credit or debit card.">
+<meta name="theme-color" content="#FFFDF9">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/assets/home/favicon.svg">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+<!--
+  Hosted card payment page, built from the Figma "Card gateway" frames (Playground).
+  Front-end simulation: no card is ever sent anywhere. Test cards:
+    4242 4242 4242 4242  Visa, approved        5555 5555 5555 4444  Mastercard, approved
+    4000 0000 0000 0002  declined by the bank
+  Bank verification code: any 6 digits, 000000 is "incorrect" (3 tries, then the payment is declined).
+-->
+<link rel="preload" href="assets/fonts/fraunces-normal-latin-fe3a28.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/inter-normal-latin-567244.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+<style>
+  :root {
+    --bg: #fffdf9; --panel: #f8f4ef; --card: #f7f1e8; --text: #4a4741; --muted: #838280; --faint: #a8a5a0;
+    --line: #ddd5c6; --accent: #2a72de; --focus: #3184ff; --danger: #d22c15; --ok: #0ca817;
+    --ease: cubic-bezier(.4,0,.2,1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { overflow-x: clip; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; background: none; border: 0; color: inherit; cursor: pointer; }
+  img { display: block; }
+  [hidden] { display: none !important; }
+  .serif { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+
+  .top { display: flex; align-items: center; justify-content: space-between; height: 72px; padding: 0 40px; background: #fff; border-bottom: 1px solid var(--line); }
+  .brand { font-family: 'Fraunces', serif; font-size: 24px; letter-spacing: 6px; }
+  .secure { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--muted); }
+  .secure img { width: 14px; height: 14px; }
+
+  .wrap { display: flex; align-items: flex-start; justify-content: center; gap: 32px; padding: 32px 24px 64px; }
+  .form-card { width: 640px; max-width: 100%; padding: 36px; background: #fff; border: 1px solid var(--line); border-radius: 16px; display: flex; flex-direction: column; gap: 18px; }
+  .form-card h1 { font-size: 32px; line-height: 1.1; letter-spacing: -1px; font-weight: 400; }
+  .form-card .lede { margin-top: 6px; font-size: 14px; line-height: 1.5; color: var(--muted); }
+  .accepted { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  .accepted .logo { width: 48px; height: 30px; border-radius: 6px; overflow: hidden; background: #fff; border: 1px solid var(--line); }
+  .accepted .logo img { width: 100%; height: 100%; object-fit: cover; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .box { display: flex; align-items: center; gap: 12px; height: 60px; padding: 0 16px; background: #fff; border: 1px solid var(--line); border-radius: 8px; transition: border-color .15s var(--ease), box-shadow .15s var(--ease); cursor: text; }
+  .box:focus-within { border-color: var(--focus); box-shadow: 0 0 0 1px var(--focus); }
+  .box.ok { border-color: var(--ok); }
+  .box.bad { border-color: var(--danger); box-shadow: 0 0 0 1px var(--danger); }
+  .box .inner { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .box label { font-size: 12px; line-height: 1.4; color: var(--muted); cursor: text; }
+  .box.bad label { color: var(--danger); }
+  .box input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; font: inherit; font-size: 16px; line-height: 1.4; color: var(--text); padding: 0; }
+  .box input::placeholder { color: var(--faint); opacity: 1; }
+  .box .brand-slot { display: flex; align-items: center; gap: 8px; flex: none; }
+  .box .brand-slot img.net { width: 40px; height: 25px; border-radius: 4px; object-fit: cover; }
+  .box .tick { width: 20px; height: 20px; border-radius: 50%; background: var(--ok); color: #fff; font-size: 12px; font-weight: 700; display: none; align-items: center; justify-content: center; }
+  .box.ok .tick { display: flex; }
+  .box .help { width: 20px; height: 20px; border: 1.2px solid var(--muted); border-radius: 50%; color: var(--muted); font-size: 11px; font-weight: 500; display: flex; align-items: center; justify-content: center; }
+  .err { font-size: 12px; line-height: 1.5; color: var(--danger); }
+  .err[hidden] { display: none; }
+  .row { display: flex; gap: 16px; }
+  .row > .field { flex: 1; }
+
+  .pay { height: 54px; width: 100%; border-radius: 999px; background: var(--accent); color: #fff; font-size: 15px; font-weight: 500; transition: background-color .15s var(--ease); }
+  .pay:hover:not(:disabled) { background: #2056a6; }
+  .pay:disabled { background: #e4e1dc; color: var(--faint); cursor: default; }
+  .note { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; line-height: 1.5; color: var(--muted); }
+  .note img { width: 14px; height: 14px; margin-top: 2px; flex: none; }
+  .back { font-size: 14px; font-weight: 500; color: var(--accent); width: fit-content; }
+  .back:hover { text-decoration: underline; }
+
+  .summary { width: 368px; flex: none; padding: 28px; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .summary h2 { font-size: 22px; font-weight: 400; letter-spacing: -.5px; }
+  .item { display: flex; gap: 12px; align-items: flex-start; }
+  .item .ph { width: 56px; height: 70px; flex: none; border-radius: 8px; border: 1px solid var(--line); background: #f2ecde; overflow: hidden; }
+  .item .ph img { width: 100%; height: 100%; object-fit: cover; }
+  .item .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 14px; }
+  .item .tx b { font-weight: 500; overflow-wrap: anywhere; }
+  .item .tx span { font-size: 12px; color: var(--muted); }
+  .item .pr { font-size: 14px; font-weight: 500; white-space: nowrap; }
+  .hr { height: 1px; background: var(--line); }
+  .ln { display: flex; justify-content: space-between; font-size: 14px; color: var(--muted); }
+  .ln b { font-weight: 400; color: var(--text); }
+  .tot { display: flex; justify-content: space-between; align-items: center; font-size: 16px; }
+  .tot .v { font-size: 26px; letter-spacing: -.5px; }
+  .oid { font-size: 12px; color: var(--muted); }
+  .empty { max-width: 560px; margin: 0 auto; padding: 64px 24px; display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+  .empty h1 { font-size: 32px; font-weight: 400; }
+  .empty p { font-size: 14px; color: var(--muted); }
+  .empty a { height: 50px; padding: 0 28px; display: flex; align-items: center; border-radius: 999px; background: var(--accent); color: #fff; font-weight: 500; font-size: 15px; }
+
+  /* Bank verification (3-D Secure) */
+  .scrim { position: fixed; inset: 0; z-index: 100; display: flex; justify-content: center; align-items: flex-start; padding: 90px 16px 24px; overflow: auto; background: rgba(28,27,26,.6); animation: fade .2s ease-out; }
+  .scrim[hidden] { display: none; }
+  .sheet { width: 440px; max-width: 100%; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.28); animation: up .26s cubic-bezier(.22,.8,.3,1); }
+  .sheet-h { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; background: var(--card); }
+  .sheet-h .brand { font-size: 18px; letter-spacing: 4px; }
+  .sheet-h .secure { font-size: 12px; }
+  .sheet-b { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px 24px 18px; text-align: center; }
+  .sheet-b h2 { font-size: 24px; font-weight: 400; letter-spacing: -.5px; }
+  .sheet-b p { font-size: 13px; line-height: 19px; color: var(--muted); }
+  .sheet-b h3 { font-size: 20px; font-weight: 700; line-height: 1.3; }
+  .det { width: 100%; padding: 12px 14px; background: var(--panel); border-radius: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .det div { display: flex; justify-content: space-between; font-size: 13px; }
+  .det span { color: var(--muted); }.det b { font-weight: 500; }
+  .code { position: relative; display: flex; gap: 8px; justify-content: center; }
+  .code i { width: 48px; height: 54px; border: 1.5px solid var(--line); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 20px; font-weight: 700; background: #fff; }
+  .code i.on { border: 2px solid var(--focus); }
+  .code.bad i { border: 2px solid var(--danger); background: #fdf1ef; }
+  .code input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; border: 0; font-size: 16px; }
+  .alert { width: 100%; padding: 10px 14px; border: 1px solid rgba(210,44,21,.4); border-radius: 10px; background: #fdf1ef; color: #b3261e; font-size: 13px; font-weight: 500; line-height: 18px; text-align: left; }
+  .small { font-size: 12px; color: var(--muted); }
+  .small button { text-decoration: underline; font-size: 12px; color: inherit; }
+  .badge { width: 56px; height: 56px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; }
+  .spin { width: 52px; height: 52px; border-radius: 50%; border: 4.6px solid var(--line); border-top-color: var(--accent); animation: spin .9s linear infinite; }
+  .sheet-f { display: flex; gap: 12px; padding: 0 24px 22px; }
+  .btn { flex: 1; height: 48px; border-radius: 999px; font-size: 13px; font-weight: 600; letter-spacing: .3px; text-transform: uppercase; border: 1px solid var(--text); transition: background-color .15s; }
+  .btn.go { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.go:hover:not(:disabled) { background: #2056a6; }
+  .btn:disabled { background: #e4e1dc; border-color: #e4e1dc; color: var(--faint); cursor: default; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .sheet, .scrim, .spin { animation: none; } }
+
+  @media (max-width: 900px) {
+    .top { height: 56px; padding: 0 20px; }
+    .brand { font-size: 20px; letter-spacing: 4px; }
+    .wrap { flex-direction: column-reverse; gap: 0; padding: 0 0 40px; align-items: stretch; }
+    .summary { width: 100%; border-radius: 0; border-width: 0 0 1px; padding: 14px 20px; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+    .summary h2 { font-size: 14px; font-weight: 500; letter-spacing: 0; font-family: 'Inter', sans-serif; }
+    .summary .item, .summary .hr, .summary .oid { display: none; }
+    .summary .ln { display: none; }
+    .summary .tot { flex: none; gap: 12px; }
+    .summary .tot span:first-child { display: none; }
+    .summary .tot .v { font-size: 20px; }
+    .form-card { width: 100%; border: 0; border-radius: 0; padding: 20px; }
+    .form-card h1 { font-size: 26px; }
+    .row { gap: 12px; }
+    .sheet-h, .sheet-b { padding-left: 20px; padding-right: 20px; }
+    .scrim { padding-top: 70px; }
+    .code i { width: 42px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <a href="index.html" class="brand" aria-label="ELARA home">ELARA</a>
+  <span class="secure"><img src="assets/checkout/lock-card.svg" alt="">Secure card payment</span>
+</header>
+
+<main class="wrap" id="app" hidden>
+  <section class="form-card" aria-labelledby="h1">
+    <div>
+      <h1 id="h1" class="serif">Pay by card</h1>
+      <p class="lede">Enter your card details to complete your order. Your bank may ask you to confirm the payment with a one-time code.</p>
+    </div>
+    <div class="accepted">
+      <span class="logo"><img src="assets/checkout/pay-visa.webp" alt="Visa"></span>
+      <span class="logo"><img src="assets/checkout/mastercard.webp" alt="Mastercard"></span>
+      <span>Visa and Mastercard credit or debit cards</span>
+    </div>
+
+    <form id="cardForm" novalidate autocomplete="on" style="display:contents">
+      <div class="field">
+        <div class="box" id="bNum">
+          <div class="inner"><label for="cNum">Card number</label><input id="cNum" inputmode="numeric" autocomplete="cc-number" placeholder="1234 5678 9012 3456" maxlength="19" aria-describedby="eNum"></div>
+          <span class="brand-slot"><img class="net" id="netLogo" alt="" hidden><img id="lockIcon" src="assets/checkout/lock-card.svg" width="14" height="14" alt=""><span class="tick" aria-hidden="true">✓</span></span>
+        </div>
+        <p class="err" id="eNum" role="alert" hidden></p>
+      </div>
+      <div class="row">
+        <div class="field">
+          <div class="box" id="bExp"><div class="inner"><label for="cExp">Expiry (MM/YY)</label><input id="cExp" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/YY" maxlength="5" aria-describedby="eExp"></div><span class="tick" aria-hidden="true">✓</span></div>
+          <p class="err" id="eExp" role="alert" hidden></p>
+        </div>
+        <div class="field">
+          <div class="box" id="bCvv"><div class="inner"><label for="cCvv">CVV</label><input id="cCvv" inputmode="numeric" autocomplete="cc-csc" placeholder="3 digits" maxlength="3" aria-describedby="eCvv"></div><span class="help" title="The 3 digits on the back of your card" aria-hidden="true">?</span></div>
+          <p class="err" id="eCvv" role="alert" hidden></p>
+        </div>
+      </div>
+      <div class="field">
+        <div class="box" id="bName"><div class="inner"><label for="cName">Name on card</label><input id="cName" autocomplete="cc-name" placeholder="As printed on your card" aria-describedby="eName" style="text-transform:uppercase"></div><span class="tick" aria-hidden="true">✓</span></div>
+        <p class="err" id="eName" role="alert" hidden></p>
+      </div>
+      <button type="submit" class="pay" id="payBtn" disabled>Pay</button>
+    </form>
+
+    <p class="note"><img src="assets/checkout/lock-card.svg" alt=""><span>Payments are encrypted. ELARA never sees or stores your full card number. Your card is charged only after your bank confirms it.</span></p>
+    <a class="back" id="backLink" href="my-checkout-review.html">← Back to checkout</a>
+  </section>
+
+  <aside class="summary" aria-label="Order summary">
+    <h2 class="serif">Order summary</h2>
+    <div id="items"></div>
+    <div class="hr"></div>
+    <div class="ln"><span id="subLabel">Subtotal</span><b id="subV"></b></div>
+    <div class="ln" id="discLine" hidden><span id="discLabel">Discount</span><b id="discV"></b></div>
+    <div class="ln"><span id="delLabel">Delivery</span><b id="delV"></b></div>
+    <div class="hr"></div>
+    <div class="tot"><span>Total</span><span class="serif v" id="totV"></span></div>
+    <p class="oid" id="oid"></p>
+  </aside>
+</main>
+
+<section class="empty" id="emptyView" hidden>
+  <h1 class="serif">No order to pay for</h1>
+  <p>We could not find an order waiting for card payment on this device.</p>
+  <a href="my-plp-screen.html">Continue shopping</a>
+</section>
+
+<div class="scrim" id="scrim" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Bank verification">
+    <div class="sheet-h"><span class="brand">ELARA</span><span class="secure"><img src="assets/checkout/lock-card.svg" alt="">Secure verification</span></div>
+    <div id="sheetBody" class="sheet-b" aria-live="polite"></div>
+    <div id="sheetBtns" class="sheet-f"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const ORDER_KEY = 'elara.order.v1', CART_KEY = 'elara.cart.v1', BUY_KEY = 'elara.buynow.v1', PROMO_KEY = 'elara.promo.v1';
+  const $ = (id) => document.getElementById(id);
+  const read = (k, f) => { try { const v = JSON.parse(localStorage.getItem(k)); return v === null ? f : v; } catch (e) { return f; } };
+  const write = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+  const money = (n) => 'Tk. ' + Number(n).toLocaleString('en-US');
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  const order = read(ORDER_KEY, null);
+  if (!order || order.payment !== 'card' || !order.items || !order.items.length) { $('emptyView').hidden = false; return; }
+  if (order.paid) { location.replace('my-order-success.html'); return; }
+  $('app').hidden = false;
+  document.title = 'Pay ' + money(order.total) + ' by card | ELARA';
+  $('payBtn').textContent = 'Pay ' + money(order.total);
+  $('backLink').href = 'my-checkout-review.html' + (order.buyNow ? '?buynow=1' : '');
+
+  // ---- summary ----
+  $('items').innerHTML = order.items.map((l) =>
+    '<div class="item"><div class="ph"><img src="' + esc(l.img) + '" alt=""></div><div class="tx"><b>' + esc(l.name) + '</b><span>' +
+    [l.colour, l.size].filter(Boolean).map(esc).concat('Qty ' + l.qty).join(' · ') + '</span></div><span class="pr">' + money(l.price * l.qty) + '</span></div>').join('');
+  const count = order.items.reduce((n, l) => n + l.qty, 0);
+  $('subLabel').textContent = 'Subtotal (' + count + (count === 1 ? ' item)' : ' items)'); $('subV').textContent = money(order.subtotal);
+  if (order.discount) { $('discLine').hidden = false; $('discLabel').textContent = 'Discount (' + order.promo + ')'; $('discV').textContent = '– ' + money(order.discount); }
+  $('delLabel').textContent = 'Delivery · ' + order.zone; $('delV').textContent = order.delivery ? money(order.delivery) : 'Free';
+  $('totV').textContent = money(order.total); $('oid').textContent = 'Order ' + order.id;
+
+  // ---- card form ----
+  const digits = (s) => s.replace(/\D/g, '');
+  const luhn = (n) => { let s = 0, d = false; for (let i = n.length - 1; i >= 0; i--) { let x = +n[i]; if (d) { x *= 2; if (x > 9) x -= 9; } s += x; d = !d; } return s % 10 === 0; };
+  const network = (n) => /^4/.test(n) ? 'visa' : (/^(5[1-5]|2(2[2-9]\d|[3-6]\d\d|7[01]\d|720))/.test(n) ? 'mastercard' : null);
+  const NET = { visa: ['Visa', 'assets/checkout/pay-visa.webp'], mastercard: ['Mastercard', 'assets/checkout/mastercard.webp'] };
+  const f = { num: $('cNum'), exp: $('cExp'), cvv: $('cCvv'), name: $('cName') };
+  const box = { num: $('bNum'), exp: $('bExp'), cvv: $('bCvv'), name: $('bName') };
+  const eMsg = { num: $('eNum'), exp: $('eExp'), cvv: $('eCvv'), name: $('eName') };
+  const touched = {};
+
+  function check(k) {
+    const v = f[k].value.trim();
+    if (k === 'num') {
+      const n = digits(v);
+      if (!n) return 'Enter your card number.';
+      if (!network(n)) return n.length >= 1 ? 'We accept Visa and Mastercard only.' : '';
+      if (n.length !== 16 || !luhn(n)) return 'Check your card number. It looks incorrect.';
+    } else if (k === 'exp') {
+      const m = v.match(/^(\d{2})\/(\d{2})$/);
+      if (!m) return 'Enter the expiry as MM/YY.';
+      const mm = +m[1], yy = 2000 + +m[2], now = new Date();
+      if (mm < 1 || mm > 12) return 'Enter a valid month (01 to 12).';
+      if (yy < now.getFullYear() || (yy === now.getFullYear() && mm < now.getMonth() + 1)) return 'This card has expired.';
+      if (yy > now.getFullYear() + 20) return 'Enter a valid expiry year.';
+    } else if (k === 'cvv') {
+      if (!/^\d{3}$/.test(v)) return 'Enter the 3 digits on the back.';
+    } else if (k === 'name') {
+      if (v.replace(/[^A-Za-z]/g, '').length < 2) return 'Enter the name on your card.';
+    }
+    return '';
+  }
+  function paint(k, show) {
+    const msg = check(k), b = box[k], e = eMsg[k];
+    const filled = f[k].value.trim().length > 0;
+    b.classList.toggle('ok', !msg && filled);
+    b.classList.toggle('bad', !!msg && show);
+    e.hidden = !(msg && show); e.textContent = show ? msg : '';
+    f[k].setAttribute('aria-invalid', msg && show ? 'true' : 'false');
+  }
+  function refresh() {
+    const allOk = ['num', 'exp', 'cvv', 'name'].every((k) => !check(k));
+    $('payBtn').disabled = !allOk;
+    const n = digits(f.num.value), net = network(n);
+    const logo = $('netLogo');
+    logo.hidden = !net; $('lockIcon').hidden = !!net;
+    if (net) { logo.src = NET[net][1]; logo.alt = NET[net][0]; }
+  }
+  f.num.addEventListener('input', () => {
+    const n = digits(f.num.value).slice(0, 16);
+    f.num.value = n.replace(/(\d{4})(?=\d)/g, '$1 ');
+    if (n.length === 16 || touched.num) { touched.num = true; }
+    paint('num', touched.num); refresh();
+  });
+  f.exp.addEventListener('input', () => {
+    let v = digits(f.exp.value).slice(0, 4);
+    if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2);
+    else if (v.length === 2 && f.exp.value.length >= 2 && !/\/$/.test(f.exp.value)) v = v + '/';
+    f.exp.value = v;
+    if (v.length === 5) touched.exp = true;
+    paint('exp', touched.exp); refresh();
+  });
+  f.exp.addEventListener('keydown', (e) => { if (e.key === 'Backspace' && /\/$/.test(f.exp.value)) { e.preventDefault(); f.exp.value = f.exp.value.slice(0, -2); f.exp.dispatchEvent(new Event('input')); } });
+  f.cvv.addEventListener('input', () => { f.cvv.value = digits(f.cvv.value).slice(0, 3); if (f.cvv.value.length === 3) touched.cvv = true; paint('cvv', touched.cvv); refresh(); });
+  f.name.addEventListener('input', () => { paint('name', touched.name); refresh(); });
+  Object.keys(f).forEach((k) => f[k].addEventListener('blur', () => { if (f[k].value.trim() || touched[k]) touched[k] = true; paint(k, touched[k]); refresh(); }));
+  box.num.addEventListener('click', () => f.num.focus());
+
+  $('cardForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const bad = ['num', 'exp', 'cvv', 'name'].filter((k) => check(k));
+    bad.forEach((k) => { touched[k] = true; paint(k, true); });
+    if (bad.length) { f[bad[0]].focus(); return; }
+    openBank();
+  });
+
+  // ---- bank verification (3-D Secure simulation) ----
+  const scrim = $('scrim'), sBody = $('sheetBody'), sBtns = $('sheetBtns');
+  let S = null, timers = {}, prevFocus = null;
+  function stop() { clearInterval(timers.tick); clearTimeout(timers.proc); clearInterval(timers.ret); }
+  function closeSheet() { stop(); scrim.hidden = true; document.body.style.overflow = ''; S = null; document.removeEventListener('keydown', onKey, true); if (prevFocus && prevFocus.focus) prevFocus.focus({ preventScroll: true }); }
+  function onKey(e) {
+    if (!S) return;
+    if (e.key === 'Escape' && S.step !== 'proc' && S.step !== 'ok') { e.preventDefault(); closeSheet(); }
+    else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { const go = sBtns.querySelector('.go'); if (go && !go.disabled) { e.preventDefault(); go.click(); } }
+  }
+  const mm = (s) => '0' + Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  function btns(l, r, on) {
+    sBtns.innerHTML = (l ? '<button type="button" class="btn" id="sL">' + l + '</button>' : '') + (r ? '<button type="button" class="btn go" id="sR"' + (on ? '' : ' disabled') + '>' + r + '</button>' : '');
+    sBtns.hidden = !(l || r);
+  }
+  function codeBoxes() {
+    let h = '<div class="code' + (S.bad ? ' bad' : '') + '" id="codeWrap">';
+    const val = S.bad ? S.shown : S.code;
+    for (let i = 0; i < 6; i++) h += '<i class="' + (!S.bad && i === val.length ? 'on' : '') + '">' + (val[i] || '') + '</i>';
+    return h + '<input id="codeIn" inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-label="Verification code"></div>';
+  }
+  function show() {
+    const last4 = digits(f.num.value).slice(-4), net = network(digits(f.num.value));
+    const cardLabel = (net ? NET[net][0] : 'Card') + ' •••• ' + last4;
+    if (S.step === 'code') {
+      sBody.innerHTML = '<h2 class="serif">Verify your payment</h2><p>Your bank sent a one-time code to +880 17•• ••• ' + esc((order.customer && order.customer.phone ? order.customer.phone.replace(/\D/g, '').slice(-3) : '678')) + '. Enter it to confirm this payment.</p>' +
+        '<div class="det"><div><span>Merchant</span><b>ELARA</b></div><div><span>Amount</span><b>' + money(order.total) + '</b></div><div><span>Card</span><b>' + cardLabel + '</b></div></div>' +
+        codeBoxes() +
+        (S.bad ? '<div class="alert" role="alert">Incorrect code. You have ' + S.tries + ' attempt' + (S.tries === 1 ? '' : 's') + ' left.</div>' : '') +
+        '<p class="small" id="codeNote">' + (S.left > 0 ? 'Code expires in ' + mm(S.left) : 'Code expired') + ' · <button type="button" id="resend">Resend code</button></p>' +
+        '<p class="small">Never share this code with anyone, including ELARA.</p>';
+      btns('Cancel', 'Verify', S.code.length === 6);
+      const inp = $('codeIn'); inp.value = S.code; inp.focus({ preventScroll: true });
+      inp.addEventListener('input', () => {
+        S.code = digits(inp.value).slice(0, 6); inp.value = S.code;
+        if (S.bad) { S.bad = false; show(); return; }
+        const is = sBody.querySelectorAll('.code i');
+        is.forEach((el, i) => { el.textContent = S.code[i] || ''; el.classList.toggle('on', i === S.code.length); });
+        $('sR').disabled = S.code.length !== 6;
+      });
+      $('resend').addEventListener('click', () => { S.left = 300; S.code = ''; S.bad = false; show(); });
+      $('sL').addEventListener('click', closeSheet);
+      $('sR').addEventListener('click', verify);
+    } else if (S.step === 'proc') {
+      sBody.innerHTML = '<div style="height:12px"></div><div class="spin" aria-hidden="true"></div><h3>Confirming with your bank</h3><p>Please do not close or refresh this page. This takes a few seconds.</p><div style="height:12px"></div>';
+      btns(null, null, false);
+    } else if (S.step === 'declined') {
+      sBody.innerHTML = '<div class="badge" style="background:var(--danger)" aria-hidden="true">!</div><h3>Your card was declined</h3><p>Your bank did not approve this payment. No money was taken. Try another card, or pay with bKash, Nagad or cash on delivery. Your order is saved for 15 minutes.</p>';
+      btns('Another method', 'Another card', true);
+      $('sL').addEventListener('click', () => { location.href = $('backLink').href; });
+      $('sR').addEventListener('click', () => { closeSheet(); f.num.value = ''; f.num.dispatchEvent(new Event('input')); touched.num = false; paint('num', false); f.num.focus(); });
+      $('sR').focus();
+    } else if (S.step === 'ok') {
+      sBody.innerHTML = '<div class="badge" style="background:var(--ok)" aria-hidden="true">✓</div><h3>Payment successful</h3>' +
+        '<div class="det"><div><span>Paid to</span><b>ELARA</b></div><div><span>Amount</span><b>' + money(order.total) + '</b></div><div><span>Card</span><b>' + cardLabel + '</b></div><div><span>Reference</span><b>' + S.ref + '</b></div></div>' +
+        '<p class="small" id="ret">Returning to your order confirmation in ' + S.ret + ' seconds…</p>';
+      btns(null, 'Return to ELARA', true);
+      $('sR').addEventListener('click', done); $('sR').focus();
+    }
+  }
+  function openBank() {
+    prevFocus = document.activeElement;
+    S = { step: 'code', code: '', shown: '', tries: 3, bad: false, left: 300, ref: null, ret: 5 };
+    scrim.hidden = false; document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', onKey, true);
+    show();
+    timers.tick = setInterval(() => {
+      if (!S || S.step !== 'code') return;
+      if (S.left > 0) S.left--;
+      const n = $('codeNote');
+      if (n) { n.innerHTML = (S.left > 0 ? 'Code expires in ' + mm(S.left) : 'Code expired') + ' · <button type="button" id="resend">Resend code</button>'; $('resend').addEventListener('click', () => { S.left = 300; S.code = ''; S.bad = false; show(); }); }
+    }, 1000);
+  }
+  function verify() {
+    if (S.code.length !== 6) return;
+    if (S.code === '000000' || S.left <= 0) {
+      S.tries--; S.bad = true; S.shown = S.code; S.code = '';
+      if (S.tries <= 0) { S.step = 'declined'; show(); return; }
+      show(); return;
+    }
+    S.step = 'proc'; show();
+    timers.proc = setTimeout(() => {
+      if (digits(f.num.value) === '4000000000000002') { S.step = 'declined'; show(); return; }
+      S.ref = 'CRD-' + Math.random().toString(36).slice(2, 10).toUpperCase();
+      S.step = 'ok'; show();
+      timers.ret = setInterval(() => {
+        S.ret--;
+        if (S.ret <= 0) { done(); return; }
+        const r = $('ret'); if (r) r.textContent = 'Returning to your order confirmation in ' + S.ret + ' seconds…';
+      }, 1000);
+    }, 1800);
+  }
+  function done() {
+    const ref = S && S.ref;
+    stop();
+    order.paid = true; order.trxId = ref; order.paidAt = new Date().toISOString();
+    write(ORDER_KEY, order);
+    if (order.buyNow) { try { localStorage.removeItem(BUY_KEY); } catch (e) {} } else { write(CART_KEY, []); }
+    try { localStorage.removeItem(PROMO_KEY); } catch (e) {}
+    location.href = 'my-order-success.html';
+  }
+  f.num.focus({ preventScroll: true });
+})();
+</script>
+</body>
+</html>

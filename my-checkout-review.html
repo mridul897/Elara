@@ -692,7 +692,7 @@
     cod: [['Place your order', 'We confirm it with your address.'], ['Delivery', 'Your delivery person calls before arriving.'], ['Pay in cash', 'Pay when the bag is in your hands.']],
     bkash: [['Place your order', 'We save it for you.'], ['Pay in the bKash window', 'Enter your number, code and PIN.'], ['Order confirmed', 'You come straight back here.']],
     nagad: [['Place your order', 'We save it for you.'], ['Pay in the Nagad window', 'Enter your number, code and PIN.'], ['Order confirmed', 'You come straight back here.']],
-    card: [['Place your order', 'We save it for you.'], ['Pay securely', 'Enter your card on the next screen.'], ['Order confirmed', 'You see your confirmation right away.']],
+    card: [['Place your order', 'We save it for you.'], ['Pay securely', 'Enter your card, then confirm with your bank.'], ['Order confirmed', 'You come straight back here.']],
   };
   function paintNext() {
     const k = payValue();
@@ -780,6 +780,13 @@
           location.href = 'my-order-success.html';
         },
       });
+      return;
+    }
+    // Card: the order is saved and the shopper goes to the hosted card page; the bag is emptied once the bank approves.
+    if (order.payment === 'card') {
+      order.payBy = Date.now() + 15 * 60000;
+      write(ORDER_KEY, order);
+      location.href = 'my-card-payment.html';
       return;
     }
     write(ORDER_KEY, order);

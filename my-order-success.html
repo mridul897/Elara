@@ -395,7 +395,9 @@
   let order = null;
   try { order = JSON.parse(localStorage.getItem('elara.order.v1')); } catch (e) {}
 
-  if (order && (order.payment === 'bkash' || order.payment === 'nagad') && !order.paid) {
+  if (order && order.payment === 'card' && !order.paid) {
+    location.replace('my-card-payment.html');
+  } else if (order && (order.payment === 'bkash' || order.payment === 'nagad') && !order.paid) {
     location.replace('my-payment.html');      // not paid yet: this is not a confirmation
   } else if (!order || !order.items || !order.items.length) {
     $('emptyView').hidden = false;
