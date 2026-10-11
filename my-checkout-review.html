@@ -195,6 +195,29 @@
   .logo { position: relative; width: 62px; height: 40px; flex-shrink: 0; border: 0.5px solid var(--text); border-radius: var(--r-small); overflow: hidden; background: #fff; }
   .logos { display: flex; gap: 6px; }
 
+  /* Payment method: visual tiles + "what happens next" */
+  .pay-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .pay-tile { position: relative; display: flex; flex-direction: column; gap: 14px; padding: 18px; background: #fff; border: 1px solid var(--border-soft); border-radius: 20px; cursor: pointer; transition: border-color .2s var(--ease), background-color .2s var(--ease); }
+  .pay-tile:not(.is-on):hover { border-color: var(--text); }
+  .pay-tile.is-on { padding: 17px; border: 2px solid var(--accent); background: #eaf1fc; }
+  .pay-tile:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .pt-top { display: flex; align-items: center; justify-content: space-between; }
+  .pt-cash { display: flex; align-items: center; justify-content: center; width: 62px; height: 40px; border-radius: var(--r-small); background: var(--bg-card); color: var(--text); }
+  .pt-text { display: flex; flex-direction: column; gap: 4px; line-height: 1.5; }
+  .pt-text b { font-weight: 500; font-size: 14px; }
+  .pt-text span { font-size: 12px; color: var(--text-muted); }
+  .pt-tag { align-self: flex-start; padding: 4px 10px; border-radius: var(--r-pill); background: var(--success-bg); color: #2b8a4b; font-weight: 500; font-size: 11px; line-height: 1.5; }
+  .pay-tile.is-on .radio { border: 0; }
+  .pay-tile.is-on .radio img { opacity: 1; }
+  .pay-next { margin-top: 16px; padding: 20px; background: var(--bg-panel); border: 1px solid var(--border-soft); border-radius: 20px; }
+  .pn-title { font-weight: 500; font-size: 14px; line-height: 1.5; margin-bottom: 14px; }
+  .pn-steps { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .pn-steps li { display: flex; align-items: flex-start; gap: 10px; }
+  .pn-steps .n { flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: var(--text); color: var(--bg-page); font-weight: 500; font-size: 12px; line-height: 24px; text-align: center; }
+  .pn-steps b { display: block; font-weight: 500; font-size: 14px; line-height: 1.4; }
+  .pn-steps span.d { display: block; font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-top: 2px; }
+  @media (prefers-reduced-motion: reduce) { .pay-tile { transition: none; } }
+
   /* Place order (231:796) */
   .place { display: flex; flex-direction: column; gap: 16px; padding-top: 32px; }
   .btn { display: flex; align-items: center; justify-content: center; height: 50px; width: 100%; padding: 0 24px; border-radius: var(--r-pill); font-weight: 500; font-size: 15px; line-height: 1; white-space: nowrap; transition: background-color .15s var(--ease); }
@@ -370,31 +393,44 @@
           <!-- 1 Payment -->
           <section class="step" aria-labelledby="h-payment">
             <div class="step-head"><span class="step-num" aria-hidden="true">1</span><h2 id="h-payment">Payment method</h2></div>
-            <div role="radiogroup" aria-label="Payment method" style="display:flex;flex-direction:column;gap:24px;">
-              <label class="opt is-on" data-pay="cod">
+            <div class="pay-grid" role="radiogroup" aria-label="Payment method">
+              <label class="pay-tile is-on" data-pay="cod">
                 <input class="sr-only" type="radio" name="pay" value="cod" checked>
-                <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
-                <span class="opt-text"><b>Cash on Delivery</b><span>Pay in cash when your bag arrives</span></span>
-                <span class="badge">Available</span>
+                <span class="pt-top">
+                  <span class="pt-cash" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6.5" width="18" height="11" rx="2"/><circle cx="12" cy="12" r="2.4"/><path d="M6.5 10v.01M17.5 14v.01"/></svg></span>
+                  <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
+                </span>
+                <span class="pt-text"><b>Cash on Delivery</b><span>Pay in cash when your bag arrives</span></span>
+                <span class="pt-tag">No advance payment</span>
               </label>
-              <label class="opt" data-pay="bkash">
+              <label class="pay-tile" data-pay="bkash">
                 <input class="sr-only" type="radio" name="pay" value="bkash">
-                <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
-                <span class="opt-text"><b>bKash</b><span>You will complete payment in the bKash app, then return here</span></span>
-                <span class="logo"><img class="cover" src="assets/cart/bkash.webp" alt="bKash"></span>
+                <span class="pt-top">
+                  <span class="logo"><img class="cover" src="assets/cart/bkash.webp" alt="bKash"></span>
+                  <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
+                </span>
+                <span class="pt-text"><b>bKash</b><span>Pay in the bKash app, then return here</span></span>
               </label>
-              <label class="opt" data-pay="nagad">
+              <label class="pay-tile" data-pay="nagad">
                 <input class="sr-only" type="radio" name="pay" value="nagad">
-                <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
-                <span class="opt-text"><b>Nagad</b><span>You will complete payment in the Nagad app, then return here</span></span>
-                <span class="logo"><img class="cover" src="assets/cart/nagad.webp" alt="Nagad"></span>
+                <span class="pt-top">
+                  <span class="logo"><img class="cover" src="assets/cart/nagad.webp" alt="Nagad"></span>
+                  <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
+                </span>
+                <span class="pt-text"><b>Nagad</b><span>Pay in the Nagad app, then return here</span></span>
               </label>
-              <label class="opt" data-pay="card">
+              <label class="pay-tile" data-pay="card">
                 <input class="sr-only" type="radio" name="pay" value="card">
-                <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
-                <span class="opt-text"><b>Credit or debit card</b><span>Visa and Mastercard, paid securely on the next screen</span></span>
-                <span class="logos"><span class="logo"><img class="cover" src="assets/cart/visa.webp" alt="Visa"></span><span class="logo"><img class="cover" src="assets/checkout/mastercard.webp" alt="Mastercard"></span></span>
+                <span class="pt-top">
+                  <span class="logos"><span class="logo"><img class="cover" src="assets/cart/visa.webp" alt="Visa"></span><span class="logo"><img class="cover" src="assets/checkout/mastercard.webp" alt="Mastercard"></span></span>
+                  <span class="radio"><img src="assets/checkout/radio-on.svg" alt=""></span>
+                </span>
+                <span class="pt-text"><b>Credit or debit card</b><span>Visa and Mastercard, paid securely on the next screen</span></span>
               </label>
+            </div>
+            <div class="pay-next" id="payNext" aria-live="polite">
+              <p class="pn-title">What happens next with <span id="payNextName">Cash on Delivery</span></p>
+              <ol class="pn-steps" id="payNextSteps"></ol>
             </div>
           </section>
 
@@ -620,10 +656,23 @@
     t.addEventListener('input', grow);
     grow();
   });
+  const NEXT = {
+    cod: [['Place your order', 'We confirm it with your address.'], ['Delivery', 'Your delivery person calls before arriving.'], ['Pay in cash', 'Pay when the bag is in your hands.']],
+    bkash: [['Place your order', 'We save it for you.'], ['Pay in the bKash app', 'Send the exact amount.'], ['Enter your Transaction ID', 'We confirm within a minute.']],
+    nagad: [['Place your order', 'We save it for you.'], ['Pay in the Nagad app', 'Send the exact amount.'], ['Enter your Transaction ID', 'We confirm within a minute.']],
+    card: [['Place your order', 'We save it for you.'], ['Pay securely', 'Enter your card on the next screen.'], ['Order confirmed', 'You see your confirmation right away.']],
+  };
+  function paintNext() {
+    const k = payValue();
+    $('payNextName').textContent = PAY[k];
+    $('payNextSteps').innerHTML = NEXT[k].map((st, i) => '<li><span class="n">' + (i + 1) + '</span><div><b>' + st[0] + '</b><span class="d">' + st[1] + '</span></div></li>').join('');
+  }
   document.querySelectorAll('input[name="pay"]').forEach((r) => r.addEventListener('change', () => {
     document.querySelectorAll('[data-pay]').forEach((o) => o.classList.toggle('is-on', o.querySelector('input').checked));
+    paintNext();
     render();
   }));
+  paintNext();
   ['fName', 'fPhone', 'fEmail', 'fUpazila', 'fArea', 'fAddress1'].forEach((id) => $(id).addEventListener('input', () => clearErr(id)));
 
   // ---------------- validation ----------------
