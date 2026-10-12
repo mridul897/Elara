@@ -714,7 +714,7 @@
           <button type="button" class="rv-btn" id="rvCancel">Cancel</button>
         </div>
       </form>
-      <p class="rv-thanks" id="rvThanks" hidden role="status"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M5.2 8.2l1.9 1.9 3.7-3.9"/></svg><span>Thank you. Your review is now on this page.</span></p>
+      <p class="rv-thanks" id="rvThanks" hidden role="status"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.5"/><path d="M5.2 8.2l1.9 1.9 3.7-3.9"/></svg><span>Thank you. Your review is saved and will appear for everyone once our team approves it.</span></p>
 
       <div class="rv-tools">
         <div class="rv-kws" id="rvKws" role="group" aria-label="Filter by topic"></div>
@@ -898,9 +898,10 @@
     }
 
     // ----- state + helpers
+    const real = [];   // approved reviews written by real customers, loaded from the shop database
     const mine = () => (rd(LS_R, {})[product.id] || []);
     const votes = rd(LS_V, {});
-    const all = () => mine().map((r, i) => Object.assign({ id: 'mine-' + r.ts, mine: true }, r)).concat(generated);
+    const all = () => mine().map((r, i) => Object.assign({ id: 'mine-' + r.ts, mine: true }, r)).concat(real, generated);
     const state = { star: 0, kw: '', sort: 'recent', shown: 6 };
     const fmtDate = (ts) => new Date(ts).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     const initials = (n) => n.trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
@@ -950,7 +951,7 @@
         const voted = !!votes[r.id], n = r.helpful + (voted ? 1 : 0);
         return '<article class="rv-item"><div class="rv-who"><div class="rv-avatar" aria-hidden="true">' + esc(initials(r.name)) + '</div>' +
           '<span class="rv-name">' + esc(r.name) + '</span>' +
-          (r.mine ? '<span class="rv-yours">Your review</span>' : '<span class="rv-verified">' + CHECK + 'Verified buyer</span><span>' + esc(r.city) + '</span><span>Bought: ' + esc(r.colour) + '</span>') +
+          (r.mine ? '<span class="rv-yours">Your review</span>' : r.real ? '' : '<span class="rv-verified">' + CHECK + 'Verified buyer</span><span>' + esc(r.city) + '</span><span>Bought: ' + esc(r.colour) + '</span>') +
           '</div><div><div class="rv-top">' + stars(r.stars) + '<span class="rv-date">' + (r.mine ? 'Just now' : fmtDate(r.ts)) + '</span></div>' +
           '<h3 class="rv-headline">' + esc(r.title) + '</h3><p class="rv-body">' + highlight(r.text) + '</p>' +
           (r.rec || (r.mine && r.rec) ? '<p class="rv-rec">' + CHECK + 'I would recommend this bag</p>' : '') +
@@ -1014,6 +1015,8 @@
       if (!ok) { first.focus(); return; }
       const store = rd(LS_R, {}); (store[product.id] = store[product.id] || []).unshift({ ts: Date.now(), stars: rating, title, text, name, rec: recommend });
       wr(LS_R, store);
+      // also send it to the shop; it appears for everyone once the owner approves it
+      if (window.ElaraDB) ElaraDB.submitReview({ product_id: product.id, author: name, rating: rating, title: title, body: text });
       form.reset(); rating = 0; recommend = true; paintRate(); $('rvTextCount').textContent = '0 / 800';
       form.querySelectorAll('.rv-yesno button').forEach((x, i) => x.setAttribute('aria-checked', String(i === 0)));
       openForm(false);
@@ -1023,6 +1026,10 @@
     });
 
     renderAll();
+    if (window.ElaraDB && window.ELARA_LIVE) ElaraDB.reviews(product.id).then((rows) => {
+      rows.forEach((r) => real.push({ id: 'db-' + r.id, real: true, stars: r.rating, title: r.title || 'Review', text: r.body || '', name: r.author, city: '', colour: '', ts: new Date(r.created_at).getTime(), helpful: 0, rec: r.rating >= 4 }));
+      if (rows.length) renderAll();
+    });
   })();
 
   // ----- gallery ---------------------------------------------------------------------------------------------

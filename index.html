@@ -982,6 +982,17 @@
                cards: [['Toauf Sky', 4200, null, ['assets/home/na/acc-1-b.webp', 'assets/home/na/acc-1-c.webp']], ['Charm Shoulder', 3390, null, ['assets/home/na/acc-2-b.webp', 'assets/home/na/acc-2-c.webp']], ['Charm Hobo Shoulder', 5200, null, ['assets/home/na/acc-3-b.webp', 'assets/home/na/acc-3-c.webp']], ['Vuitton Lockit Tote', 4500, null, ['assets/home/na/acc-4-b.webp', 'assets/home/na/acc-4-c.webp']]] },
   };
   Object.entries(NA).forEach(([k, t]) => t.cards.forEach((c, i) => { c[2] = 'assets/home/na/' + k + '-' + (i + 1) + '.webp'; }));
+  // The "New Arrivals" tab follows the five bags the owner picked in Admin > Content (first = feature, next four = cards).
+  (function () {
+    const ids = ((window.ELARA_SETTINGS || {}).new_arrivals || {}).ids, P = window.ELARA_PRODUCTS || [];
+    if (!window.ELARA_LIVE || !ids || ids.length < 5) return;
+    const picks = ids.map((id) => P.find((p) => p.id === id)).filter(Boolean);
+    if (picks.length < 5) return;
+    const main = (p) => p.colours[0].card, more = (p) => p.colours[0].slides.filter((u) => u && u !== main(p)).slice(0, 2);
+    NA['new'] = { title: 'New Arrivals',
+      feature: { img: main(picks[0]), alt: more(picks[0])[0] || main(picks[0]), name: picks[0].name, ls: '0', price: picks[0].price },
+      cards: picks.slice(1, 5).map((p) => [p.name, p.price, main(p), more(p).length ? more(p) : null]) };
+  })();
   const naMoney = (n) => 'Tk. ' + Number(n).toLocaleString('en-US') + '/-';
   // The price on a homepage card is always the price on that bag's product page.
   const naPrice = (name, fallback) => {

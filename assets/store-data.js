@@ -84,6 +84,28 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply); else apply();
   })();
 
+  // Announcement bar from Admin > Content. A slim strip above the page; the shopper can close it for the session.
+  (function () {
+    var a = (settings && settings.announcement) || null;
+    if (!a || !a.active || !String(a.text || '').trim()) return;
+    try { if (sessionStorage.getItem('elara.ann.closed') === '1') return; } catch (e) {}
+    function add() {
+      if (document.querySelector('.elara-ann')) return;
+      var st = document.createElement('style');
+      st.textContent = '.elara-ann{position:relative;z-index:50;display:flex;align-items:center;justify-content:center;min-height:36px;padding:8px 44px;background:var(--text,#4a4741);color:var(--bg-page,#f7f3ec);font:400 13px/1.4 Inter,-apple-system,"Segoe UI",sans-serif;text-align:center}' +
+        '.elara-ann button{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:28px;height:28px;border:0;background:none;color:inherit;font-size:18px;line-height:1;cursor:pointer;opacity:.8}' +
+        '.elara-ann button:hover{opacity:1}';
+      document.head.appendChild(st);
+      var bar = document.createElement('div'); bar.className = 'elara-ann'; bar.setAttribute('role', 'region'); bar.setAttribute('aria-label', 'Announcement');
+      var t = document.createElement('span'); t.textContent = String(a.text).trim();
+      var x = document.createElement('button'); x.type = 'button'; x.setAttribute('aria-label', 'Close announcement'); x.textContent = '\u00d7';
+      x.addEventListener('click', function () { bar.remove(); try { sessionStorage.setItem('elara.ann.closed', '1'); } catch (e) {} });
+      bar.appendChild(t); bar.appendChild(x);
+      document.body.insertBefore(bar, document.body.firstChild);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', add); else add();
+  })();
+
   // Bag lines saved earlier hold the price of that day. Bring them in line with today's catalogue and drop anything
   // that is no longer sold, so the bag never shows a stale price.
   if (window.ELARA_LIVE) {
@@ -107,6 +129,17 @@
   window.ElaraDB = {
     url: URL_,
     // POST to a database function. Returns a Promise of the JSON result (never rejects: { ok:false, error } instead).
+    // Send a customer review. It waits for the owner's approval before anyone sees it.
+    submitReview: function (r) {
+      return fetch(URL_ + '/rest/v1/reviews', { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json', Prefer: 'return=minimal' }, headers()),
+        body: JSON.stringify({ product_id: r.product_id, author: r.author, rating: r.rating, title: r.title || null, body: r.body, status: 'pending' }) })
+        .then(function (res) { return res.ok; }).catch(function () { return false; });
+    },
+    // Approved reviews for one product (newest first).
+    reviews: function (productId) {
+      return fetch(URL_ + '/rest/v1/reviews?select=id,author,rating,title,body,created_at&status=eq.approved&product_id=eq.' + encodeURIComponent(productId) + '&order=created_at.desc&limit=100', { headers: headers() })
+        .then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
+    },
     rpc: function (name, args) {
       return fetch(URL_ + '/rest/v1/rpc/' + name, { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json' }, headers()), body: JSON.stringify(args || {}) })
         .then(function (r) { return r.json().then(function (j) { return r.ok ? j : { ok: false, error: (j && j.message) || 'Request failed' }; }); })

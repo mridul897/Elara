@@ -483,10 +483,19 @@
     acc: { feature: { img: 'assets/home/na/acc-feature.webp', name: 'Black Panther', price: 5550 },
             cards: [['Toauf Sky', 4200], ['Charm Shoulder', 3390], ['Charm Hobo Shoulder', 5200], ['Vuitton Lockit Tote', 4500]] },
   };
+  // "New Arrivals" follows the five bags picked in Admin > Content.
+  (function () {
+    const ids = ((window.ELARA_SETTINGS || {}).new_arrivals || {}).ids, P = window.ELARA_PRODUCTS || [];
+    if (!window.ELARA_LIVE || !ids || ids.length < 5) return;
+    const picks = ids.map((id) => P.find((p) => p.id === id)).filter(Boolean);
+    if (picks.length < 5) return;
+    NA.new = { feature: { img: picks[0].colours[0].card, name: picks[0].name, price: picks[0].price },
+               cards: picks.slice(1, 5).map((p) => [p.name, p.price, p.colours[0].card]) };
+  })();
   const body = $('#naBody');
   function naHTML(k) {
     const t = NA[k], f = t.feature;
-    const card = (c, i) => '<a class="pc" href="' + pdpFor(c[0]) + '"><div class="pc-img"><img src="assets/home/na/' + k + '-' + (i + 1) + '.webp" alt="' + c[0] + '" loading="lazy"></div>' +
+    const card = (c, i) => '<a class="pc" href="' + pdpFor(c[0]) + '"><div class="pc-img"><img src="' + (c[2] || 'assets/home/na/' + k + '-' + (i + 1) + '.webp') + '" alt="' + c[0] + '" loading="lazy"></div>' +
       '<div class="pc-info"><p class="t-title">' + c[0] + '</p><p class="t-dflt pc-price">' + money(priceFor(c[0], c[1])) + '</p></div></a>';
     return '<a class="feature" href="' + pdpFor(f.name) + '"><img src="' + f.img + '" alt="' + f.name + '">' +
       '<div class="feature-text"><p class="t-h4">' + f.name + '</p><div class="feature-row"><span class="t-large">' + money(priceFor(f.name, f.price)) + '</span>' +
