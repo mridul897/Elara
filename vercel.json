@@ -3,6 +3,11 @@
   "trailingSlash": false,
   "redirects": [
     {
+      "source": "/admin",
+      "destination": "/admin/index.html",
+      "permanent": false
+    },
+    {
       "source": "/build-homepage.html",
       "destination": "/",
       "permanent": true
