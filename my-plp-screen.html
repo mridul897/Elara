@@ -109,6 +109,8 @@
   .abs { position: absolute; }
   .cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .nav-page button { background: none; border: none; padding: 0; color: inherit; font: inherit; }
+  /* The listing's global img { max-width: 100% } let the nav items shrink below their content, so the gaps between the top links came out uneven and tighter than on the other pages */
+  .nav-page img { max-width: none; }
   .nav-page :where(a, button, p, div, span) { margin: 0; }
   .nav-page .nav-link, .nav-page .cart-btn { font-family: var(--font-body); }
   @media (max-width: 1279.98px) { .nav-page { display: none; } }
