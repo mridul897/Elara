@@ -1,4 +1,4 @@
-/* ELARA mobile shell styles. Linked with media="(max-width: 1023.98px)", so desktop never parses a rule from here.
+/* ELARA mobile shell styles. Linked with media="(max-width: 1279.98px)", so desktop never parses a rule from here.
    Pairs with assets/mobile.js (header + drawer + footer). Page-specific mobile layout lives in each page. */
 :root { --m-bg: #fffdf9; --m-card: #f7f1e8; --m-text: #4a4741; --m-muted: #838280; --m-faint: #a8a5a0; --m-line: rgba(74,71,65,.25); --m-accent: #2a72de; }
 
@@ -44,4 +44,11 @@ html, body { overflow-x: clip; }
   .mf { padding: 56px 40px 40px; }
   .mf-brand, .mf-help { max-width: 560px; }
   .mf-cols { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Small laptop / tablet landscape (1024 to 1279): same single column, a little wider; the full desktop layout starts at 1280 */
+@media (min-width: 1024px) {
+  .page { max-width: 880px; }
+  .mh { padding-left: max(40px, calc((100vw - 1100px) / 2)); padding-right: max(28px, calc((100vw - 1100px) / 2)); }
+  .mf { padding-left: max(40px, calc((100vw - 1100px) / 2)); padding-right: max(40px, calc((100vw - 1100px) / 2)); }
 }

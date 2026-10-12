@@ -111,8 +111,8 @@
   .nav-page button { background: none; border: none; padding: 0; color: inherit; font: inherit; }
   .nav-page :where(a, button, p, div, span) { margin: 0; }
   .nav-page .nav-link, .nav-page .cart-btn { font-family: var(--font-body); }
-  @media (max-width: 1023.98px) { .nav-page { display: none; } }
-  @media (min-width: 1024px) {
+  @media (max-width: 1279.98px) { .nav-page { display: none; } }
+  @media (min-width: 1280px) {
     body > .site-header { display: none; }
     /* Nav stays locked at the top; the cards slide underneath it. */
     .nav-page { display: block; position: sticky; top: 0; background: var(--bg-page); box-shadow: 0 1px 0 var(--border-soft); }
@@ -449,7 +449,7 @@
     .p-media { aspect-ratio: 4/5; }
   }
 
-  @media (min-width: 1024px) {
+  @media (min-width: 1280px) {
     .site-header, .breadcrumb, .plp-head { padding-left: 64px; padding-right: 64px; }
     .filter-sort-row { display: none; }
     .sort-select { padding: 10px 36px 10px 14px; border-radius: var(--radius-control); border: 1px solid var(--color-border-strong); background: transparent; font-family: inherit; font-size: 0.85rem; color: var(--color-text-primary); appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234A4741' stroke-width='1.4' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; }
@@ -475,10 +475,10 @@
 
   /* ======================================================================
      Mobile listing (phones + small tablets): matches the Figma "PLP / Mobile (390)" frame.
-     Everything here is scoped to < 1024px; the desktop layout is untouched.
+     Everything here is scoped to < 1280px; the desktop layout is untouched.
      ====================================================================== */
   .m-menu, .cat-chips, .more-wrap, .m-footer { display: none; }
-  @media (max-width: 1023.98px) {
+  @media (max-width: 1279.98px) {
     .site-header { height: 64px; padding: 8px 12px 8px 20px; background: #fffdf9; backdrop-filter: none; border-bottom: 1px solid #ddd5c6; }
     .m-logo { display: block; width: 112px; height: 50px; }
     .m-logo img { width: 100%; height: 100%; object-fit: cover; }
@@ -532,14 +532,18 @@
     .m-close { align-self: flex-end; width: 44px; height: 44px; font-size: 28px; line-height: 1; background: none; border: 0; }
     .m-menu nav a { padding: 14px 0; border-bottom: 1px solid #ddd5c6; font-family: var(--font-display); font-size: 24px; letter-spacing: -.72px; }
   }
-  @media (min-width: 1024px) { .m-footer { display: none; } }
+  @media (min-width: 1280px) { .m-footer { display: none; } }
   /* Tablet: three product columns, content held to a comfortable width, roomier side padding */
-  @media (min-width: 768px) and (max-width: 1023.98px) {
+  @media (min-width: 768px) and (max-width: 1279.98px) {
     .site-header { padding-left: 40px; padding-right: 28px; }
     .product-grid { grid-template-columns: repeat(3, 1fr); gap: 28px 20px; }
     .plp-right .grid-wrap, .filter-sort-row, .cat-chips, .active-chips, .breadcrumb, .plp-head { padding-left: 40px; padding-right: 40px; }
     .m-footer { padding-left: 40px; padding-right: 40px; }
     .mf-cols { grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (min-width: 1024px) and (max-width: 1279.98px) {
+    .product-grid { grid-template-columns: repeat(4, 1fr); }
+    .site-header, .plp-right .grid-wrap, .filter-sort-row, .cat-chips, .active-chips, .breadcrumb, .plp-head, .m-footer { padding-left: 56px; padding-right: 56px; }
   }
 </style>
 </head>
@@ -1369,7 +1373,7 @@
   }
 
   // ---- small-screen listing: paging, category chips, sort, sticky bar, menu ----
-  const MOBILE = window.matchMedia('(max-width: 1023.98px)');
+  const MOBILE = window.matchMedia('(max-width: 1279.98px)');
   const PAGE = 12;
   let shown = PAGE, lastSig = '';
   const SORT_LABEL = { featured: 'Featured', newest: 'Newest', 'price-asc': 'Low to high', 'price-desc': 'High to low' };
