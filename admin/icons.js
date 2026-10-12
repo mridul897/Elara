@@ -119,5 +119,17 @@ window.ADMIN_ICONS = {
  "check16": {
   "vb": "0 0 16 16",
   "p": "<path d=\"M5.16667 8.70833L7.29167 10.8333L10.8333 5.16667\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"
+ },
+ "trash-can": {
+  "vb": "0 0 24 24",
+  "p": "<path d=\"M4.75 6.5L5.65512 19.3901C5.72868 20.4377 6.6 21.25 7.6502 21.25H16.3498C17.4 21.25 18.2713 20.4377 18.3449 19.3901L19.25 6.5\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M10 10.5V16.25\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M14 10.5V16.25\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M3.25 5.75H20.75\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M8.5246 5.58289C8.73079 3.84652 10.2081 2.5 12 2.5C13.7919 2.5 15.2692 3.84652 15.4754 5.58289\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"
+ },
+ "phone": {
+  "vb": "0 0 24 24",
+  "p": "<path d=\"M9.75 19.25H14.25M7.75 22.25H16.25C17.3546 22.25 18.25 21.3546 18.25 20.25V3.75C18.25 2.64543 17.3546 1.75 16.25 1.75H7.75C6.64543 1.75 5.75 2.64543 5.75 3.75V20.25C5.75 21.3546 6.64543 22.25 7.75 22.25Z\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"
+ },
+ "package24": {
+  "vb": "0 0 24 24",
+  "p": "<path d=\"M8.75 3.75V7.75C8.75 8.57843 9.42157 9.25 10.25 9.25H13.75C14.5784 9.25 15.25 8.57843 15.25 7.75V3.75M13.75 16.25H16.25M3.75 5.75V18.25C3.75 19.3546 4.64543 20.25 5.75 20.25H18.25C19.3546 20.25 20.25 19.3546 20.25 18.25V5.75C20.25 4.64543 19.3546 3.75 18.25 3.75H5.75C4.64543 3.75 3.75 4.64543 3.75 5.75Z\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"
  }
 };

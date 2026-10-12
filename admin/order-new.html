@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Create order · ELARA Admin</title>
+<link rel="icon" href="favicon1.png">
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="admin.css">
+<style>
+  .cols { display: flex; gap: 20px; align-items: flex-start; }
+  .left { flex: 2 1 0; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+  .right { width: 340px; flex: none; position: sticky; top: 0; display: flex; flex-direction: column; gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .card h3 { font-size: 15px; font-weight: 600; }
+  .f { display: flex; flex-direction: column; gap: 6px; } .f > label { font-size: 13px; font-weight: 500; } .f .opt { font-weight: 400; color: var(--mute); }
+  .two { display: flex; gap: 12px; } .two > * { flex: 1; min-width: 0; }
+  .adder { display: flex; flex-direction: column; gap: 10px; padding: 12px; background: var(--head); border: 1px solid var(--border); border-radius: var(--r); }
+  .adder .row { display: flex; gap: 10px; } .adder .row > * { flex: 1; min-width: 0; }
+  .adder .qty { flex: 0 0 90px; }
+  .hint { font-size: 12px; color: var(--mute); }
+  .line { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--border); }
+  .line img { width: 40px; height: 50px; border-radius: 6px; object-fit: cover; background: var(--canvas); flex: none; }
+  .line .t { flex: 1; min-width: 0; } .line .n { font-size: 13px; font-weight: 500; } .line .m { font-size: 12px; color: var(--sub); }
+  .line .p { font-size: 13px; font-weight: 500; white-space: nowrap; }
+  .line .x { width: 28px; height: 28px; border: 0; background: none; border-radius: 6px; color: var(--mute); font-size: 18px; line-height: 1; }
+  .line .x:hover { background: var(--canvas); color: var(--bad); }
+  .sum .r { display: flex; font-size: 13px; } .sum .r span:first-child { flex: 1; color: var(--sub); }
+  .sum .tot { padding-top: 8px; border-top: 1px solid var(--border); font-weight: 600; font-size: 15px; } .sum .tot span:first-child { color: var(--text); }
+  .promo { display: flex; gap: 8px; } .promo .text { flex: 1; text-transform: uppercase; }
+  .okline { font-size: 12px; color: var(--ok); } .errline { font-size: 12px; color: var(--bad); }
+  .chk { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+  .chk input { width: 16px; height: 16px; accent-color: var(--accent); }
+  .go { height: 40px; border: 0; border-radius: var(--r); background: var(--accent); color: #fff; font-size: 13px; font-weight: 500; }
+  .go[disabled] { opacity: .55; }
+  @media (max-width: 1100px) { .cols { flex-direction: column; } .right { width: 100%; position: static; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="icons.js"></script>
+<script src="admin.js"></script>
+<script>
+var DISTRICTS = {
+  'Barishal': ['Barguna', 'Barishal', 'Bhola', 'Jhalokati', 'Patuakhali', 'Pirojpur'],
+  'Chattogram': ['Bandarban', 'Brahmanbaria', 'Chandpur', 'Chattogram', "Cox's Bazar", 'Cumilla', 'Feni', 'Khagrachhari', 'Lakshmipur', 'Noakhali', 'Rangamati'],
+  'Dhaka': ['Dhaka', 'Faridpur', 'Gazipur', 'Gopalganj', 'Kishoreganj', 'Madaripur', 'Manikganj', 'Munshiganj', 'Narayanganj', 'Narsingdi', 'Rajbari', 'Shariatpur', 'Tangail'],
+  'Khulna': ['Bagerhat', 'Chuadanga', 'Jashore', 'Jhenaidah', 'Khulna', 'Kushtia', 'Magura', 'Meherpur', 'Narail', 'Satkhira'],
+  'Mymensingh': ['Jamalpur', 'Mymensingh', 'Netrokona', 'Sherpur'],
+  'Rajshahi': ['Bogura', 'Chapai Nawabganj', 'Joypurhat', 'Naogaon', 'Natore', 'Pabna', 'Rajshahi', 'Sirajganj'],
+  'Rangpur': ['Dinajpur', 'Gaibandha', 'Kurigram', 'Lalmonirhat', 'Nilphamari', 'Panchagarh', 'Rangpur', 'Thakurgaon'],
+  'Sylhet': ['Habiganj', 'Moulvibazar', 'Sunamganj', 'Sylhet']
+};
+A.boot({
+  active: 'orders',
+  crumbs: [{ t: 'Orders', href: 'orders.html' }, { t: 'Create order' }],
+  render: async function (page, ctx) {
+    var $ = function (id) { return document.getElementById(id); };
+    var S = { items: [], promo: null, delivery: { dhaka: 60, outside: 120, free_over: 3000 }, products: [] };
+    var SIZES = ['Small', 'Medium', 'Large'];
+
+    page.innerHTML =
+      '<div class="page-head keep"><div class="t"><h1 class="h1">Create order</h1><p class="sub">For an order you took by phone or WhatsApp. Prices, delivery and stock are worked out the same way as on the store.</p></div></div>' +
+      '<div class="cols"><div class="left">' +
+      '<section class="card"><h3>Customer</h3>' +
+      '<div class="two"><div class="f"><label for="cName">Full name</label><input class="text" id="cName" autocomplete="off"></div><div class="f"><label for="cPhone">Mobile number</label><input class="text" id="cPhone" inputmode="tel" placeholder="01712 345678"></div></div>' +
+      '<div class="f"><label for="cEmail">Email <span class="opt">(optional)</span></label><input class="text" id="cEmail" type="email"></div>' +
+      '<div class="two"><div class="f"><label for="cDiv">Division</label><select class="select" id="cDiv"></select></div><div class="f"><label for="cDis">District</label><select class="select" id="cDis"></select></div></div>' +
+      '<div class="two"><div class="f"><label for="cUp">Upazila / thana</label><input class="text" id="cUp"></div><div class="f"><label for="cAddr">House, road, area</label><input class="text" id="cAddr"></div></div></section>' +
+      '<section class="card"><h3>Items</h3>' +
+      '<div class="adder"><div class="f"><label for="aProd">Product</label><select class="select" id="aProd"><option value="">Loading…</option></select></div>' +
+      '<div class="row"><div class="f"><label for="aCol">Colour</label><select class="select" id="aCol" disabled></select></div><div class="f"><label for="aSize">Size</label><select class="select" id="aSize" disabled></select></div><div class="f qty"><label for="aQty">Qty</label><input class="text" id="aQty" type="number" min="1" value="1"></div></div>' +
+      '<p class="hint" id="aHint">Choose a product to see what is in stock.</p><div><button class="btn sm" id="aAdd" disabled>' + A.ic('plus-small', 16) + 'Add to order</button></div></div>' +
+      '<div id="lines"></div></section>' +
+      '<section class="card"><h3>Payment and notes</h3>' +
+      '<div class="two"><div class="f"><label for="pPay">Payment method</label><select class="select" id="pPay"><option value="cod">Cash on delivery</option><option value="bkash">bKash</option><option value="nagad">Nagad</option><option value="card">Card</option></select></div>' +
+      '<div class="f" id="paidBox" hidden><label>&nbsp;</label><label class="chk"><input type="checkbox" id="pPaid"> Already received the money</label></div></div>' +
+      '<div class="f"><label for="pNote">Note <span class="opt">(optional, only your team sees it)</span></label><textarea class="text" id="pNote" rows="2"></textarea></div></section>' +
+      '</div><div class="right"><section class="card sum"><h3>Order summary</h3><div id="sum"></div>' +
+      '<div class="f"><label for="promo">Promo code <span class="opt">(optional)</span></label><div class="promo"><input class="text" id="promo" autocomplete="off"><button class="btn" id="promoBtn">Apply</button></div><p id="promoMsg" class="hint"></p></div>' +
+      '<p class="errline" id="err" hidden></p><button class="go" id="go">Create order</button></section></div></div>';
+
+    // data
+    var res = await Promise.all([
+      A.sb.from('products').select('id,name,price,sale_price,sale_starts,sale_ends,status,product_colours(id,label,card,position,product_variants(size,stock))').eq('status', 'published').order('position').limit(1000),
+      A.sb.from('settings').select('value').eq('key', 'delivery').maybeSingle()
+    ]);
+    if (res[1].data && res[1].data.value) Object.assign(S.delivery, res[1].data.value);
+    var now = Date.now();
+    S.products = (res[0].data || []).map(function (p) {
+      var on = p.sale_price != null && (!p.sale_starts || new Date(p.sale_starts) <= now) && (!p.sale_ends || new Date(p.sale_ends) >= now);
+      p.eff = on ? p.sale_price : p.price;
+      p.cols = (p.product_colours || []).slice().sort(function (a, b) { return a.position - b.position; });
+      return p;
+    });
+    $('aProd').innerHTML = '<option value="">Choose a product…</option>' + S.products.map(function (p) { return '<option value="' + A.esc(p.id) + '">' + A.esc(p.name) + ' · ' + A.money(p.eff) + '</option>'; }).join('');
+    $('cDiv').innerHTML = Object.keys(DISTRICTS).map(function (d) { return '<option' + (d === 'Dhaka' ? ' selected' : '') + '>' + d + '</option>'; }).join('');
+    function fillDis() { $('cDis').innerHTML = DISTRICTS[$('cDiv').value].map(function (d) { return '<option>' + d + '</option>'; }).join(''); $('cDis').value = DISTRICTS[$('cDiv').value][0]; }
+    fillDis(); $('cDiv').addEventListener('change', function () { fillDis(); drawSum(); }); $('cDis').addEventListener('change', drawSum);
+
+    var prod = function () { return S.products.filter(function (p) { return p.id === $('aProd').value; })[0]; };
+    function stockOf(p, colId, size) { var c = p.cols.filter(function (c) { return c.id === colId; })[0]; var v = c && (c.product_variants || []).filter(function (v) { return v.size === size; })[0]; return v ? v.stock : 0; }
+    function inBag(pid, colId, size) { return S.items.filter(function (i) { return i.pid === pid && i.col === colId && i.size === size; }).reduce(function (s, i) { return s + i.qty; }, 0); }
+
+    $('aProd').addEventListener('change', function () {
+      var p = prod();
+      $('aCol').disabled = !p; $('aSize').disabled = !p;
+      $('aCol').innerHTML = p ? p.cols.map(function (c) { return '<option value="' + A.esc(c.id) + '">' + A.esc(c.label) + '</option>'; }).join('') : '';
+      sizeOpts();
+    });
+    $('aCol').addEventListener('change', sizeOpts); $('aSize').addEventListener('change', hint);
+    function sizeOpts() {
+      var p = prod(); if (!p) { $('aSize').innerHTML = ''; $('aAdd').disabled = true; $('aHint').textContent = 'Choose a product to see what is in stock.'; return; }
+      var col = $('aCol').value;
+      $('aSize').innerHTML = SIZES.map(function (s) { var n = stockOf(p, col, s); return '<option value="' + s + '"' + (n <= 0 ? ' disabled' : '') + '>' + s + (n <= 0 ? ' · out of stock' : ' · ' + n + ' left') + '</option>'; }).join('');
+      var first = SIZES.filter(function (s) { return stockOf(p, col, s) > 0; })[0]; if (first) $('aSize').value = first;
+      hint();
+    }
+    function hint() {
+      var p = prod(); if (!p) return;
+      var n = stockOf(p, $('aCol').value, $('aSize').value), have = inBag(p.id, $('aCol').value, $('aSize').value);
+      $('aAdd').disabled = n - have <= 0;
+      $('aHint').textContent = n <= 0 ? 'This colour and size is out of stock.' : (n - have) + ' available' + (have ? ' (' + have + ' already in this order)' : '') + '.';
+    }
+    $('aAdd').addEventListener('click', function () {
+      var p = prod(); if (!p) return;
+      var col = $('aCol').value, size = $('aSize').value, q = Math.max(1, Math.min(10, parseInt($('aQty').value, 10) || 1));
+      var room = stockOf(p, col, size) - inBag(p.id, col, size);
+      if (q > room) { A.toast('Only ' + room + ' left in stock.', true); q = room; if (q <= 0) return; }
+      var c = p.cols.filter(function (c) { return c.id === col; })[0];
+      var ex = S.items.filter(function (i) { return i.pid === p.id && i.col === col && i.size === size; })[0];
+      if (ex) ex.qty += q; else S.items.push({ pid: p.id, name: p.name, col: col, colLabel: c.label, size: size, qty: q, price: p.eff, img: c.card });
+      $('aQty').value = 1; hint(); drawLines(); drawSum();
+    });
+
+    function subtotal() { return S.items.reduce(function (s, i) { return s + i.price * i.qty; }, 0); }
+    function drawLines() {
+      $('lines').innerHTML = S.items.length ? S.items.map(function (i, k) {
+        return '<div class="line"><img src="' + A.esc(A.img(i.img)) + '" alt=""><div class="t"><p class="n">' + A.esc(i.name) + '</p><p class="m">' + A.esc(i.colLabel) + ' · ' + i.size + ' · Qty ' + i.qty + '</p></div><span class="p">' + A.money(i.price * i.qty) + '</span><button class="x" data-rm="' + k + '" aria-label="Remove">×</button></div>';
+      }).join('') : '<p class="hint" style="padding-top:4px">No items yet.</p>';
+    }
+    function discount() { if (!S.promo) return 0; var sub = subtotal(); return S.promo.kind === 'fixed' ? Math.min(S.promo.value, sub) : Math.round(sub * S.promo.value / 100); }
+    function delivery() { var sub = subtotal(); if (!sub) return 0; if (sub >= S.delivery.free_over) return 0; return $('cDis').value === 'Dhaka' ? +S.delivery.dhaka : +S.delivery.outside; }
+    function drawSum() {
+      var sub = subtotal(), d = discount(), dl = delivery();
+      $('sum').innerHTML = '<div class="r"><span>Subtotal</span><span>' + A.money(sub) + '</span></div><div class="r"><span>Delivery · ' + ($('cDis').value === 'Dhaka' ? 'Dhaka' : 'Outside Dhaka') + '</span><span>' + (dl ? A.money(dl) : 'Free') + '</span></div>' +
+        '<div class="r"><span>Discount' + (S.promo ? ' · ' + A.esc(S.promo.code) : '') + '</span><span>' + (d ? '– ' + A.money(d) : 'Tk. 0') + '</span></div><div class="r tot"><span>Total</span><span>' + A.money(sub - d + dl) + '</span></div>';
+    }
+    $('lines').addEventListener('click', function (e) { var b = e.target.closest('[data-rm]'); if (!b) return; S.items.splice(+b.getAttribute('data-rm'), 1); S.promo = null; $('promoMsg').textContent = ''; drawLines(); drawSum(); hint(); });
+    $('pPay').addEventListener('change', function () { $('paidBox').hidden = $('pPay').value === 'cod'; });
+
+    $('promoBtn').addEventListener('click', async function () {
+      var code = $('promo').value.trim(); if (!code) return;
+      if (!subtotal()) { $('promoMsg').className = 'errline'; $('promoMsg').textContent = 'Add items first.'; return; }
+      var r = await A.sb.rpc('validate_promo', { p_code: code, p_subtotal: subtotal() });
+      var d = r.data;
+      if (r.error || !d || !d.ok) { S.promo = null; $('promoMsg').className = 'errline'; $('promoMsg').textContent = (d && d.error) || 'That code is not valid.'; }
+      else { S.promo = { code: d.code, kind: d.kind, value: d.value }; $('promoMsg').className = 'okline'; $('promoMsg').textContent = d.code + ' applied.'; }
+      drawSum();
+    });
+
+    function phoneIntl(v) { var d = String(v).replace(/\D/g, ''); if (d.indexOf('880') === 0) d = d.slice(3); if (d.indexOf('0') === 0) d = d.slice(1); return /^1[3-9]\d{8}$/.test(d) ? '+880' + d : ''; }
+    $('go').addEventListener('click', async function () {
+      var err = $('err'); err.hidden = true;
+      var name = $('cName').value.trim(), ph = phoneIntl($('cPhone').value), up = $('cUp').value.trim(), ad = $('cAddr').value.trim();
+      var bad = name.length < 2 ? 'Enter the customer name.' : !ph ? 'Enter a valid mobile number, like 01712 345678.' : !up ? 'Enter the upazila or thana.' : ad.length < 5 ? 'Enter the house, road and area.' : !S.items.length ? 'Add at least one item.' : '';
+      if (bad) { err.textContent = bad; err.hidden = false; return; }
+      $('go').disabled = true; $('go').textContent = 'Creating…';
+      var payload = { name: name, phone: ph, email: $('cEmail').value.trim() || null, division: $('cDiv').value, district: $('cDis').value, upazila: up, address: ad,
+        zone: $('cDis').value === 'Dhaka' ? 'Dhaka' : 'Outside Dhaka', payment: $('pPay').value, promo: S.promo ? S.promo.code : null, note: null,
+        items: S.items.map(function (i) { return { id: i.pid, colour: i.col, size: i.size, qty: i.qty }; }) };
+      var r = await A.sb.rpc('place_order', { p_order: payload });
+      var d = r.data;
+      if (r.error || !d || !d.ok) { $('go').disabled = false; $('go').textContent = 'Create order'; err.textContent = (d && d.error) || (r.error && r.error.message) || 'Could not create the order.'; err.hidden = false; return; }
+      var patch = {};
+      if ($('pPay').value !== 'cod' && $('pPaid').checked) patch.payment_state = 'paid';
+      if ($('pNote').value.trim()) patch.internal_note = $('pNote').value.trim();
+      if (Object.keys(patch).length) await A.sb.from('orders').update(patch).eq('id', d.id);
+      location.href = 'order.html?id=' + encodeURIComponent(d.id);
+    });
+    drawLines(); drawSum();
+  }
+});
+</script>
+</body>
+</html>

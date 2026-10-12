@@ -77,10 +77,23 @@
     if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
   }
 
+  // Footer pages written in Admin > Content open as real pages; anything not written yet keeps the polite popup.
+  var SLUGS = { 'shipping & delivery': 'shipping', 'returns & exchange': 'returns', 'our story': 'story', 'privacy policy': 'privacy', 'terms of service': 'terms' };
+  var KEY_ = 'sb_publishable_rAfRs-tHq_DNYBBqiNIOwA_AW1EauJs', URL_ = 'https://sxwniigfrjzxryhuavev.supabase.co';
   document.addEventListener('click', function (e) {
     var a = e.target.closest && e.target.closest('[data-soon]');
     if (!a) return;
     e.preventDefault();
-    open(a.getAttribute('data-soon'), a, a.hasAttribute('data-soon-page'));
+    var name = a.getAttribute('data-soon'), isPage = a.hasAttribute('data-soon-page'), slug = SLUGS[String(name).toLowerCase()];
+    if (!isPage || !slug) { open(name, a, isPage); return; }
+    var done = false, fallback = setTimeout(function () { if (!done) { done = true; open(name, a, true); } }, 1800);
+    fetch(URL_ + '/rest/v1/settings?select=value&key=eq.page_' + slug, { headers: { apikey: KEY_ } })
+      .then(function (r) { return r.json(); })
+      .then(function (rows) {
+        if (done) return; done = true; clearTimeout(fallback);
+        var v = rows && rows[0] && rows[0].value;
+        if (v && v.status === 'published' && String(v.body || '').trim()) location.href = 'page.html?p=' + slug; else open(name, a, true);
+      })
+      .catch(function () { if (done) return; done = true; clearTimeout(fallback); open(name, a, true); });
   });
 })();

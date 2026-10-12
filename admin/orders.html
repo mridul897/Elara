@@ -115,12 +115,37 @@ A.boot({
     $('more').addEventListener('click', function () { A.toast('Filters for payment state and delivery zone are coming next.'); });
     $('prev').addEventListener('click', function () { state.page--; draw(); });
     $('next').addEventListener('click', function () { state.page++; draw(); });
-    $('create').addEventListener('click', function () { A.toast('Creating an order by hand is coming soon.'); });
+    $('create').addEventListener('click', function () { location.href = 'order-new.html'; });
     $('table').addEventListener('click', function (e) {
       var m = e.target.closest('[data-menu]');
-      if (m) { e.stopPropagation(); location.href = 'order.html?id=' + encodeURIComponent(m.getAttribute('data-menu')); return; }
+      if (m) { e.stopPropagation(); openRowMenu(m); return; }
       var r = e.target.closest('[data-id]'); if (r) location.href = 'order.html?id=' + encodeURIComponent(r.getAttribute('data-id'));
     });
+    // Row menu (Figma "Orders / Row menu open"): view, print slip, next step, call, cancel
+    var NEXT = { placed: ['confirmed', 'Confirm order', 'check16'], confirmed: ['packed', 'Mark as packed', 'package24'], packed: ['shipped', 'Mark as shipped', 'package24'], shipped: ['delivered', 'Mark as delivered', 'check16'] };
+    function openRowMenu(btn) {
+      var id = btn.getAttribute('data-menu'), o = state.rows.filter(function (x) { return x.id === id; })[0]; if (!o) return;
+      var items = [{ v: 'view', l: 'View order', icon: 'eye-open' }, { v: 'slip', l: 'Print packing slip', icon: 'printer' }];
+      if (NEXT[o.status]) items.push({ v: 'next', l: NEXT[o.status][1], icon: NEXT[o.status][2] });
+      items.push({ v: 'call', l: 'Contact customer', icon: 'phone' });
+      if (o.status === 'placed' || o.status === 'confirmed' || o.status === 'packed') items.push({ v: 'cancel', l: 'Cancel order', icon: 'trash-can', danger: true, divider: true });
+      var wrap = btn.parentNode; wrap.style.position = 'relative';
+      A.menu(wrap, items, null, async function (v) {
+        if (v === 'view') { location.href = 'order.html?id=' + encodeURIComponent(id); return; }
+        if (v === 'call') { location.href = 'tel:' + o.customer_phone; return; }
+        if (v === 'slip') {
+          var r = await A.sb.from('orders').select('*, order_items(*)').eq('id', id).maybeSingle();
+          if (r.error || !r.data) { A.toast('Could not load the order.', true); return; }
+          A.printSlip(r.data, r.data.order_items || []); return;
+        }
+        var to = v === 'cancel' ? 'cancelled' : NEXT[o.status][0];
+        if (v === 'cancel' && !confirm('Cancel order ' + id + '? The items go back into stock.')) return;
+        var u = await A.sb.from('orders').update({ status: to }).eq('id', id).select('id').maybeSingle();
+        if (u.error || !u.data) { A.toast('Could not save: ' + ((u.error && u.error.message) || 'no permission'), true); return; }
+        o.status = to; draw(); A.toast(id + ' is now ' + to);
+      });
+      var pop = wrap.querySelector('.pop'); if (pop) pop.classList.add('right');
+    }
     $('export').addEventListener('click', function () {
       var list = filtered(false);
       if (!list.length) { A.toast('Nothing to export for these filters.', true); return; }

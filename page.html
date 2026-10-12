@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ELARA</title>
+<meta name="description" content="Shipping, returns, privacy and more from ELARA.">
+<link rel="icon" href="favicon.ico">
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+<style>
+  :root { --text: #4a4741; --muted: #838280; --bg: #fffdf9; --line: rgba(74,71,65,.18); }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+  .top { display: flex; align-items: center; padding: 20px 32px; border-bottom: 1px solid var(--line); }
+  .top img { height: 26px; display: block; }
+  .top a.back { margin-left: auto; font-size: 14px; color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+  main { max-width: 720px; margin: 0 auto; padding: 72px 24px 96px; }
+  .eye { font-size: 11px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-family: 'Fraunces', Georgia, serif; font-weight: 300; font-size: 56px; line-height: 1.05; letter-spacing: -2px; margin: 14px 0 36px; font-variation-settings: "SOFT" 0, "WONK" 1; }
+  .body p { font-size: 17px; line-height: 1.75; margin: 0 0 20px; }
+  .updated { margin-top: 40px; font-size: 13px; color: var(--muted); }
+  .empty a { color: var(--text); }
+  footer { border-top: 1px solid var(--line); padding: 28px 32px; font-size: 13px; color: var(--muted); text-align: center; }
+  @media (max-width: 640px) { .top { padding: 16px; } main { padding: 40px 20px 64px; } h1 { font-size: 38px; letter-spacing: -1.2px; margin-bottom: 24px; } .body p { font-size: 16px; } }
+</style>
+</head>
+<body>
+<header class="top"><a href="index.html" aria-label="ELARA home"><img src="assets/home/logo.webp" alt="ELARA"></a><a class="back" href="index.html">Back to the shop</a></header>
+<main>
+  <p class="eye" id="eye">ELARA</p>
+  <h1 id="title">&nbsp;</h1>
+  <div class="body" id="body"></div>
+  <p class="updated" id="updated" hidden></p>
+</main>
+<footer>© 2026 ELARA · <a href="my-contact-screen.html" style="color:inherit">Contact us</a></footer>
+<script src="assets/store-data.js"></script>
+<script>
+(function () {
+  var NAMES = { shipping: 'Shipping and delivery', returns: 'Returns and exchange', story: 'Our story', privacy: 'Privacy policy', terms: 'Terms of service' };
+  var slug = new URLSearchParams(location.search).get('p') || '';
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var title = document.getElementById('title'), body = document.getElementById('body');
+  if (!NAMES[slug]) { title.textContent = 'Page not found'; body.innerHTML = '<p class="empty">We could not find that page. <a href="index.html">Back to the shop</a>.</p>'; return; }
+  title.textContent = NAMES[slug]; document.title = NAMES[slug] + ' | ELARA';
+  var p = (window.ELARA_SETTINGS || {})['page_' + slug];
+  function show(p) {
+    if (!p || p.status !== 'published' || !String(p.body || '').trim()) {
+      body.innerHTML = '<p class="empty">We are still writing this page. If you need something now, <a href="my-contact-screen.html">our team is happy to help</a>.</p>'; return;
+    }
+    body.innerHTML = String(p.body).trim().split(/\n\s*\n/).map(function (para) { return '<p>' + esc(para).replace(/\n/g, '<br>') + '</p>'; }).join('');
+    if (p.updated) { var d = new Date(p.updated); var u = document.getElementById('updated'); u.hidden = false; u.textContent = 'Last updated ' + d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }); }
+  }
+  if (p) show(p);
+  else if (window.ElaraDB) {
+    // settings are cached for a minute; ask for this page directly so a fresh edit shows at once
+    fetch(ElaraDB.url + '/rest/v1/settings?select=value&key=eq.page_' + slug, { headers: { apikey: 'sb_publishable_rAfRs-tHq_DNYBBqiNIOwA_AW1EauJs' } })
+      .then(function (r) { return r.json(); }).then(function (rows) { show(rows && rows[0] && rows[0].value); }).catch(function () { show(null); });
+  } else show(null);
+})();
+</script>
+</body>
+</html>

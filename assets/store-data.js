@@ -63,6 +63,38 @@
 
   window.ELARA_SETTINGS = settings || {};
 
+  // Contact details from Admin > Content: phone / WhatsApp, e-mail and support hours replace the numbers and addresses
+  // printed on the pages (text and links), so the owner never needs a developer for a new number.
+  (function () {
+    var c = (settings && settings.contact) || null; if (!c) return;
+    var OLD_PH = ['+880 1320575476', '+880 1320 575476', '+880 1XXX-XXXXXX', '+8801320575476'];
+    var OLD_EM = ['hello@elara.com.bd', 'hello@elara.bd'];
+    var DEF_HOURS = 'Sat to Thu, 10 am to 7 pm';
+    var digits = String(c.whatsapp || '').replace(/\D/g, '');
+    if (digits && digits.indexOf('880') !== 0) digits = '880' + digits.replace(/^0/, '');
+    var phoneText = String(c.whatsapp || '').trim(), email = String(c.email || '').trim(), hours = String(c.hours || '').trim();
+    function swap(text) {
+      var t = text, i;
+      if (phoneText) for (i = 0; i < OLD_PH.length; i++) if (t.indexOf(OLD_PH[i]) >= 0 && OLD_PH[i] !== phoneText) t = t.split(OLD_PH[i]).join(phoneText);
+      if (email) for (i = 0; i < OLD_EM.length; i++) if (t.indexOf(OLD_EM[i]) >= 0 && OLD_EM[i] !== email) t = t.split(OLD_EM[i]).join(email);
+      return t;
+    }
+    function apply() {
+      var w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null), n, nodes = [];
+      while ((n = w.nextNode())) { var p = n.parentNode && n.parentNode.nodeName; if (p !== 'SCRIPT' && p !== 'STYLE' && p !== 'TEXTAREA' && p !== 'INPUT') nodes.push(n); }
+      nodes.forEach(function (t) { var s = swap(t.nodeValue); if (s !== t.nodeValue) t.nodeValue = s; });
+      document.querySelectorAll('a[href]').forEach(function (a) {
+        var h = a.getAttribute('href') || '';
+        if (digits && /^https:\/\/wa\.me\//.test(h)) { var q = h.indexOf('?'); a.setAttribute('href', 'https://wa.me/' + digits + (q >= 0 ? h.slice(q) : '')); }
+        else if (digits && /^tel:/.test(h)) a.setAttribute('href', 'tel:+' + digits);
+        else if (email && /^mailto:/.test(h)) a.setAttribute('href', 'mailto:' + email);
+      });
+      if (hours && hours !== DEF_HOURS) document.querySelectorAll('.c-hours').forEach(function (el) { el.innerHTML = '<b>Support hours</b><br>'; el.appendChild(document.createTextNode(hours)); });
+    }
+    function run() { apply(); setTimeout(apply, 800); }
+    if (document.readyState === 'complete') run(); else window.addEventListener('load', run);
+  })();
+
   // Home hero copy and button, as edited in Admin > Content. Only fields the owner actually changed are touched,
   // so the designed line breaks stay when nothing was edited.
   (function () {

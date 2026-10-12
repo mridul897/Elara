@@ -205,16 +205,7 @@ A.boot({
     }
     function setStatus(s) { update({ status: s }, 'Order moved to ' + s); }
 
-    function printSlip() {
-      var w = window.open('', '_blank'); if (!w) { A.toast('Allow pop-ups to print the slip.', true); return; }
-      w.document.write('<!doctype html><title>' + A.esc(o.id) + '</title><style>body{font:14px Inter,Arial,sans-serif;color:#1f2328;margin:32px}h1{font-size:22px;margin:0 0 4px}table{width:100%;border-collapse:collapse;margin-top:16px}td,th{padding:8px 0;border-bottom:1px solid #ddd;text-align:left}td:last-child,th:last-child{text-align:right}.m{color:#656a73}</style>' +
-        '<h1>ELARA · Packing slip</h1><p class="m">' + A.esc(o.id) + ' · ' + A.when(o.placed_at) + '</p>' +
-        '<p><b>' + A.esc(o.customer_name) + '</b><br>' + A.esc(phone(o.customer_phone)) + '<br>' + A.esc([o.address, o.upazila, o.district, o.division].filter(Boolean).join(', ')) + '</p>' +
-        '<table><tr><th>Item</th><th>Qty</th><th>Price</th></tr>' + items.map(function (i) { return '<tr><td>' + A.esc(i.name) + '<br><span class="m">' + A.esc([i.colour, i.size].filter(Boolean).join(' · ')) + '</span></td><td>' + i.qty + '</td><td>' + A.money(i.unit_price * i.qty) + '</td></tr>'; }).join('') + '</table>' +
-        '<p style="text-align:right">Subtotal ' + A.money(o.subtotal) + '<br>Delivery ' + (o.delivery ? A.money(o.delivery) : 'Free') + '<br>Discount ' + A.money(o.discount) + '<br><b>Total ' + A.money(o.total) + '</b></p>' +
-        '<p class="m">' + (o.payment_method === 'cod' ? 'Collect cash on delivery: ' + A.money(o.total) : 'Paid by ' + A.esc(A.payName(o.payment_method)) + ' (' + o.payment_state + ')') + '</p>');
-      w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 250);
-    }
+    function printSlip() { A.printSlip(o, items); }
     draw();
   }
 });

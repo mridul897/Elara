@@ -180,9 +180,25 @@
   A.menu = function (wrap, items, current, onPick) {
     var pop = wrap.querySelector('.pop'); if (pop) pop.remove();
     pop = document.createElement('div'); pop.className = 'pop';
-    pop.innerHTML = items.map(function (i) { return '<button data-v="' + A.esc(i.v) + '" class="' + (i.v === current ? 'on' : '') + '">' + A.esc(i.l) + (i.v === current ? '✓' : '') + '</button>'; }).join('');
+    pop.innerHTML = items.map(function (i) {
+      return (i.divider ? '<div class="pdiv"></div>' : '') + '<button data-v="' + A.esc(i.v) + '" class="' + (i.v === current ? 'on ' : '') + (i.danger ? 'danger' : '') + '">' +
+        (i.icon ? '<span class="pic">' + A.ic(i.icon, 16) + '</span>' : '') + '<span class="plb">' + A.esc(i.l) + '</span>' + (i.v === current ? '<span class="pck">✓</span>' : '') + '</button>';
+    }).join('');
     wrap.appendChild(pop);
-    pop.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; pop.remove(); onPick(b.getAttribute('data-v')); });
+    pop.addEventListener('click', function (e) { var bt = e.target.closest('button'); if (!bt) return; pop.remove(); onPick(bt.getAttribute('data-v')); });
     setTimeout(function () { document.addEventListener('click', function off() { pop.remove(); document.removeEventListener('click', off); }); });
+  };
+
+  /* Packing slip in a print window (used by the order page and the orders list menu) */
+  A.printSlip = function (o, items) {
+    var w = window.open('', '_blank'); if (!w) { A.toast('Allow pop-ups to print the slip.', true); return; }
+    var addr = [o.address, o.upazila, o.district, o.division].filter(Boolean).join(', ');
+    w.document.write('<!doctype html><title>' + A.esc(o.id) + '</title><style>body{font:14px Inter,Arial,sans-serif;color:#1f2328;margin:32px}h1{font-size:22px;margin:0 0 4px}table{width:100%;border-collapse:collapse;margin-top:16px}td,th{padding:8px 0;border-bottom:1px solid #ddd;text-align:left}td:last-child,th:last-child{text-align:right}.m{color:#656a73}</style>' +
+      '<h1>ELARA · Packing slip</h1><p class="m">' + A.esc(o.id) + ' · ' + A.when(o.placed_at) + '</p>' +
+      '<p><b>' + A.esc(o.customer_name) + '</b><br>' + A.esc(o.customer_phone) + '<br>' + A.esc(addr) + '</p>' +
+      '<table><tr><th>Item</th><th>Qty</th><th>Price</th></tr>' + items.map(function (i) { return '<tr><td>' + A.esc(i.name) + '<br><span class="m">' + A.esc([i.colour, i.size].filter(Boolean).join(' · ')) + '</span></td><td>' + i.qty + '</td><td>' + A.money(i.unit_price * i.qty) + '</td></tr>'; }).join('') + '</table>' +
+      '<p style="text-align:right">Subtotal ' + A.money(o.subtotal) + '<br>Delivery ' + (o.delivery ? A.money(o.delivery) : 'Free') + '<br>Discount ' + A.money(o.discount) + '<br><b>Total ' + A.money(o.total) + '</b></p>' +
+      '<p class="m">' + (o.payment_method === 'cod' ? 'Collect cash on delivery: ' + A.money(o.total) : 'Paid by ' + A.esc(A.payName(o.payment_method)) + ' (' + o.payment_state + ')') + '</p>');
+    w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 250);
   };
 })();
