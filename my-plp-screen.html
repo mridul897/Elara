@@ -264,23 +264,22 @@
      scale rather than the Figma component's literal 8px/12px sizing). Now
      wired for real — it filters the visible grid by each product's price. */
   .price-slider { display: flex; flex-direction: column; gap: 18px; padding: 4px 2px 8px; }
-  .price-slider-labels { display: flex; justify-content: space-between; align-items: flex-end; }
-  .price-slider-label-block { display: flex; flex-direction: column; gap: 3px; }
-  .price-slider-label-block.right { align-items: flex-end; text-align: right; }
-  .price-slider-label-block .micro { font-size: 0.72rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
-  .price-slider-label-block .micro-value { font-size: 0.95rem; font-weight: 500; color: var(--color-text-primary); }
-  /* The min / max amounts are real inputs: drag the handles or type an amount */
-  .price-field { display: inline-flex; align-items: baseline; gap: 4px; padding: 5px 8px; margin: -5px -8px; border-radius: 8px; border: 1px solid transparent; font-size: 0.95rem; font-weight: 500; color: var(--color-text-primary); cursor: text; transition: border-color .15s, background-color .15s; }
-  .price-field:hover { background: var(--bg-card); }
-  .price-field:focus-within { border-color: var(--color-focus-ring); background: #fff; }
-  .price-field.bad { border-color: var(--color-danger); }
-  .price-field input { width: 4.4ch; padding: 0; border: 0; outline: 0; background: transparent; font: inherit; color: inherit; text-align: right; -moz-appearance: textfield; }
-  .price-field .u { color: var(--color-text-muted); font-weight: 400; }
-  .price-field { margin: -5px 0 -5px -6px; padding: 5px 6px; }
-  .price-slider-label-block.right .price-field { margin: -5px -2px -5px 0; }
   .price-slider-track-wrap { position: relative; height: 20px; margin-top: 4px; }
   .price-slider-track { position: absolute; top: 9px; left: 9px; right: 9px; height: 2px; border-radius: 999px; background: var(--color-border); }
   .price-slider-active { position: absolute; top: 8px; height: 4px; border-radius: 999px; background: var(--color-text-primary); }
+  /* Min / max are visible text boxes under the slider: drag the handles or type an exact amount */
+  .price-inputs { display: flex; align-items: flex-end; gap: 10px; }
+  .price-box { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; cursor: text; }
+  .price-box .micro { font-size: 0.72rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .price-field { display: flex; align-items: center; gap: 6px; height: 42px; padding: 0 12px; background: #fff; border: 1px solid rgba(74,71,65,0.4); border-radius: 10px; font-size: 0.95rem; font-weight: 500; color: var(--color-text-primary); transition: border-color .15s, box-shadow .15s; }
+  .price-field:hover { border-color: var(--color-text-primary); }
+  .price-field:focus-within { border-color: var(--color-focus-ring); box-shadow: 0 0 0 3px rgba(49,132,255,0.18); }
+  .price-field.bad { border-color: var(--color-danger); box-shadow: 0 0 0 3px rgba(210,44,21,0.12); }
+  .price-field .u { color: var(--color-text-muted); font-weight: 400; }
+  .price-field input { flex: 1; width: 100%; min-width: 0; padding: 0; border: 0; outline: 0; background: transparent; font: inherit; color: inherit; }
+  .price-dash { padding-bottom: 11px; color: var(--color-text-muted); }
+  .price-hint { margin: -4px 0 0; font-size: 0.75rem; color: var(--color-text-muted); }
+  @media (max-width: 1279.98px) { .price-field { font-size: 16px; } }   /* 16px keeps iOS from zooming the page when the box is focused */
   .price-slider-input { position: absolute; top: -4px; left: 0; width: 100%; margin: 0; height: 28px; -webkit-appearance: none; appearance: none; background: transparent; pointer-events: none; }
   .price-slider-input::-webkit-slider-runnable-track { -webkit-appearance: none; background: transparent; height: 28px; }
   .price-slider-input::-moz-range-track { background: transparent; height: 28px; border: none; }
@@ -1530,16 +1529,18 @@
         <summary>Price</summary>
         <div class="body">
           <div class="price-slider" data-prefix="${idPrefix}">
-            <div class="price-slider-labels">
-              <div class="price-slider-label-block"><label class="micro" for="${idPrefix}PriceMin">Min Price</label><span class="price-field"><span class="u">Tk.</span><input id="${idPrefix}PriceMin" class="price-min-field" type="text" inputmode="numeric" autocomplete="off" value="${Number(state.priceMin).toLocaleString('en-US')}" aria-label="Minimum price in taka"><span class="u">/-</span></span></div>
-              <div class="price-slider-label-block right"><label class="micro" for="${idPrefix}PriceMax">Max Price</label><span class="price-field"><span class="u">Tk.</span><input id="${idPrefix}PriceMax" class="price-max-field" type="text" inputmode="numeric" autocomplete="off" value="${Number(state.priceMax).toLocaleString('en-US')}" aria-label="Maximum price in taka"><span class="u">/-</span></span></div>
-            </div>
             <div class="price-slider-track-wrap">
               <div class="price-slider-track"></div>
               <div class="price-slider-active"></div>
               <input type="range" class="price-slider-input price-slider-min" min="${PRICE_BOUND.min}" max="${PRICE_BOUND.max}" step="1" value="${state.priceMin}" aria-label="Minimum price">
               <input type="range" class="price-slider-input price-slider-max" min="${PRICE_BOUND.min}" max="${PRICE_BOUND.max}" step="1" value="${state.priceMax}" aria-label="Maximum price">
             </div>
+            <div class="price-inputs">
+              <label class="price-box" for="${idPrefix}PriceMin"><span class="micro">Min price</span><span class="price-field"><span class="u">Tk.</span><input id="${idPrefix}PriceMin" class="price-min-field" type="text" inputmode="numeric" autocomplete="off" value="${Number(state.priceMin).toLocaleString('en-US')}" aria-label="Minimum price in taka"></span></label>
+              <span class="price-dash" aria-hidden="true">–</span>
+              <label class="price-box" for="${idPrefix}PriceMax"><span class="micro">Max price</span><span class="price-field"><span class="u">Tk.</span><input id="${idPrefix}PriceMax" class="price-max-field" type="text" inputmode="numeric" autocomplete="off" value="${Number(state.priceMax).toLocaleString('en-US')}" aria-label="Maximum price in taka"></span></label>
+            </div>
+            <p class="price-hint">Drag the handles or type an amount</p>
           </div>
         </div>
       </details>
