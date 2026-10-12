@@ -1062,12 +1062,17 @@
         img.style.opacity = '0';
         const next = new Image();
         next.src = ph.src;
-        (next.decode ? next.decode() : Promise.resolve()).catch(() => {}).then(() => {
+        const apply = () => {
           if (token !== swapToken) return;
           img.src = ph.src;
           img.alt = label;
           requestAnimationFrame(() => { img.style.opacity = '1'; });
-        });
+        };
+        (next.decode ? next.decode() : Promise.resolve()).catch(() => {}).then(apply);
+        // Some browsers never settle decode() for large or WebP photos; never leave the photo invisible.
+        setTimeout(() => { if (token === swapToken && img.style.opacity !== '1') { apply(); img.style.opacity = '1'; } }, 1200);
+        // A photo that fails to load falls back to the colour's listing photo instead of an empty frame.
+        img.onerror = () => { img.style.opacity = '1'; if (colour.card && img.src.indexOf(colour.card) < 0) img.src = colour.card; };
       }
       if (announce) status.textContent = 'Image ' + (index + 1) + ' of ' + list.length + ': ' + ph.alt;
     }
