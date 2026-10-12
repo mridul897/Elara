@@ -13,6 +13,13 @@
     return '<svg class="ic" width="' + size + '" height="' + size + '" viewBox="' + i.vb + '" fill="none" aria-hidden="true">' + i.p + '</svg>';
   };
   A.img = function (s) { return !s ? '' : /^(https?:|data:|\/)/.test(s) ? s : '../' + s; };
+  // n filled stars out of 5 (design: gold #E0A400 filled, light grey outline for empty)
+  A.stars = function (n) {
+    var out = '';
+    for (var i = 1; i <= 5; i++) out += '<span style="color:' + (i <= n ? '#E0A400' : '#D5D8DE') + ';display:flex">' + A.ic('star14', 14).replace('fill="none"', 'fill="' + (i <= n ? '#E0A400' : 'none') + '"') + '</span>';
+    return '<span style="display:inline-flex;gap:2px">' + out + '</span>';
+  };
+  A.initials = function (n) { var p = String(n || '').trim().split(/\s+/); return ((p.length > 1 ? p[0][0] + p[1][0] : String(n || '').slice(0, 2)) || '?').toUpperCase(); };
   A.money = function (n) { return 'Tk. ' + Number(n || 0).toLocaleString('en-US'); };
   var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   A.when = function (iso) {
@@ -43,7 +50,7 @@
     ['Catalog', [['products', 'Products', 'package'], ['reviews', 'Reviews', 'star']]],
     ['Store', [['content', 'Content', 'file-text'], ['settings', 'Settings', 'settings-gear1']]]
   ];
-  var BUILT = { orders: 1, products: 1 };   // pages that exist so far
+  var BUILT = { orders: 1, products: 1, dashboard: 1, promotions: 1, customers: 1, reviews: 1, content: 1, settings: 1, more: 1 };   // pages that exist so far
 
   A.brand = function (withCollapse) {
     return '<div class="brand"><img class="fav" src="favicon1.png" alt="">' +
@@ -60,6 +67,18 @@
         return '<a class="nav-item' + (i[0] === active ? ' on' : '') + '" href="' + i[0] + '.html" data-nav="' + i[0] + '" title="' + i[1] + '">' + A.ic(i[2], 18) +
           '<span class="lbl">' + i[1] + '</span>' + (n ? '<span class="count">' + n + '</span>' : '') + '</a>';
       }).join('') + '</div>';
+    }).join('');
+  }
+
+  // Phone layout: bottom tab bar (Home, Orders, Products, Customers, More)
+  function mobileTabs(active, role, counts) {
+    var tabs = [['dashboard', 'Home', 'home'], ['orders', 'Orders', 'shopping-bag1'], ['products', 'Products', 'package'], ['customers', 'Customers', 'user-group'], ['more', 'More', 'dot-grid1x3-horizontal']];
+    if (role !== 'owner') tabs = [['orders', 'Orders', 'shopping-bag1'], ['more', 'More', 'dot-grid1x3-horizontal']];
+    var main = { dashboard: 1, orders: 1, products: 1, customers: 1 };
+    var cur = main[active] ? active : 'more';
+    return tabs.map(function (t) {
+      var n = t[0] === 'orders' ? counts.orders : 0;
+      return '<a class="mtab' + (t[0] === cur ? ' on' : '') + '" href="' + t[0] + '.html"><span class="mic">' + A.ic(t[2], 20) + '</span><span class="mlb">' + t[1] + (n ? '<i class="mbd">' + n + '</i>' : '') + '</span></a>';
     }).join('');
   }
 
@@ -102,11 +121,13 @@
       '<button class="more" id="userMore" aria-label="Account menu">' + A.ic('dot-grid1x3-horizontal', 18) + '</button>' +
       '<div class="pop" id="userPop" hidden style="top:auto;bottom:calc(100% + 6px);left:0;min-width:200px"><button id="signOut">Sign out</button></div></div>' +
       '</aside>' +
+      '<header class="mtop"><span class="mlogo">E</span><p class="mttl">' + A.esc(opts.mtitle || (opts.crumbs && opts.crumbs[0] && opts.crumbs[0].t) || 'ELARA') + '</p><button class="mbell" id="mbell" aria-label="Notifications">' + A.ic('bell', 20) + '</button></header>' +
       '<div class="main"><header class="topbar"><div class="crumbs">' +
       (opts.crumbs || []).map(function (c, i, a) { return (c.href ? '<a href="' + c.href + '">' + A.esc(c.t) + '</a>' : '<span>' + A.esc(c.t) + '</span>') + (i < a.length - 1 ? '<span class="sep">' + A.ic('chevron-right-small', 16) + '</span>' : ''); }).join('') +
       '</div><button class="btn icon" aria-label="Notifications" id="bell">' + A.ic('bell', 18) + '</button>' +
       '<a class="btn" href="../index.html" target="_blank" rel="noopener">View store</a></header>' +
-      '<main class="page" id="page"></main></div></div>';
+      '<main class="page" id="page"></main></div>' +
+      '<nav class="mtabs" aria-label="Main">' + mobileTabs(opts.active, role, counts) + '</nav></div>';
 
     var app = document.getElementById('app');
     function toggle() { app.classList.toggle('collapsed'); try { localStorage.setItem('elara.admin.collapsed', app.classList.contains('collapsed') ? '1' : '0'); } catch (e) {} }
@@ -128,7 +149,9 @@
     function setCount(key, n) {
       counts[key] = n || 0;
       document.getElementById('navs').innerHTML = navHtml(opts.active, role, counts);
+      var mt = document.querySelector('.mtabs'); if (mt) mt.innerHTML = mobileTabs(opts.active, role, counts);
     }
+    document.getElementById('mbell').addEventListener('click', function () { A.toast('No new notifications.'); });
 
     var ctx = { user: s.user, role: role, name: who, counts: counts };
     await opts.render(document.getElementById('page'), ctx);

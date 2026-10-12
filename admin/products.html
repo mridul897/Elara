@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Products · ELARA Admin</title>
 <link rel="icon" href="favicon1.png">
@@ -24,6 +24,16 @@
   .tog[aria-checked="true"]::after { left: 18px; }
   .tog[disabled] { opacity: .5; cursor: default; }
   .btn.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+
+  @media (max-width: 899.98px) {
+    .trow.prow { align-items: center; }
+    .trow.prow > span:first-child, .trow.prow .c-cat, .trow.prow .c-menu { display: none; }
+    .prod { flex: 1 1 100%; }
+    .prod img { width: 48px; height: 60px; }
+    .prod .n { font-size: 14px; font-weight: 600; white-space: normal; }
+    .c-price, .c-stock { width: auto; } .c-live { margin-left: auto; width: auto; }
+    .trow.prow { gap: 10px 12px; }
+  }
 </style>
 </head>
 <body>

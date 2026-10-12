@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>More · ELARA Admin</title>
+<link rel="icon" href="favicon1.png">
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="icons.js"></script>
+<script src="admin.js"></script>
+<script>
+A.boot({
+  active: 'more',
+  crumbs: [{ t: 'More' }],
+  render: async function (page, ctx) {
+    var owner = ctx.role === 'owner';
+    var rows = [];
+    if (owner) rows.push(['reviews.html', 'star', 'Reviews', ctx.counts.reviews || 0], ['promotions.html', 'percent', 'Promotions'], ['content.html', 'file-text', 'Content'], ['settings.html', 'settings-gear1', 'Settings']);
+    rows.push(['../my-contact-screen.html', 'questionmark-circle', 'Get help'], ['../index.html', 'arrow-up-right', 'View store']);
+    page.innerHTML = '<div class="mmore">' +
+      '<div class="mcard muser"><span class="avatar">' + A.esc(A.initials(ctx.name)) + '</span><div><p class="n">' + A.esc(ctx.name) + '</p><p class="e">' + (owner ? 'Owner' : 'Staff') + ' · ' + A.esc(ctx.user.email) + '</p></div></div>' +
+      '<div class="mcard mmenu">' + rows.map(function (r) {
+        return '<a class="mrow" href="' + r[0] + '">' + A.ic(r[1], 20) + '<span class="lbl">' + r[2] + '</span>' + (r[3] ? '<span class="cnt">' + r[3] + '</span>' : '') + '<span class="chev">' + A.ic('chevron-right-small', 18) + '</span></a>';
+      }).join('') + '</div>' +
+      '<button class="msign" id="so">' + A.ic('arrow-out-of-box', 18) + 'Sign out</button></div>';
+    document.getElementById('so').addEventListener('click', A.signOut);
+    // the reviews badge count arrives a moment after the page
+    var tries = 0, t = setInterval(function () {
+      tries++; var c = ctx.counts.reviews, row = page.querySelector('a[href="reviews.html"]');
+      if (c && row && !row.querySelector('.cnt')) { var s = document.createElement('span'); s.className = 'cnt'; s.textContent = c; row.insertBefore(s, row.querySelector('.chev')); clearInterval(t); }
+      if (tries > 12) clearInterval(t);
+    }, 300);
+  }
+});
+</script>
+</body>
+</html>

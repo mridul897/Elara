@@ -61,6 +61,29 @@
   var dv = (settings && settings.delivery) || {};
   window.ELARA_DELIVERY = { dhaka: +dv.dhaka || 60, outside: +dv.outside || 120, freeOver: +dv.free_over || 3000, dhakaDays: dv.dhaka_days || '1–3', outsideDays: dv.outside_days || '3–5' };
 
+  window.ELARA_SETTINGS = settings || {};
+
+  // Home hero copy and button, as edited in Admin > Content. Only fields the owner actually changed are touched,
+  // so the designed line breaks stay when nothing was edited.
+  (function () {
+    var h = (settings && settings.hero) || null; if (!h) return;
+    var DEF = { eyebrow: 'The Everyday Collection', headline: 'Bags built for every chapter.', text: 'Premium leather, considered detail, made for the routine you actually have: work, weekend, and everything between.', button_label: 'Shop New Collection' };
+    function apply() {
+      var q = function (s) { return document.querySelector(s); };
+      var box = q('.hero-copy') || q('.hero');
+      if (!box) return;
+      var ey = box.querySelector('.hero-eyebrow, .t-eyebrow'), hd = box.querySelector('h1'), tx = box.querySelector('.hero-body, .t-large'), bt = box.querySelector('a.btn-pill, a.btn');
+      if (ey && h.eyebrow && h.eyebrow !== DEF.eyebrow) ey.textContent = h.eyebrow;
+      if (hd && h.headline && h.headline !== DEF.headline) hd.textContent = h.headline;
+      if (tx && h.text && h.text !== DEF.text) tx.textContent = h.text;
+      if (bt) {
+        if (h.button_label && h.button_label !== DEF.button_label) { var img = bt.querySelector('img'); bt.textContent = h.button_label + ' '; if (img) bt.appendChild(img); }
+        if (h.button_link) bt.setAttribute('href', h.button_link);
+      }
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', apply); else apply();
+  })();
+
   // Bag lines saved earlier hold the price of that day. Bring them in line with today's catalogue and drop anything
   // that is no longer sold, so the bag never shows a stale price.
   if (window.ELARA_LIVE) {

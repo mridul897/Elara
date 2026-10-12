@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Dashboard · ELARA Admin</title>
+<link rel="icon" href="favicon1.png">
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="admin.css">
+<style>
+  .kpis { display: flex; gap: 16px; align-items: flex-start; }
+  .kpi { flex: 1 1 0; min-width: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .kpi .h { display: flex; align-items: center; font-size: 13px; color: var(--sub); }
+  .kpi .h span:first-child { flex: 1; }
+  .delta { display: inline-flex; align-items: center; gap: 2px; font-size: 12px; font-weight: 500; }
+  .delta.up { color: var(--ok); } .delta.down { color: var(--bad); }
+  .kpi .v { font-size: 26px; font-weight: 600; letter-spacing: -0.6px; }
+  .kpi .s { font-size: 12px; color: var(--mute); }
+  .bars { display: flex; gap: 3px; height: 26px; align-items: flex-end; width: 100%; }
+  .bars i { width: 6px; border-radius: 2px; background: #d9def3; display: block; }
+  .bars i:last-child { background: var(--accent); }
+  .row2 { display: flex; gap: 16px; align-items: stretch; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); padding: 16px; }
+  .card h3 { font-size: 15px; font-weight: 600; }
+  .sales { flex: 2 1 0; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+  .side { width: 380px; flex: none; }
+  .head { display: flex; align-items: center; gap: 12px; }
+  .head .t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .head .t p { font-size: 13px; color: var(--sub); }
+  .seg { display: flex; gap: 2px; padding: 3px; background: var(--chip); border-radius: 8px; flex: none; }
+  .seg button { border: 0; background: none; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; color: var(--sub); }
+  .seg button.on { background: var(--surface); color: var(--text); }
+  .chart { position: relative; height: 276px; width: 100%; }
+  .chart svg { display: block; overflow: visible; }
+  .chart .yl, .chart .xl { position: absolute; font-size: 11px; color: var(--mute); white-space: nowrap; }
+  .tip { position: absolute; top: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; box-shadow: 0 4px 12px rgba(0,0,0,.08); display: flex; flex-direction: column; gap: 2px; pointer-events: none; white-space: nowrap; z-index: 2; }
+  .tip .d { font-size: 11px; color: var(--mute); }
+  .tip .r { display: flex; gap: 8px; align-items: center; }
+  .tip .r b { font-size: 14px; font-weight: 600; }
+  .tp { display: flex; flex-direction: column; gap: 6px; }
+  .tp .hd { display: flex; align-items: center; }
+  .tp .hd h3 { flex: 1; }
+  .tp .hd a { font-size: 13px; font-weight: 500; color: var(--accent); }
+  .tprow { display: flex; gap: 12px; align-items: center; padding: 8px 0; }
+  .tprow img { width: 40px; height: 48px; border-radius: 6px; object-fit: cover; flex: none; background: var(--canvas); }
+  .tprow .t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+  .tprow .n { font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tprow .bar { height: 6px; background: var(--chip); border-radius: 3px; }
+  .tprow .bar i { display: block; height: 6px; border-radius: 3px; background: var(--accent); }
+  .tprow .p { font-size: 13px; font-weight: 500; flex: none; }
+  .row3 { display: flex; gap: 16px; align-items: flex-start; }
+  .otable { flex: 2 1 0; min-width: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); overflow: hidden; }
+  .otable .h { display: flex; gap: 8px; align-items: center; padding: 16px 16px 12px; }
+  .otable .h h3 { flex: 1; }
+  .pm { display: flex; flex-direction: column; gap: 12px; }
+  .stack { display: flex; gap: 2px; height: 8px; }
+  .stack i { display: block; height: 8px; border-radius: 4px; }
+  .pmr { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+  .pmr .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .pmr .n { flex: 1; } .pmr .pc { color: var(--sub); } .pmr .am { font-weight: 500; min-width: 78px; text-align: right; }
+  .att { display: flex; flex-direction: column; gap: 10px; }
+  .attr { display: flex; gap: 10px; align-items: center; }
+  .attr p { flex: 1; min-width: 0; font-size: 13px; color: var(--sub); }
+  .attr a { color: inherit; }
+  .col-o { width: 96px; } .col-t { width: 90px; } .col-p { width: 120px; } .col-s { width: 110px; } .col-m { width: 24px; }
+  .range-pop { width: 280px; padding: 8px; }
+  .range-pop .custom { border-top: 1px solid var(--divider); margin-top: 6px; padding: 10px 6px 4px; display: flex; flex-direction: column; gap: 8px; }
+  .range-pop .custom .two { display: flex; gap: 8px; } .range-pop .custom .two > * { flex: 1; min-width: 0; }
+  .range-pop .custom label { font-size: 12px; color: var(--sub); display: flex; flex-direction: column; gap: 4px; }
+  @media (max-width: 1180px) { .kpis { flex-wrap: wrap; } .kpi { flex-basis: 45%; } .row2, .row3 { flex-direction: column; } .side { width: 100%; } }
+
+  .mdash { display: none; }
+  @media (max-width: 899.98px) {
+    .page > .page-head, .page > .kpis, .page > .row2, .page > .row3 { display: none; }
+    .mdash { display: flex; flex-direction: column; gap: 14px; }
+    .mgreet h2 { font-size: 20px; font-weight: 600; letter-spacing: -0.4px; }
+    .mgreet p { font-size: 13px; color: var(--sub); margin-top: 2px; }
+    .mchips { display: flex; gap: 8px; }
+    .mchips button { border: 1px solid var(--border); background: var(--surface); border-radius: 999px; padding: 7px 12px; font-size: 13px; font-weight: 500; color: var(--text); }
+    .mchips button.on { background: var(--text); border-color: var(--text); color: #fff; }
+    .mk { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .mk > div { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .mk .l { font-size: 12px; color: var(--sub); } .mk .v { font-size: 20px; font-weight: 600; letter-spacing: -0.4px; white-space: nowrap; }
+    .mk .s { font-size: 12px; color: var(--bad); }
+    .mcard2 { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+    .mcard2 h3 { font-size: 15px; font-weight: 600; }
+    .mcard2 .hh { display: flex; align-items: center; } .mcard2 .hh h3 { flex: 1; } .mcard2 .hh span { font-size: 13px; color: var(--sub); }
+    .mbars { display: flex; align-items: flex-end; justify-content: space-between; height: 96px; }
+    .mbars i { display: block; width: 6px; border-radius: 2px; background: #d9def3; } .mbars i:last-child { background: var(--accent); }
+    .matt { display: flex; flex-direction: column; gap: 2px; }
+    .matt h3 { margin-bottom: 0; }
+    .matt a { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--border); font-size: 14px; color: var(--text); }
+    .matt a:first-of-type { border-top: 0; } .matt a span.t { flex: 1; } .matt a .ic { color: var(--mute); }
+    .mtp { display: flex; align-items: center; gap: 12px; }
+    .mtp img { width: 40px; height: 50px; border-radius: 6px; object-fit: cover; background: var(--canvas); }
+    .mtp .t { flex: 1; min-width: 0; } .mtp .n { font-size: 14px; font-weight: 500; } .mtp .s { font-size: 12px; color: var(--mute); }
+    .mtp .p { font-size: 13px; font-weight: 500; white-space: nowrap; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="icons.js"></script>
+<script src="admin.js"></script>
+<script>
+A.boot({
+  active: 'dashboard',
+  crumbs: [{ t: 'Dashboard' }],
+  render: async function (page, ctx) {
+    var $ = function (id) { return document.getElementById(id); };
+    var DAY = 86400000, MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    var PRESETS = [['1', 'Today'], ['7', 'Last 7 days'], ['30', 'Last 30 days'], ['90', 'Last 90 days'], ['month', 'This month'], ['custom', 'Custom range…']];
+    var state = { range: '30', from: null, to: null, chart: '30D' };
+    var h = new Date().getHours(), greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+    var first = String(ctx.name).split(/\s+/)[0];
+    var sod = function (d) { var x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+    var fmtShort = function (d) { return d.getDate() + ' ' + MON[d.getMonth()]; };
+
+    page.innerHTML =
+      '<div class="page-head"><div class="t"><h1 class="h1">' + greet + ', ' + A.esc(first) + '</h1><p class="sub" id="sub">Loading…</p></div>' +
+      '<button class="btn" id="export">' + A.ic('file-download', 16) + 'Export</button></div>' +
+      '<div class="kpis" id="kpis"></div>' +
+      '<div class="row2"><section class="card sales"><div class="head"><div class="t"><h3>Sales</h3><p id="salesSub">Revenue per day</p></div><div class="seg" id="seg"></div></div><div class="chart" id="chart"></div></section>' +
+      '<section class="card side tp" id="top"></section></div>' +
+      '<div class="row3"><section class="otable" id="otable"></section><div class="side" style="display:flex;flex-direction:column;gap:16px"><section class="card pm" id="pm"></section><section class="card att" id="att"></section></div></div>' +
+      '<div class="mdash" id="mdash"></div>';
+
+    // range button lives in the top bar next to the bell
+    var topbar = document.querySelector('.topbar'), bell = $('bell');
+    var rw = document.createElement('div'); rw.className = 'pop-wrap';
+    rw.innerHTML = '<button class="btn" id="rangeBtn">' + A.ic('calendar1', 16) + '<span id="rangeTxt">Last 30 days</span>' + A.ic('chevron-down-small', 16) + '</button>';
+    topbar.insertBefore(rw, bell);
+
+    var orders = [], products = {}, lowStock = [], pendingReviews = 0;
+    var oRes = await A.sb.from('orders').select('id,placed_at,customer_name,total,status,payment_method,payment_state,order_items(product_id,name,qty,unit_price)').order('placed_at', { ascending: false }).limit(5000);
+    if (oRes.error) { page.innerHTML = '<div class="empty card"><b>Could not load the dashboard</b>' + A.esc(oRes.error.message) + '</div>'; return; }
+    orders = oRes.data;
+    var pRes = await A.sb.from('products').select('id,name,status,product_colours(id,card,position,product_variants(stock))').limit(1000);
+    (pRes.data || []).forEach(function (p) {
+      var cols = (p.product_colours || []).slice().sort(function (a, b) { return a.position - b.position; });
+      var stock = 0; cols.forEach(function (c) { (c.product_variants || []).forEach(function (v) { stock += v.stock; }); });
+      products[p.id] = { name: p.name, img: cols[0] && cols[0].card };
+      if (p.status === 'published' && stock <= 5) lowStock.push({ name: p.name, stock: stock });
+    });
+    lowStock.sort(function (a, b) { return a.stock - b.stock; });
+    var rv = await A.sb.from('reviews').select('id', { count: 'exact', head: true }).eq('status', 'pending');
+    pendingReviews = rv.count || 0;
+
+    var counts = function (o) { return o.status !== 'cancelled' && o.status !== 'returned' && o.payment_state !== 'failed' && o.payment_state !== 'refunded'; };
+    function period() {
+      var end = sod(new Date()), start;
+      if (state.range === 'custom' && state.from && state.to) { start = sod(state.from); end = sod(state.to); }
+      else if (state.range === 'month') { start = new Date(end.getFullYear(), end.getMonth(), 1); }
+      else start = new Date(end.getTime() - (+state.range - 1) * DAY);
+      var days = Math.round((end - start) / DAY) + 1;
+      return { start: start, end: new Date(end.getTime() + DAY - 1), days: days, prevStart: new Date(start.getTime() - days * DAY), prevEnd: new Date(start.getTime() - 1) };
+    }
+    var between = function (list, a, b) { return list.filter(function (o) { var t = new Date(o.placed_at); return t >= a && t <= b; }); };
+    var sum = function (l) { return l.reduce(function (s, o) { return s + o.total; }, 0); };
+    function delta(cur, prev) { if (!prev) return null; return (cur - prev) / prev * 100; }
+    function deltaHtml(d) { if (d == null || !isFinite(d)) return ''; var up = d >= 0; return '<span class="delta ' + (up ? 'up' : 'down') + '">' + A.ic(up ? 'arrow-up-right' : 'arrow-down-right', 12) + Math.abs(d).toFixed(1) + '%</span>'; }
+    function spark(list, p, valueOf) {
+      var n = 9, step = (p.end - p.start + 1) / n, out = [];
+      for (var i = 0; i < n; i++) out.push(valueOf(between(list, new Date(p.start.getTime() + i * step), new Date(p.start.getTime() + (i + 1) * step - 1))));
+      var mx = Math.max.apply(null, out) || 1;
+      return '<div class="bars">' + out.map(function (v) { return '<i style="height:' + Math.max(4, Math.round(v / mx * 24)) + 'px"></i>'; }).join('') + '</div>';
+    }
+
+    function draw() {
+      var p = period(), good = orders.filter(counts);
+      var cur = between(good, p.start, p.end), prev = between(good, p.prevStart, p.prevEnd);
+      var rev = sum(cur), prevRev = sum(prev), n = cur.length, pn = prev.length, avg = n ? Math.round(rev / n) : 0, pavg = pn ? Math.round(prevRev / pn) : 0;
+      var failed = orders.filter(function (o) { return o.payment_state === 'failed' && o.status === 'placed'; });
+      var todo = orders.filter(function (o) { return o.status === 'placed' || o.status === 'confirmed'; });
+      var need = todo.length + failed.filter(function (o) { return todo.indexOf(o) < 0; }).length + lowStock.length;
+      var label = state.range === 'custom' ? fmtShort(p.start) + ' to ' + fmtShort(sod(p.end)) : (PRESETS.filter(function (r) { return r[0] === state.range; })[0] || [0, ''])[1];
+      $('rangeTxt').textContent = label;
+      var phrase = state.range === 'custom' ? 'from ' + fmtShort(p.start) + ' to ' + fmtShort(sod(p.end)) : state.range === '1' ? 'today' : state.range === 'month' ? 'this month' : 'in the ' + label.toLowerCase();
+      $('sub').textContent = 'Here is how ELARA is doing ' + phrase + '.';
+      var vs = state.range === 'custom' || state.range === 'month' ? 'previous period' : 'previous ' + p.days + (p.days === 1 ? ' day' : ' days');
+      $('kpis').innerHTML =
+        '<div class="kpi"><div class="h"><span>Revenue</span>' + deltaHtml(delta(rev, prevRev)) + '</div><p class="v">' + A.money(rev) + '</p><p class="s">vs ' + A.money(prevRev) + ' ' + vs + '</p>' + spark(good, p, sum) + '</div>' +
+        '<div class="kpi"><div class="h"><span>Orders</span>' + deltaHtml(delta(n, pn)) + '</div><p class="v">' + n + '</p><p class="s">vs ' + pn + ' ' + vs + '</p>' + spark(good, p, function (l) { return l.length; }) + '</div>' +
+        '<div class="kpi"><div class="h"><span>Average order</span>' + deltaHtml(delta(avg, pavg)) + '</div><p class="v">' + A.money(avg) + '</p><p class="s">vs ' + A.money(pavg) + ' ' + vs + '</p>' + spark(good, p, function (l) { return l.length ? sum(l) / l.length : 0; }) + '</div>' +
+        '<div class="kpi"><div class="h"><span>Needs action</span></div><p class="v">' + need + '</p><p class="s">orders and products waiting</p></div>';
+
+      // top products by revenue in the range
+      var tp = {};
+      cur.forEach(function (o) { (o.order_items || []).forEach(function (i) { var t = tp[i.product_id] = tp[i.product_id] || { id: i.product_id, name: i.name, rev: 0 }; t.rev += i.unit_price * i.qty; }); });
+      var top = Object.keys(tp).map(function (k) { return tp[k]; }).sort(function (a, b) { return b.rev - a.rev; }).slice(0, 5), mx = top.length ? top[0].rev : 1;
+      $('top').innerHTML = '<div class="hd"><h3>Top products</h3><a href="products.html">View all</a></div>' +
+        (top.length ? top.map(function (t) {
+          var pr = products[t.id] || {};
+          return '<div class="tprow"><img src="' + A.esc(A.img(pr.img)) + '" alt=""><div class="t"><p class="n">' + A.esc(t.name) + '</p><div class="bar"><i style="width:' + Math.max(4, Math.round(t.rev / mx * 100)) + '%"></i></div></div><p class="p">' + A.money(t.rev) + '</p></div>';
+        }).join('') : '<p class="sub" style="padding:24px 0">No sales in this period yet.</p>');
+
+      // payment methods
+      var pmv = { cod: 0, bkash: 0, nagad: 0, card: 0 }; cur.forEach(function (o) { pmv[o.payment_method] += o.total; });
+      var colors = { cod: '#1f2328', bkash: '#d6336c', nagad: '#e8590c', card: '#3559e0' }, names = { cod: 'Cash on delivery', bkash: 'bKash', nagad: 'Nagad', card: 'Card' };
+      $('pm').innerHTML = '<h3>Payment methods</h3>' + (rev ?
+        '<div class="stack">' + Object.keys(pmv).filter(function (k) { return pmv[k]; }).map(function (k) { return '<i style="background:' + colors[k] + ';flex:' + pmv[k] + '"></i>'; }).join('') + '</div>' : '<div class="stack"><i style="background:var(--chip);flex:1"></i></div>') +
+        Object.keys(pmv).map(function (k) { return '<div class="pmr"><span class="dot" style="background:' + colors[k] + '"></span><span class="n">' + names[k] + '</span><span class="pc">' + (rev ? Math.round(pmv[k] / rev * 100) : 0) + '%</span><span class="am">' + A.money(pmv[k]) + '</span></div>'; }).join('');
+
+      // attention
+      var att = [];
+      lowStock.slice(0, 2).forEach(function (l) { att.push(['b-warn', 'Low stock', l.name + (l.stock <= 0 ? ' is out of stock' : ' is down to ' + l.stock + ' in stock'), 'products.html']); });
+      failed.slice(0, 2).forEach(function (o) { att.push(['b-bad', 'Payment', 'Payment failed for ' + o.id, 'order.html?id=' + encodeURIComponent(o.id)]); });
+      if (pendingReviews) att.push(['b-info', 'Reviews', pendingReviews + ' review' + (pendingReviews === 1 ? ' is' : 's are') + ' waiting for approval', 'reviews.html']);
+      $('att').innerHTML = '<h3>Attention</h3>' + (att.length ? att.map(function (a) { return '<div class="attr"><span class="badge ' + a[0] + '">' + a[1] + '</span><p><a href="' + a[3] + '">' + A.esc(a[2]) + '</a></p></div>'; }).join('') : '<p class="sub">Nothing needs you right now.</p>');
+
+      // orders needing action
+      var act = orders.filter(function (o) { return o.status === 'placed' || o.status === 'confirmed' || (o.payment_state === 'failed' && o.status !== 'cancelled'); }).slice(0, 5);
+      $('otable').innerHTML = '<div class="h"><h3>Orders needing action</h3><button class="btn sm" id="ofilter">' + A.ic('filter1', 16) + 'Filter</button><a class="btn sm" href="orders.html">View all</a></div>' +
+        '<div class="trow head"><span class="c col-o">Order</span><span class="grow">Customer</span><span class="c col-t">Total</span><span class="c col-p">Payment</span><span class="c col-s">Status</span><span class="c col-m"></span></div>' +
+        (act.length ? act.map(function (o) {
+          var b = A.statusBadge(o);
+          return '<a class="trow link" href="order.html?id=' + encodeURIComponent(o.id) + '" style="color:inherit"><span class="c col-o strong">' + A.esc(o.id) + '</span><span class="grow">' + A.esc(o.customer_name) + '</span><span class="c col-t">' + A.money(o.total) + '</span><span class="c col-p">' + A.esc(A.payLabel(o)) + '</span><span class="c col-s"><span class="badge ' + b.cls + '">' + b.label + '</span></span><span class="c col-m"><span class="rowmenu">' + A.ic('dot-grid1x3-horizontal', 18) + '</span></span></a>';
+        }).join('') : '<div class="empty"><b>All caught up</b>No orders are waiting for you.</div>');
+      var fb = $('ofilter'); if (fb) fb.addEventListener('click', function () { location.href = 'orders.html'; });
+      drawChart(good, p);
+
+      // ---- phone layout (Figma Dashboard / Mobile) ----
+      var toConfirm = orders.filter(function (o) { return o.status === 'placed'; }).length, toPack = orders.filter(function (o) { return o.status === 'confirmed'; }).length;
+      var days = Math.min(p.days, 30), bars = [];
+      for (var bi = 0; bi < days; bi++) { var bd = new Date(p.end.getTime() - (days - 1 - bi) * DAY); bd.setHours(0, 0, 0, 0); bars.push(sum(between(good, bd, new Date(bd.getTime() + DAY - 1)))); }
+      var bmx = Math.max.apply(null, bars) || 1;
+      var chip = function (k, l) { return '<button data-mr="' + k + '" class="' + (state.range === k ? 'on' : '') + '">' + l + '</button>'; };
+      var ts = top.slice(0, 3), sold = {};
+      cur.forEach(function (o) { (o.order_items || []).forEach(function (i) { sold[i.product_id] = (sold[i.product_id] || 0) + i.qty; }); });
+      $('mdash').innerHTML =
+        '<div class="mgreet"><h2>' + greet + ', ' + A.esc(first) + '</h2><p>' + A.esc(label) + '</p></div>' +
+        '<div class="mchips">' + chip('1', 'Today') + chip('7', '7 days') + chip('30', '30 days') + '</div>' +
+        '<div class="mk"><div><span class="l">Revenue</span><span class="v">' + A.money(rev) + '</span>' + deltaHtml(delta(rev, prevRev)) + '</div>' +
+        '<div><span class="l">Orders</span><span class="v">' + n + '</span>' + deltaHtml(delta(n, pn)) + '</div>' +
+        '<div><span class="l">Average order</span><span class="v">' + A.money(avg) + '</span>' + deltaHtml(delta(avg, pavg)) + '</div>' +
+        '<div><span class="l">Needs action</span><span class="v">' + need + '</span><span class="s">waiting on you</span></div></div>' +
+        '<div class="mcard2"><div class="hh"><h3>Sales</h3><span>' + A.money(rev) + '</span></div><div class="mbars">' +
+        bars.map(function (v) { return '<i style="height:' + Math.max(3, Math.round(v / bmx * 90)) + 'px"></i>'; }).join('') + '</div></div>' +
+        '<div class="mcard2 matt"><h3>Needs your attention</h3>' +
+        [[toConfirm, 'Orders to confirm', 'b-bad', 'orders.html'], [toPack, 'Orders to pack', 'b-warn', 'orders.html'], [lowStock.length, 'Products running low', 'b-warn', 'products.html'], [pendingReviews, 'Reviews to approve', 'b-info', 'reviews.html']].map(function (r) {
+          return '<a href="' + r[3] + '"><span class="badge ' + r[2] + '">' + r[0] + '</span><span class="t">' + r[1] + '</span>' + A.ic('chevron-right-small', 18) + '</a>';
+        }).join('') + '</div>' +
+        '<div class="mcard2"><h3>Top products</h3>' + (ts.length ? ts.map(function (t) {
+          var pr = products[t.id] || {};
+          return '<div class="mtp"><img src="' + A.esc(A.img(pr.img)) + '" alt=""><div class="t"><p class="n">' + A.esc(t.name) + '</p><p class="s">' + (sold[t.id] || 0) + ' sold</p></div><span class="p">' + A.money(t.rev) + '</span></div>';
+        }).join('') : '<p class="sub">No sales in this period yet.</p>') + '</div>';
+    }
+
+    // sales chart: one SVG sized to the card
+    var chartData = [];
+    function drawChart(good) {
+      var mode = state.chart, now = sod(new Date()), pts = [];
+      if (mode === '12M') {
+        for (var m = 11; m >= 0; m--) { var s = new Date(now.getFullYear(), now.getMonth() - m, 1), e = new Date(now.getFullYear(), now.getMonth() - m + 1, 0, 23, 59, 59); pts.push({ d: s, v: sum(between(good, s, e)), l: MON[s.getMonth()], full: MON[s.getMonth()] + ' ' + s.getFullYear() }); }
+        $('salesSub').textContent = 'Revenue per month';
+      } else {
+        var nd = mode === '7D' ? 7 : 30;
+        for (var i = nd - 1; i >= 0; i--) { var d = new Date(now.getTime() - i * DAY); pts.push({ d: d, v: sum(between(good, d, new Date(d.getTime() + DAY - 1))), l: fmtShort(d), full: DOW[d.getDay()] + ', ' + fmtShort(d) }); }
+        $('salesSub').textContent = 'Revenue per day';
+      }
+      chartData = pts;
+      var box = $('chart'), W = box.clientWidth || 700, L = 48, plotW = W - L - 12, H = 250;
+      var mx = Math.max.apply(null, pts.map(function (q) { return q.v; })), step = Math.max(1000, Math.ceil(mx / 4 / 1000) * 1000), top = step * 4;
+      var X = function (i) { return L + (pts.length < 2 ? plotW / 2 : i * plotW / (pts.length - 1)); }, Y = function (v) { return H - v / top * H; };
+      var line = pts.map(function (q, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(q.v).toFixed(1); }).join(' ');
+      var area = line + ' L' + X(pts.length - 1).toFixed(1) + ' ' + H + ' L' + X(0).toFixed(1) + ' ' + H + ' Z';
+      var grid = '', yl = '';
+      for (var g = 0; g <= 4; g++) {
+        var y = Math.round(H / 4 * g), val = top - step * g;
+        grid += '<line x1="' + L + '" x2="' + (L + plotW) + '" y1="' + y + '" y2="' + y + '" stroke="' + (g === 4 ? '#e7e7ea' : '#f0f0f2') + '"/>';
+        yl += '<span class="yl" style="left:0;top:' + (y - 7) + 'px">' + (g === 0 ? 'Tk. ' : '') + (val === 0 ? '0' : (val / 1000) + 'K') + '</span>';
+      }
+      var xl = '', every = Math.max(1, Math.round(pts.length / 6));
+      pts.forEach(function (q, i) { if (i % every === 0 || i === pts.length - 1) xl += '<span class="xl" style="left:' + (X(i) - (i === pts.length - 1 ? 24 : 0)) + 'px;top:258px">' + q.l + '</span>'; });
+      var peak = 0; pts.forEach(function (q, i) { if (q.v > pts[peak].v) peak = i; });
+      box.innerHTML = '<svg width="' + W + '" height="' + (H + 2) + '" viewBox="0 0 ' + W + ' ' + (H + 2) + '"><defs><linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3559e0" stop-opacity=".16"/><stop offset="1" stop-color="#3559e0" stop-opacity="0"/></linearGradient></defs>' +
+        grid + '<path d="' + area + '" fill="url(#gr)"/><path d="' + line + '" fill="none" stroke="#3559e0" stroke-width="1.6" stroke-linejoin="round"/>' +
+        '<line id="cv" y1="0" y2="' + H + '" stroke="#1f2328" opacity=".35"/><circle id="cd" r="5" fill="#fff" stroke="#3559e0" stroke-width="1.6"/><rect id="hit" x="' + L + '" y="0" width="' + plotW + '" height="' + H + '" fill="transparent"/></svg>' +
+        yl + xl + '<div class="tip" id="tip"></div>';
+      function at(i) {
+        var q = pts[i], prevV = i ? pts[i - 1].v : null, dl = prevV ? (q.v - prevV) / prevV * 100 : null, x = X(i);
+        $('cv').setAttribute('x1', x); $('cv').setAttribute('x2', x); $('cd').setAttribute('cx', x); $('cd').setAttribute('cy', Y(q.v));
+        var tip = $('tip'); tip.innerHTML = '<span class="d">' + q.full + '</span><div class="r"><b>' + A.money(q.v) + '</b>' + (dl != null && isFinite(dl) ? deltaHtml(dl) : '') + '</div>';
+        var tw = tip.offsetWidth; tip.style.left = Math.min(Math.max(0, x + 12), W - tw) + 'px';
+      }
+      at(peak);
+      $('hit').addEventListener('mousemove', function (e) {
+        var r = box.getBoundingClientRect(), x = e.clientX - r.left, i = Math.round((x - L) / (plotW / Math.max(1, pts.length - 1)));
+        at(Math.min(pts.length - 1, Math.max(0, i)));
+      });
+    }
+
+    $('mdash').addEventListener('click', function (e) { var b = e.target.closest('[data-mr]'); if (!b) return; state.range = b.getAttribute('data-mr'); draw(); });
+    $('seg').innerHTML = ['7D', '30D', '12M'].map(function (k) { return '<button data-c="' + k + '" class="' + (state.chart === k ? 'on' : '') + '">' + k + '</button>'; }).join('');
+    $('seg').addEventListener('click', function (e) { var b = e.target.closest('[data-c]'); if (!b) return; state.chart = b.getAttribute('data-c'); $('seg').querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); }); drawChart(orders.filter(counts)); });
+    window.addEventListener('resize', function () { drawChart(orders.filter(counts)); });
+
+    $('rangeBtn').addEventListener('click', function (e) {
+      e.stopPropagation();
+      var wrap = rw, old = wrap.querySelector('.pop'); if (old) { old.remove(); return; }
+      var pop = document.createElement('div'); pop.className = 'pop right range-pop';
+      pop.innerHTML = PRESETS.map(function (r) { return '<button data-r="' + r[0] + '" class="' + (state.range === r[0] ? 'on' : '') + '">' + r[1] + (state.range === r[0] ? '✓' : '') + '</button>'; }).join('') +
+        '<div class="custom" id="customBox" hidden><div class="two"><label>From<input class="text" type="date" id="cFrom"></label><label>To<input class="text" type="date" id="cTo"></label></div><button class="btn primary sm" id="cApply">Apply range</button></div>';
+      wrap.appendChild(pop);
+      pop.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        var b = ev.target.closest('[data-r]');
+        if (b) { var r = b.getAttribute('data-r'); if (r === 'custom') { $('customBox').hidden = false; return; } state.range = r; pop.remove(); draw(); return; }
+        if (ev.target.id === 'cApply') {
+          var f = $('cFrom').value, t = $('cTo').value; if (!f || !t || f > t) { A.toast('Pick a start date that is before the end date.', true); return; }
+          state.range = 'custom'; state.from = f + 'T00:00:00'; state.to = t + 'T00:00:00'; pop.remove(); draw();
+        }
+      });
+      setTimeout(function () { document.addEventListener('click', function off(ev) { if (!pop.contains(ev.target)) { pop.remove(); document.removeEventListener('click', off); } }); });
+    });
+
+    $('export').addEventListener('click', function () {
+      var good = orders.filter(counts), p = period(), rows = ['Date,Orders,Revenue'];
+      for (var i = 0; i < p.days; i++) { var d = new Date(p.start.getTime() + i * DAY), l = between(good, d, new Date(d.getTime() + DAY - 1)); rows.push([d.toISOString().slice(0, 10), l.length, sum(l)].join(',')); }
+      var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + rows.join('\r\n')], { type: 'text/csv' }));
+      a.download = 'elara-sales-' + new Date().toISOString().slice(0, 10) + '.csv'; a.click(); URL.revokeObjectURL(a.href);
+    });
+    draw();
+  }
+});
+</script>
+</body>
+</html>

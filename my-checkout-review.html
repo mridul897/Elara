@@ -653,6 +653,15 @@
     return { dhaka, charge: dhaka ? DEL.dhaka : DEL.outside, days: dhaka ? DEL.dhakaDays : DEL.outsideDays, free, zone: dhaka ? 'Dhaka' : 'Outside Dhaka' };
   }
   const PAY = { cod: 'Cash on Delivery', bkash: 'bKash', nagad: 'Nagad', card: 'Credit or debit card' };
+  // Payment methods the owner switched off in Admin > Settings are hidden here (cash on delivery stays as the safe default).
+  (function () {
+    const pm = (window.ELARA_SETTINGS || {}).payments; if (!pm) return;
+    ['bkash', 'nagad'].forEach((k) => {
+      if (pm[k] && pm[k].on === false) {
+        const tile = document.querySelector('.pay-tile[data-pay="' + k + '"]'); if (tile) { tile.hidden = true; tile.style.display = 'none'; }
+      }
+    });
+  })();
   const payValue = () => document.querySelector('input[name="pay"]:checked').value;
 
   function render() {

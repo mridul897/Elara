@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Content · ELARA Admin</title>
+<link rel="icon" href="favicon1.png">
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="admin.css">
+<style>
+  .cols { display: flex; gap: 20px; align-items: flex-start; }
+  .left { flex: 2 1 0; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+  .right { width: 340px; flex: none; display: flex; flex-direction: column; gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .card h3 { font-size: 15px; font-weight: 600; }
+  .hd { display: flex; align-items: center; } .hd h3 { flex: 1; } .hd .mute { font-size: 13px; color: var(--mute); }
+  .f { display: flex; flex-direction: column; gap: 6px; } .f > label { font-size: 13px; font-weight: 500; }
+  .two { display: flex; gap: 12px; } .two > * { flex: 1; min-width: 0; }
+  .tog { width: 36px; height: 20px; border-radius: 10px; border: 0; padding: 0; background: #d5d8de; position: relative; transition: background .15s; flex: none; }
+  .tog::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s; }
+  .tog[aria-checked="true"] { background: var(--accent); } .tog[aria-checked="true"]::after { left: 18px; }
+  .himg { display: flex; gap: 14px; align-items: center; }
+  .himg .box { width: 150px; height: 90px; border-radius: 8px; background: var(--canvas); border: 1px solid var(--border); object-fit: cover; flex: none; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--mute); overflow: hidden; }
+  .himg .box img { width: 100%; height: 100%; object-fit: cover; }
+  .himg .t { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+  .himg .t b { font-size: 13px; font-weight: 500; } .himg .t span { font-size: 12px; color: var(--sub); }
+  .picks { display: flex; gap: 12px; flex-wrap: wrap; }
+  .pick { width: 104px; display: flex; flex-direction: column; gap: 6px; cursor: grab; position: relative; }
+  .pick img { width: 104px; height: 130px; border-radius: 8px; object-fit: cover; background: var(--canvas); }
+  .pick p { font-size: 12px; font-weight: 500; line-height: 16px; }
+  .pick .x { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; border-radius: 6px; border: 0; background: rgba(31,35,40,.7); color: #fff; display: none; line-height: 1; }
+  .pick:hover .x { display: block; }
+  .pick.drag { opacity: .4; }
+  .addpick { width: 104px; height: 130px; border-radius: 8px; border: 1px dashed var(--check); background: var(--head); font-size: 12px; color: var(--sub); display: flex; flex-direction: column; gap: 6px; align-items: center; justify-content: center; }
+  .pg { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); width: 100%; background: none; border-left: 0; border-right: 0; border-bottom: 0; text-align: left; }
+  .pg:first-of-type { border-top: 0; }
+  .pg .t { flex: 1; display: flex; flex-direction: column; gap: 2px; } .pg .n { font-size: 13px; font-weight: 500; } .pg .s { font-size: 12px; color: var(--mute); }
+  .pg .s.warn { color: var(--warn); } .pg .s.bad { color: var(--bad); } .pg .ic { color: var(--mute); }
+  .pickrow { display: flex; align-items: center; gap: 12px; padding: 8px 4px; border-radius: 8px; width: 100%; background: none; border: 0; text-align: left; font-size: 13px; }
+  .pickrow:hover { background: var(--canvas); } .pickrow img { width: 32px; height: 40px; border-radius: 6px; object-fit: cover; }
+  .dirty { font-size: 12px; color: var(--warn); }
+  @media (max-width: 1100px) { .cols { flex-direction: column; } .right { width: 100%; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="icons.js"></script>
+<script src="admin.js"></script>
+<script>
+A.boot({
+  active: 'content',
+  crumbs: [{ t: 'Content' }],
+  render: async function (page, ctx) {
+    var $ = function (id) { return document.getElementById(id); };
+    var PAGES = [['shipping', 'Shipping and delivery'], ['returns', 'Returns and exchange'], ['story', 'Our story'], ['privacy', 'Privacy policy'], ['terms', 'Terms of service']];
+    var LINKS = [['my-plp-screen.html', 'All products'], ['my-plp-screen.html?collection=new', 'New arrivals'], ['my-contact-screen.html', 'Contact page']];
+    var S = {
+      announcement: { text: 'Free delivery over Tk. 3,000 · Cash on delivery across Bangladesh', active: true },
+      hero: { eyebrow: 'The Everyday Collection', headline: 'Bags built for every chapter.', text: 'Premium leather, considered detail, made for the routine you actually have: work, weekend, and everything between.', button_label: 'Shop New Collection', button_link: 'my-plp-screen.html', image: '' },
+      new_arrivals: { ids: [] },
+      contact: { whatsapp: '+880 1320 575476', email: 'hello@elara.com.bd', hours: 'Sat to Thu, 10 am to 7 pm' }
+    };
+    var pages = {}, products = [], dirty = {}, saving = false;
+
+    var res = await A.sb.from('settings').select('key,value');
+    (res.data || []).forEach(function (r) {
+      if (S[r.key]) S[r.key] = Object.assign({}, S[r.key], r.value);
+      else if (r.key.indexOf('page_') === 0) pages[r.key.slice(5)] = r.value;
+    });
+    var pr = await A.sb.from('products').select('id,name,status,position,product_colours(card,position)').eq('status', 'published').order('position').limit(1000);
+    products = (pr.data || []).map(function (p) { var c = (p.product_colours || []).slice().sort(function (a, b) { return a.position - b.position; })[0]; return { id: p.id, name: p.name, img: c && c.card }; });
+    var pOf = function (id) { return products.filter(function (p) { return p.id === id; })[0]; };
+    if (!S.new_arrivals.ids.length) S.new_arrivals.ids = products.slice(0, 5).map(function (p) { return p.id; });
+
+    function mark(k) { dirty[k] = true; $('dirty').hidden = false; }
+    function pageStatus(slug) {
+      var p = pages[slug];
+      if (!p || !String(p.body || '').trim()) return ['Not written', 'bad'];
+      if (p.status === 'draft') return ['Draft', 'warn'];
+      return ['Edited ' + A.ago(p.updated), ''];
+    }
+
+    page.innerHTML =
+      '<div class="page-head keep"><div class="t"><h1 style="font-size:22px;font-weight:600;letter-spacing:-0.4px">Content</h1><p class="sub">Change what the store says without touching code</p></div>' +
+      '<span class="dirty" id="dirty" hidden>Unpublished changes</span>' +
+      '<a class="btn" href="../index.html" target="_blank" rel="noopener">' + A.ic('eye-open', 16) + 'Preview store</a>' +
+      (ctx.role === 'owner' ? '<button class="btn primary" id="publish">Publish changes</button>' : '') + '</div>' +
+      '<div class="cols"><div class="left">' +
+      '<section class="card"><div class="hd"><h3>Announcement bar</h3><button class="tog" id="annOn" role="switch" aria-checked="' + !!S.announcement.active + '" aria-label="Show announcement bar"></button></div>' +
+      '<div class="f"><label for="annText">Message</label><input class="text" id="annText" value="' + A.esc(S.announcement.text) + '"></div></section>' +
+      '<section class="card"><h3>Home hero</h3>' +
+      '<div class="f"><label for="hEy">Eyebrow</label><input class="text" id="hEy" value="' + A.esc(S.hero.eyebrow) + '"></div>' +
+      '<div class="f"><label for="hHe">Headline</label><input class="text" id="hHe" value="' + A.esc(S.hero.headline) + '"></div>' +
+      '<div class="f"><label for="hTx">Supporting text</label><textarea class="text" id="hTx" rows="2">' + A.esc(S.hero.text) + '</textarea></div>' +
+      '<div class="two"><div class="f"><label for="hBl">Button label</label><input class="text" id="hBl" value="' + A.esc(S.hero.button_label) + '"></div>' +
+      '<div class="f"><label for="hLk">Button links to</label><select class="select" id="hLk">' + LINKS.map(function (l) { return '<option value="' + A.esc(l[0]) + '"' + (l[0] === S.hero.button_link ? ' selected' : '') + '>' + l[1] + '</option>'; }).join('') + '</select></div></div>' +
+      '<div class="himg"><div class="box" id="hBox">' + (S.hero.image ? '<img src="' + A.esc(A.img(S.hero.image)) + '" alt="">' : 'Current photo') + '</div><div class="t"><b>Hero image</b><span>Best at 1600 × 900. Replaces the photo on the home page.</span><button class="btn sm" id="hImg">Replace image</button><input type="file" id="hFile" accept="image/jpeg,image/png,image/webp" hidden></div></div></section>' +
+      '<section class="card"><div class="hd"><h3>New arrivals on the home page</h3><span class="mute">Pick 5 · drag to reorder</span></div><div class="picks" id="picks"></div></section>' +
+      '</div><div class="right">' +
+      '<section class="card" style="gap:0"><h3 style="margin-bottom:6px">Pages</h3><div id="pgs"></div></section>' +
+      '<section class="card"><h3>Contact details</h3>' +
+      '<div class="f"><label for="cWa">WhatsApp</label><input class="text" id="cWa" value="' + A.esc(S.contact.whatsapp) + '"></div>' +
+      '<div class="f"><label for="cEm">Email</label><input class="text" id="cEm" type="email" value="' + A.esc(S.contact.email) + '"></div>' +
+      '<div class="f"><label for="cHo">Support hours</label><input class="text" id="cHo" value="' + A.esc(S.contact.hours) + '"></div></section>' +
+      '</div></div>';
+
+    function drawPicks() {
+      var ids = S.new_arrivals.ids;
+      $('picks').innerHTML = ids.map(function (id, i) {
+        var p = pOf(id) || { name: id };
+        return '<div class="pick" draggable="true" data-i="' + i + '"><img src="' + A.esc(A.img(p.img)) + '" alt=""><button class="x" data-rm="' + i + '" aria-label="Remove">×</button><p>' + A.esc(p.name) + '</p></div>';
+      }).join('') + (ids.length < 5 ? '<button class="addpick" id="addPick">' + A.ic('plus-small', 16) + 'Add product</button>' : '');
+    }
+    function drawPages() {
+      $('pgs').innerHTML = PAGES.map(function (p) {
+        var st = pageStatus(p[0]);
+        return '<button class="pg" data-pg="' + p[0] + '"><span class="t"><span class="n">' + p[1] + '</span><span class="s ' + st[1] + '">' + A.esc(st[0]) + '</span></span>' + A.ic('chevron-right-small', 16) + '</button>';
+      }).join('');
+    }
+    drawPicks(); drawPages();
+
+    var bind = function (id, fn) { $(id).addEventListener('input', function (e) { fn(e.target.value); mark(); }); };
+    bind('annText', function (v) { S.announcement.text = v; });
+    $('annOn').addEventListener('click', function () { S.announcement.active = !S.announcement.active; $('annOn').setAttribute('aria-checked', S.announcement.active); mark(); });
+    bind('hEy', function (v) { S.hero.eyebrow = v; }); bind('hHe', function (v) { S.hero.headline = v; }); bind('hTx', function (v) { S.hero.text = v; }); bind('hBl', function (v) { S.hero.button_label = v; });
+    $('hLk').addEventListener('change', function (e) { S.hero.button_link = e.target.value; mark(); });
+    bind('cWa', function (v) { S.contact.whatsapp = v; }); bind('cEm', function (v) { S.contact.email = v; }); bind('cHo', function (v) { S.contact.hours = v; });
+
+    $('hImg').addEventListener('click', function () { $('hFile').click(); });
+    $('hFile').addEventListener('change', async function (e) {
+      var f = e.target.files[0]; if (!f) return;
+      $('hImg').disabled = true; $('hImg').textContent = 'Uploading…';
+      try {
+        var blob = await new Promise(function (res, rej) {
+          var img = new Image(), u = URL.createObjectURL(f);
+          img.onload = function () { var s = Math.min(1, 2000 / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(u); c.toBlob(function (b) { b ? res(b) : rej(new Error('Could not convert')); }, 'image/webp', 0.86); };
+          img.onerror = function () { rej(new Error('That file is not an image')); }; img.src = u;
+        });
+        var path = 'content/hero-' + Date.now() + '.webp';
+        var up = await A.sb.storage.from('product-images').upload(path, blob, { contentType: 'image/webp' });
+        if (up.error) throw up.error;
+        S.hero.image = A.sb.storage.from('product-images').getPublicUrl(path).data.publicUrl;
+        $('hBox').innerHTML = '<img src="' + A.esc(S.hero.image) + '" alt="">'; mark();
+      } catch (err) { A.toast('Upload failed: ' + (err.message || err), true); }
+      $('hImg').disabled = false; $('hImg').textContent = 'Replace image';
+    });
+
+    page.addEventListener('click', function (e) {
+      var rm = e.target.closest('[data-rm]'); if (rm) { S.new_arrivals.ids.splice(+rm.getAttribute('data-rm'), 1); mark(); drawPicks(); return; }
+      if (e.target.closest('#addPick')) {
+        A.modal('<h3>Add to new arrivals</h3><input class="text" id="pq" placeholder="Search products"><div id="pl" style="max-height:340px;overflow:auto"></div><div class="actions"><button class="btn" data-close>Close</button></div>', function (o, close) {
+          var draw = function () {
+            var q = o.querySelector('#pq').value.toLowerCase(), have = S.new_arrivals.ids;
+            o.querySelector('#pl').innerHTML = products.filter(function (p) { return have.indexOf(p.id) < 0 && p.name.toLowerCase().indexOf(q) >= 0; }).slice(0, 40).map(function (p) { return '<button class="pickrow" data-id="' + A.esc(p.id) + '"><img src="' + A.esc(A.img(p.img)) + '" alt=""><span>' + A.esc(p.name) + '</span></button>'; }).join('') || '<p class="sub" style="padding:12px">No products found.</p>';
+          };
+          o.querySelector('#pq').addEventListener('input', draw); draw();
+          o.querySelector('#pl').addEventListener('click', function (ev) { var b = ev.target.closest('[data-id]'); if (!b) return; S.new_arrivals.ids.push(b.getAttribute('data-id')); mark(); close(); drawPicks(); });
+        }); return;
+      }
+      var pg = e.target.closest('[data-pg]'); if (pg) editPage(pg.getAttribute('data-pg'));
+    });
+    var from = null;
+    $('picks').addEventListener('dragstart', function (e) { var el = e.target.closest('.pick'); if (!el) return; from = +el.getAttribute('data-i'); el.classList.add('drag'); });
+    $('picks').addEventListener('dragover', function (e) { if (from != null) e.preventDefault(); });
+    $('picks').addEventListener('drop', function (e) { var el = e.target.closest('.pick'); if (!el || from == null) return; e.preventDefault(); var to = +el.getAttribute('data-i'), a = S.new_arrivals.ids, m = a.splice(from, 1)[0]; a.splice(to, 0, m); from = null; mark(); drawPicks(); });
+
+    function editPage(slug) {
+      var name = PAGES.filter(function (p) { return p[0] === slug; })[0][1], cur = pages[slug] || { body: '', status: 'draft' };
+      A.modal('<h3>' + A.esc(name) + '</h3><div class="f"><label for="pgBody">Page text</label><textarea class="text" id="pgBody" rows="12" placeholder="Write the page here. Leave a blank line between paragraphs.">' + A.esc(cur.body || '') + '</textarea></div>' +
+        '<div class="f"><label for="pgSt">Status</label><select class="select" id="pgSt"><option value="published"' + (cur.status === 'published' ? ' selected' : '') + '>Published on the store</option><option value="draft"' + (cur.status !== 'published' ? ' selected' : '') + '>Draft (hidden)</option></select></div>' +
+        '<p class="err-text" id="pgErr" hidden style="color:var(--bad);font-size:12px"></p><div class="actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="pgOk"' + (ctx.role === 'owner' ? '' : ' disabled') + '>Save page</button></div>',
+        function (o, close) {
+          o.querySelector('#pgOk').addEventListener('click', async function () {
+            var val = { title: name, body: o.querySelector('#pgBody').value, status: o.querySelector('#pgSt').value, updated: new Date().toISOString() };
+            var u = await A.sb.from('settings').upsert({ key: 'page_' + slug, value: val }, { onConflict: 'key' });
+            if (u.error) { var er = o.querySelector('#pgErr'); er.textContent = u.error.message; er.hidden = false; return; }
+            pages[slug] = val; close(); drawPages(); A.toast('Page saved');
+          });
+        });
+    }
+
+    var pub = $('publish');
+    if (pub) pub.addEventListener('click', async function () {
+      if (saving) return; saving = true; pub.disabled = true; pub.textContent = 'Publishing…';
+      var keys = ['announcement', 'hero', 'new_arrivals', 'contact'], rows = keys.map(function (k) { return { key: k, value: S[k] }; });
+      var u = await A.sb.from('settings').upsert(rows, { onConflict: 'key' });
+      saving = false; pub.disabled = false; pub.textContent = 'Publish changes';
+      if (u.error) { A.toast('Could not publish: ' + u.error.message, true); return; }
+      dirty = {}; $('dirty').hidden = true; A.toast('Published. The store shows this within a minute.');
+    });
+    window.addEventListener('beforeunload', function (e) { if (Object.keys(dirty).length) { e.preventDefault(); e.returnValue = ''; } });
+  }
+});
+</script>
+</body>
+</html>

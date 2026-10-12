@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Orders · ELARA Admin</title>
 <link rel="icon" href="favicon1.png">
@@ -10,6 +10,13 @@
 <link rel="stylesheet" href="admin.css">
 <style>
   .col-order { width: 100px; } .col-placed { width: 130px; } .col-items { width: 50px; } .col-total { width: 100px; } .col-pay { width: 130px; } .col-status { width: 130px; } .col-menu { width: 24px; }
+
+  .ocards { display: none; flex-direction: column; gap: 14px; }
+  .ocard { display: block; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px; color: inherit; }
+  .ocard .h { display: flex; align-items: center; margin-bottom: 8px; } .ocard .h b { flex: 1; font-size: 14px; font-weight: 600; }
+  .ocard .r { display: flex; align-items: center; font-size: 14px; margin-bottom: 8px; } .ocard .r span { flex: 1; } .ocard .r b { font-weight: 600; }
+  .ocard .m { font-size: 12px; color: var(--mute); }
+  @media (max-width: 899.98px) { #table { display: none; } .ocards { display: flex; } .pager .btn { flex: 1; } }
 </style>
 </head>
 <body>
@@ -39,7 +46,7 @@ A.boot({
       '<div class="pop-wrap" id="payWrap"><button class="btn" id="payBtn">' + A.ic('wallet1', 16) + '<span id="payTxt">Payment</span>' + A.ic('chevron-down-small', 16) + '</button></div>' +
       '<div class="pop-wrap" id="rangeWrap"><button class="btn" id="rangeBtn">' + A.ic('calendar1', 16) + '<span id="rangeTxt">Last 30 days</span>' + A.ic('chevron-down-small', 16) + '</button></div>' +
       '<button class="btn" id="more">' + A.ic('filter1', 16) + 'More filters</button></div>' +
-      '<div class="table" id="table"></div>' +
+      '<div class="table" id="table"></div><div class="ocards" id="cards"></div>' +
       '<div class="pager"><p class="info" id="info"></p><button class="btn sm" id="prev">Previous</button><button class="btn sm" id="next">Next</button></div>';
 
     var $ = function (id) { return document.getElementById(id); };
@@ -90,6 +97,12 @@ A.boot({
             '<span class="c col-menu"><button class="rowmenu" data-menu="' + A.esc(o.id) + '" aria-label="Order actions">' + A.ic('dot-grid1x3-horizontal', 18) + '</button></span></div>';
         }).join('');
       }
+      $('cards').innerHTML = slice.length ? slice.map(function (o) {
+        var b = A.statusBadge(o);
+        return '<a class="ocard" href="order.html?id=' + encodeURIComponent(o.id) + '"><div class="h"><b>' + A.esc(o.id) + '</b><span class="badge ' + b.cls + '">' + b.label + '</span></div>' +
+          '<div class="r"><span>' + A.esc(o.customer_name) + '</span><b>' + A.money(o.total) + '</b></div>' +
+          '<p class="m">' + o.items + ' item' + (o.items === 1 ? '' : 's') + ' · ' + A.esc(A.payLabel(o)) + ' · ' + A.when(o.placed_at) + '</p></a>';
+      }).join('') : '<div class="empty"><b>' + (state.rows.length ? 'No orders match these filters' : 'No orders yet') + '</b></div>';
       var from = list.length ? state.page * PAGE + 1 : 0, to = Math.min(list.length, state.page * PAGE + PAGE);
       $('info').textContent = 'Showing ' + from + ' to ' + to + ' of ' + list.length + ' order' + (list.length === 1 ? '' : 's');
       $('prev').disabled = state.page === 0; $('next').disabled = state.page >= pages - 1;

@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Promotions · ELARA Admin</title>
+<link rel="icon" href="favicon1.png">
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="admin.css">
+<style>
+  .cols { display: flex; gap: 20px; align-items: flex-start; }
+  .cols > .table { flex: 2 1 0; min-width: 0; }
+  .formcard { width: 340px; flex: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .formcard h3 { font-size: 15px; font-weight: 600; }
+  .f { display: flex; flex-direction: column; gap: 6px; }
+  .f > label { font-size: 13px; font-weight: 500; }
+  .two { display: flex; gap: 10px; } .two > * { flex: 1; min-width: 0; }
+  .money-in { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--r); background: var(--surface); font-size: 13px; }
+  .money-in span { color: var(--mute); }
+  .money-in input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: inherit; color: var(--text); line-height: 20px; }
+  .money-in:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .type { display: flex; gap: 2px; padding: 3px; background: var(--chip); border-radius: var(--r); }
+  .type button { flex: 1; border: 0; background: none; padding: 6px 0; border-radius: 6px; font-size: 13px; font-weight: 500; color: var(--sub); }
+  .type button.on { background: var(--surface); color: var(--text); }
+  .save { height: 38px; border: 0; border-radius: var(--r); background: var(--accent); color: #fff; font-size: 13px; font-weight: 500; }
+  .save:hover { background: #2d4ec9; } .save[disabled] { opacity: .6; }
+  .linkbtn { background: none; border: 0; padding: 0; font-size: 13px; font-weight: 500; color: var(--accent); text-align: left; }
+  .linkbtn.bad { color: var(--bad); }
+  .c-code { width: 120px; } .c-min { width: 110px; } .c-used { width: 90px; } .c-exp { width: 110px; } .c-live { width: 44px; }
+  .tog { width: 36px; height: 20px; border-radius: 10px; border: 0; padding: 0; background: #d5d8de; position: relative; transition: background .15s; flex: none; }
+  .tog::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s; }
+  .tog[aria-checked="true"] { background: var(--accent); } .tog[aria-checked="true"]::after { left: 18px; }
+  .trow.sel { background: var(--accent-soft); }
+  .rules { display: flex; gap: 16px; margin-top: 20px; }
+  #body > .rules:first-child { margin-top: 0; }
+  .rule { flex: 1 1 0; min-width: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); padding: 16px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+  .rule .k { font-size: 13px; color: var(--sub); }
+  .rule .v { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; }
+  .rule .s { font-size: 12px; color: var(--mute); }
+  .rule .btn { height: 30px; margin-top: 2px; }
+  .err-text { font-size: 12px; color: var(--bad); }
+  .c-prod { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; }
+  .c-prod img { width: 32px; height: 40px; border-radius: 6px; object-fit: cover; background: var(--canvas); }
+  @media (max-width: 1100px) { .cols { flex-direction: column; } .formcard { width: 100%; } .rules { flex-direction: column; } }
+
+  @media (max-width: 899.98px) { .c-min, .c-used { display: none; } .c-exp { width: auto; } .c-code { width: 96px; } .trow { flex-wrap: nowrap; } .cols > .table { width: 100%; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="icons.js"></script>
+<script src="admin.js"></script>
+<script>
+A.boot({
+  active: 'promotions',
+  crumbs: [{ t: 'Promotions' }],
+  render: async function (page, ctx) {
+    var $ = function (id) { return document.getElementById(id); };
+    var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var state = { tab: 'codes', codes: [], sales: [], delivery: { dhaka: 60, outside: 120, free_over: 3000, dhaka_days: '1–3', outside_days: '3–5' }, edit: null, kind: 'percent' };
+    var shortDate = function (iso) { var d = new Date(iso), y = d.getFullYear() === new Date().getFullYear() ? '' : ' ' + d.getFullYear(); return d.getDate() + ' ' + MON[d.getMonth()] + y; };
+    var d10 = function (iso) { return iso ? String(iso).slice(0, 10) : ''; };
+    var num = function (v) { var n = parseInt(String(v).replace(/[^0-9]/g, ''), 10); return isNaN(n) ? null : n; };
+
+    page.innerHTML =
+      '<div class="page-head"><div class="t"><h1 class="h1">Promotions</h1><p class="sub">Promo codes, sale prices and delivery rules</p></div>' +
+      '<button class="btn primary" id="newBtn">' + A.ic('plus-small', 16) + 'Create promo code</button></div>' +
+      '<div class="tabs" id="tabs"></div><div id="body"></div>';
+
+    var results = await Promise.all([
+      A.sb.from('promo_codes').select('*').order('created_at', { ascending: false }),
+      A.sb.from('products').select('id,name,price,sale_price,sale_starts,sale_ends,status,product_colours(card,position)').not('sale_price', 'is', null).neq('status', 'archived'),
+      A.sb.from('settings').select('value').eq('key', 'delivery').maybeSingle()
+    ]);
+    if (results[0].error) { $('body').innerHTML = '<div class="empty card"><b>Could not load promotions</b>' + A.esc(results[0].error.message) + '</div>'; return; }
+    state.codes = results[0].data || [];
+    state.sales = (results[1].data || []);
+    if (results[2].data && results[2].data.value) Object.assign(state.delivery, results[2].data.value);
+
+    function status(c) {
+      var now = Date.now();
+      if (c.expires_at && new Date(c.expires_at).getTime() < now) return 'Ended';
+      if (c.starts_at && new Date(c.starts_at).getTime() > now) return 'Starts ' + shortDate(c.starts_at);
+      return c.expires_at ? shortDate(c.expires_at) : 'No expiry';
+    }
+    function discountText(c) { return c.kind === 'percent' ? c.value + '% off' : A.money(c.value) + ' off'; }
+
+    function drawTabs() {
+      var T = [['codes', 'Promo codes', state.codes.length], ['sales', 'Sale prices', state.sales.length], ['delivery', 'Delivery rules', null]];
+      $('tabs').innerHTML = T.map(function (t) { return '<button class="tab' + (state.tab === t[0] ? ' on' : '') + '" data-tab="' + t[0] + '"><span class="l">' + t[1] + (t[2] != null ? '<span class="b">' + t[2] + '</span>' : '') + '</span><span class="bar"></span></button>'; }).join('');
+    }
+
+    function rulesHtml() {
+      var d = state.delivery;
+      var cards = [['dhaka', 'Dhaka', A.money(d.dhaka), d.dhaka_days.replace('–', ' to ') + ' working days'], ['outside', 'Outside Dhaka', A.money(d.outside), d.outside_days.replace('–', ' to ') + ' working days'], ['free', 'Free delivery over', A.money(d.free_over), 'Applies to the whole bag']];
+      return '<div class="rules">' + cards.map(function (c) {
+        return '<div class="rule"><span class="k">' + c[1] + '</span><span class="v">' + c[2] + '</span><span class="s">' + c[3] + '</span><button class="btn sm" data-rule="' + c[0] + '"' + (ctx.role !== 'owner' ? ' disabled' : '') + '>Edit</button></div>';
+      }).join('') + '</div>';
+    }
+
+    function codesHtml() {
+      var head = '<div class="trow head"><span class="c c-code">Code</span><span class="grow">Discount</span><span class="c c-min">Min order</span><span class="c c-used">Used</span><span class="c c-exp">Expires</span><span class="c c-live">Live</span></div>';
+      var rows = state.codes.length ? state.codes.map(function (c) {
+        return '<div class="trow link' + (state.edit === c.code ? ' sel' : '') + '" data-code="' + A.esc(c.code) + '"><span class="c c-code strong">' + A.esc(c.code) + '</span><span class="grow">' + discountText(c) + '</span><span class="c c-min">' + A.money(c.min_order) + '</span>' +
+          '<span class="c c-used">' + c.used_count + (c.usage_limit ? ' / ' + c.usage_limit : '') + '</span><span class="c c-exp">' + A.esc(status(c)) + '</span>' +
+          '<span class="c c-live"><button class="tog" role="switch" aria-checked="' + c.active + '" aria-label="Live" data-live="' + A.esc(c.code) + '"></button></span></div>';
+      }).join('') : '<div class="empty"><b>No promo codes yet</b>Create one with the form on the right.</div>';
+      var e = state.codes.filter(function (c) { return c.code === state.edit; })[0] || {};
+      var kind = state.kind;
+      return '<div class="cols"><div class="table">' + head + rows + '</div>' +
+        '<form class="formcard" id="form" novalidate><h3>' + (state.edit ? 'Edit promo code' : 'New promo code') + '</h3>' +
+        '<div class="f"><label for="code">Code</label><input class="text" id="code" placeholder="SUMMER15" autocomplete="off" maxlength="20" value="' + A.esc(e.code || '') + '"' + (state.edit ? ' readonly' : '') + ' style="text-transform:uppercase"></div>' +
+        '<div class="type" id="type"><button type="button" data-k="percent" class="' + (kind === 'percent' ? 'on' : '') + '">Percent</button><button type="button" data-k="fixed" class="' + (kind === 'fixed' ? 'on' : '') + '">Fixed amount</button></div>' +
+        '<div class="f"><label for="value">Value</label><div class="money-in"><span>' + (kind === 'percent' ? '%' : 'Tk.') + '</span><input id="value" inputmode="numeric" value="' + (e.value || '') + '"></div></div>' +
+        '<div class="f"><label for="min">Minimum order</label><div class="money-in"><span>Tk.</span><input id="min" inputmode="numeric" value="' + (e.min_order ? e.min_order.toLocaleString('en-US') : '') + '" placeholder="0"></div></div>' +
+        '<div class="two"><div class="f"><label for="limit">Usage limit</label><input class="text" id="limit" inputmode="numeric" placeholder="No limit" value="' + (e.usage_limit || '') + '"></div>' +
+        '<div class="f"><label for="expires">Expires</label><input class="text" type="date" id="expires" value="' + d10(e.expires_at) + '"></div></div>' +
+        '<div class="f"><label for="starts">Starts (optional)</label><input class="text" type="date" id="starts" value="' + d10(e.starts_at) + '"></div>' +
+        '<p class="err-text" id="ferr" hidden></p>' +
+        '<button class="save" id="saveBtn" type="submit"' + (ctx.role !== 'owner' ? ' disabled' : '') + '>' + (state.edit ? 'Save changes' : 'Save promo code') + '</button>' +
+        (state.edit ? '<div style="display:flex;justify-content:space-between"><button type="button" class="linkbtn" id="resetBtn">New code instead</button><button type="button" class="linkbtn bad" id="delBtn">Delete code</button></div>' : '') +
+        '</form></div>' + rulesHtml();
+    }
+
+    function salesHtml() {
+      var head = '<div class="trow head"><span class="grow">Product</span><span class="c" style="width:100px">Regular</span><span class="c" style="width:100px">Sale price</span><span class="c" style="width:80px">Off</span><span class="c" style="width:150px">Runs</span><span class="c" style="width:60px"></span></div>';
+      var now = Date.now();
+      var rows = state.sales.length ? state.sales.map(function (p) {
+        var cols = (p.product_colours || []).slice().sort(function (a, b) { return a.position - b.position; });
+        var on = (!p.sale_starts || new Date(p.sale_starts) <= now) && (!p.sale_ends || new Date(p.sale_ends) >= now);
+        var runs = (p.sale_starts ? shortDate(p.sale_starts) : 'Now') + ' → ' + (p.sale_ends ? shortDate(p.sale_ends) : 'No end');
+        return '<a class="trow link" href="product.html?id=' + encodeURIComponent(p.id) + '" style="color:inherit"><span class="grow c-prod"><img src="' + A.esc(A.img(cols[0] && cols[0].card)) + '" alt=""><span class="strong">' + A.esc(p.name) + '</span></span>' +
+          '<span class="c" style="width:100px">' + A.money(p.price) + '</span><span class="c strong" style="width:100px">' + A.money(p.sale_price) + '</span>' +
+          '<span class="c" style="width:80px"><span class="badge ' + (on ? 'b-ok' : 'b-mute') + '">' + Math.round((1 - p.sale_price / p.price) * 100) + '%</span></span><span class="c" style="width:150px">' + runs + '</span><span class="c" style="width:60px;text-align:right;color:var(--accent);font-weight:500">Edit</span></a>';
+      }).join('') : '<div class="empty"><b>No products on sale</b>Open a product and set a sale price to start a discount.</div>';
+      return '<div class="table">' + head + rows + '</div>';
+    }
+
+    function draw() {
+      drawTabs();
+      $('body').innerHTML = state.tab === 'codes' ? codesHtml() : state.tab === 'sales' ? salesHtml() : rulesHtml();
+      $('newBtn').hidden = state.tab !== 'codes';
+    }
+
+    page.addEventListener('click', async function (e) {
+      var t = e.target.closest('[data-tab]'); if (t) { state.tab = t.getAttribute('data-tab'); draw(); return; }
+      var lv = e.target.closest('[data-live]');
+      if (lv) {
+        e.stopPropagation(); if (ctx.role !== 'owner') return;
+        var c = state.codes.filter(function (x) { return x.code === lv.getAttribute('data-live'); })[0];
+        var u = await A.sb.from('promo_codes').update({ active: !c.active }).eq('code', c.code).select('code').maybeSingle();
+        if (u.error || !u.data) { A.toast('Could not save: ' + ((u.error && u.error.message) || 'no permission'), true); return; }
+        c.active = !c.active; draw(); A.toast(c.code + (c.active ? ' is live' : ' is switched off')); return;
+      }
+      var row = e.target.closest('[data-code]');
+      if (row) { state.edit = row.getAttribute('data-code'); state.kind = state.codes.filter(function (x) { return x.code === state.edit; })[0].kind; draw(); return; }
+      var k = e.target.closest('#type [data-k]'); if (k) { state.kind = k.getAttribute('data-k'); keepForm(); return; }
+      if (e.target.id === 'resetBtn') { state.edit = null; state.kind = 'percent'; draw(); return; }
+      if (e.target.id === 'delBtn') {
+        if (!confirm('Delete ' + state.edit + '? Orders that used it keep their discount.')) return;
+        var d = await A.sb.from('promo_codes').delete().eq('code', state.edit);
+        if (d.error) { A.toast('Could not delete: ' + d.error.message, true); return; }
+        state.codes = state.codes.filter(function (x) { return x.code !== state.edit; }); state.edit = null; state.kind = 'percent'; draw(); A.toast('Code deleted'); return;
+      }
+      var rl = e.target.closest('[data-rule]'); if (rl) editRule(rl.getAttribute('data-rule'));
+    });
+    $('newBtn').addEventListener('click', function () { state.tab = 'codes'; state.edit = null; state.kind = 'percent'; draw(); var c = $('code'); if (c) c.focus(); });
+
+    // re-draw the form with the new type but keep what was typed
+    function keepForm() {
+      var keep = {}; ['code', 'value', 'min', 'limit', 'expires', 'starts'].forEach(function (id) { keep[id] = $(id).value; });
+      draw(); Object.keys(keep).forEach(function (id) { $(id).value = keep[id]; });
+    }
+
+    page.addEventListener('input', function (e) { if (e.target.id === 'min' || e.target.id === 'value') { var n = num(e.target.value); e.target.value = n == null ? '' : (e.target.id === 'min' ? n.toLocaleString('en-US') : String(n)); } });
+
+    page.addEventListener('submit', async function (e) {
+      if (e.target.id !== 'form') return; e.preventDefault();
+      var err = $('ferr'); err.hidden = true;
+      var code = $('code').value.trim().toUpperCase().replace(/\s+/g, ''), value = num($('value').value), min = num($('min').value) || 0, limit = num($('limit').value), ex = $('expires').value, st = $('starts').value;
+      var bad = !/^[A-Z0-9_-]{3,20}$/.test(code) ? 'Use 3 to 20 letters or numbers for the code.' : !value ? 'Enter the discount value.' : state.kind === 'percent' && value > 100 ? 'A percent discount cannot be more than 100.' :
+        (ex && st && st > ex) ? 'The start date must be before the expiry date.' : (!state.edit && state.codes.some(function (c) { return c.code === code; })) ? 'That code already exists. Click it in the list to edit it.' : '';
+      if (bad) { err.textContent = bad; err.hidden = false; return; }
+      var row = { code: code, label: code, kind: state.kind, value: value, min_order: min, usage_limit: limit || null, expires_at: ex ? ex + 'T23:59:59+06:00' : null, starts_at: st ? st + 'T00:00:00+06:00' : null };
+      $('saveBtn').disabled = true;
+      var r = state.edit ? await A.sb.from('promo_codes').update(row).eq('code', code).select().maybeSingle() : await A.sb.from('promo_codes').insert(Object.assign({ active: true }, row)).select().maybeSingle();
+      $('saveBtn').disabled = false;
+      if (r.error) { err.textContent = /starts_at/.test(r.error.message) ? 'The start date needs a one-time database update (07-promo-start.sql).' : r.error.message; err.hidden = false; return; }
+      var saved = r.data || row;
+      state.codes = state.codes.filter(function (c) { return c.code !== code; }); state.codes.unshift(Object.assign({ used_count: 0, active: true }, saved));
+      state.edit = null; state.kind = 'percent'; draw(); A.toast('Promo code saved');
+    });
+
+    function editRule(key) {
+      var d = state.delivery, fields = key === 'free' ? [['free_over', 'Free delivery over (Tk.)', d.free_over]] : key === 'dhaka' ? [['dhaka', 'Delivery charge (Tk.)', d.dhaka], ['dhaka_days', 'Working days, e.g. 1–3', d.dhaka_days]] : [['outside', 'Delivery charge (Tk.)', d.outside], ['outside_days', 'Working days, e.g. 3–5', d.outside_days]];
+      A.modal('<h3>' + { dhaka: 'Dhaka delivery', outside: 'Outside Dhaka delivery', free: 'Free delivery' }[key] + '</h3>' +
+        fields.map(function (f, i) { return '<div class="f"><label for="rf' + i + '">' + f[1] + '</label><input class="text" id="rf' + i + '" value="' + A.esc(f[2]) + '"></div>'; }).join('') +
+        '<p class="err-text" id="rerr" hidden></p><div class="actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="rOk">Save</button></div>',
+        function (o, close) {
+          o.querySelector('#rOk').addEventListener('click', async function () {
+            var next = Object.assign({}, state.delivery), bad = '';
+            fields.forEach(function (f, i) {
+              var v = o.querySelector('#rf' + i).value.trim();
+              if (/days$/.test(f[0])) { if (!v) bad = 'Enter the working days.'; next[f[0]] = v.replace('-', '–'); }
+              else { var n = num(v); if (n == null) bad = 'Enter a number.'; next[f[0]] = n; }
+            });
+            if (bad) { var er = o.querySelector('#rerr'); er.textContent = bad; er.hidden = false; return; }
+            var u = await A.sb.from('settings').upsert({ key: 'delivery', value: next }, { onConflict: 'key' });
+            if (u.error) { A.toast('Could not save: ' + u.error.message, true); return; }
+            state.delivery = next; close(); draw(); A.toast('Delivery rule saved. The store uses it within a minute.');
+          });
+        });
+    }
+    draw();
+  }
+});
+</script>
+</body>
+</html>

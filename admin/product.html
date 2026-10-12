@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>Product · ELARA Admin</title>
 <link rel="icon" href="favicon1.png">
@@ -69,6 +69,17 @@
   .btn.danger:hover { background: var(--bad-bg); }
   .err-text { font-size: 12px; color: var(--bad); }
   @media (max-width: 1100px) { .cols { flex-direction: column; } .right { width: 100%; } }
+
+  @media (max-width: 899.98px) {
+    .vrow.head { display: none; }
+    .vrow { flex-wrap: wrap; gap: 8px 12px; }
+    .vrow .vc { width: 100%; }
+    .vrow .vs { width: auto; flex: 1; } .vrow .vk { width: auto; } .vrow .vp { flex: none; width: auto; }
+    .three { flex-wrap: wrap; }
+    .pimg, .add-ph { width: calc(33.33% - 8px); height: auto; aspect-ratio: 4 / 5; }
+    .photos { gap: 12px; }
+    .page-head .btn { flex: 1; }
+  }
 </style>
 </head>
 <body>
@@ -116,7 +127,7 @@ A.boot({
       var photos = cc ? (cc.photos || []) : [];
       var eff = (P.sale_price != null) ? P.sale_price : P.price;
       page.innerHTML =
-        '<div class="page-head"><div class="t"><div class="title-row"><h1 class="h1" id="h1">' + A.esc(P.name || 'New product') + '</h1><span class="badge ' + (P.status === 'published' ? 'b-ok' : P.status === 'draft' ? 'b-warn' : 'b-mute') + '" id="stBadge">' + { published: 'Published', draft: 'Draft', archived: 'Archived' }[P.status] + '</span></div>' +
+        '<div class="page-head keep"><div class="t"><div class="title-row"><h1 class="h1" id="h1">' + A.esc(P.name || 'New product') + '</h1><span class="badge ' + (P.status === 'published' ? 'b-ok' : P.status === 'draft' ? 'b-warn' : 'b-mute') + '" id="stBadge">' + { published: 'Published', draft: 'Draft', archived: 'Archived' }[P.status] + '</span></div>' +
         '<p class="sub">' + (P._new ? 'Not saved yet' : 'Last saved ' + A.ago(P.updated_at)) + '</p></div>' +
         (!P._new ? '<a class="btn" href="../my-product-detail-screen.html?p=' + encodeURIComponent(P.id) + '" target="_blank" rel="noopener">' + A.ic('eye-open', 16) + 'Preview on store</a>' : '') +
         (!readonly ? '<button class="btn" id="saveDraft">Save as draft</button><button class="btn primary" id="save">Save changes</button>' : '') + '</div>' +
