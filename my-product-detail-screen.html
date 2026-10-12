@@ -88,9 +88,10 @@
   .ico20 img { position: absolute; display: block; }
   /* Nav search / account icons: soft circle on hover, same cue as the cart pill */
   .nav-icons .ico20 { overflow: visible; cursor: pointer; }
-  .nav-icons .ico20::before { content: ""; position: absolute; inset: -8px; border-radius: 50%; background: #f1e9dc; opacity: 0; transform: scale(.7); transition: opacity .15s cubic-bezier(.4,0,.2,1), transform .2s cubic-bezier(.4,0,.2,1); }
+  .nav-icons .ico20::before { content: ""; position: absolute; inset: -8px; border-radius: 50%; background: var(--text, #4a4741); opacity: 0; transform: scale(.7); transition: opacity .15s cubic-bezier(.4,0,.2,1), transform .2s cubic-bezier(.4,0,.2,1); }
   .nav-icons .ico20:hover::before, .nav-icons .ico20:focus-visible::before { opacity: 1; transform: scale(1); }
-  .nav-icons .ico20 img { z-index: 1; }
+  .nav-icons .ico20 img { z-index: 1; transition: filter .15s cubic-bezier(.4,0,.2,1); }
+  .nav-icons .ico20:hover img, .nav-icons .ico20:focus-visible img { filter: brightness(0) invert(1); }
   .nav-icons a.ico20 { display: block; }
   .cart-btn { display: flex; gap: 10px; align-items: center; justify-content: center; height: 40px; padding: 10px 18px; border: 1px solid var(--text); border-radius: var(--r-pill); font-weight: 500; font-size: 16px; line-height: 1.5; text-transform: uppercase; white-space: nowrap; transition: background-color .15s var(--ease); }
   .cart-btn:hover { background: var(--bg-card); }
