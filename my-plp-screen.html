@@ -268,6 +268,15 @@
   .price-slider-label-block.right { align-items: flex-end; text-align: right; }
   .price-slider-label-block .micro { font-size: 0.72rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
   .price-slider-label-block .micro-value { font-size: 0.95rem; font-weight: 500; color: var(--color-text-primary); }
+  /* The min / max amounts are real inputs: drag the handles or type an amount */
+  .price-field { display: inline-flex; align-items: baseline; gap: 4px; padding: 5px 8px; margin: -5px -8px; border-radius: 8px; border: 1px solid transparent; font-size: 0.95rem; font-weight: 500; color: var(--color-text-primary); cursor: text; transition: border-color .15s, background-color .15s; }
+  .price-field:hover { background: var(--bg-card); }
+  .price-field:focus-within { border-color: var(--color-focus-ring); background: #fff; }
+  .price-field.bad { border-color: var(--color-danger); }
+  .price-field input { width: 4.4ch; padding: 0; border: 0; outline: 0; background: transparent; font: inherit; color: inherit; text-align: right; -moz-appearance: textfield; }
+  .price-field .u { color: var(--color-text-muted); font-weight: 400; }
+  .price-field { margin: -5px 0 -5px -6px; padding: 5px 6px; }
+  .price-slider-label-block.right .price-field { margin: -5px -2px -5px 0; }
   .price-slider-track-wrap { position: relative; height: 20px; margin-top: 4px; }
   .price-slider-track { position: absolute; top: 9px; left: 9px; right: 9px; height: 2px; border-radius: 999px; background: var(--color-border); }
   .price-slider-active { position: absolute; top: 8px; height: 4px; border-radius: 999px; background: var(--color-text-primary); }
@@ -1521,14 +1530,14 @@
         <div class="body">
           <div class="price-slider" data-prefix="${idPrefix}">
             <div class="price-slider-labels">
-              <div class="price-slider-label-block"><span class="micro">Min Price</span><span class="micro-value price-min-label">${fmtPrice(state.priceMin)}</span></div>
-              <div class="price-slider-label-block right"><span class="micro">Max Price</span><span class="micro-value price-max-label">${fmtPrice(state.priceMax)}</span></div>
+              <div class="price-slider-label-block"><label class="micro" for="${idPrefix}PriceMin">Min Price</label><span class="price-field"><span class="u">Tk.</span><input id="${idPrefix}PriceMin" class="price-min-field" type="text" inputmode="numeric" autocomplete="off" value="${Number(state.priceMin).toLocaleString('en-US')}" aria-label="Minimum price in taka"><span class="u">/-</span></span></div>
+              <div class="price-slider-label-block right"><label class="micro" for="${idPrefix}PriceMax">Max Price</label><span class="price-field"><span class="u">Tk.</span><input id="${idPrefix}PriceMax" class="price-max-field" type="text" inputmode="numeric" autocomplete="off" value="${Number(state.priceMax).toLocaleString('en-US')}" aria-label="Maximum price in taka"><span class="u">/-</span></span></div>
             </div>
             <div class="price-slider-track-wrap">
               <div class="price-slider-track"></div>
               <div class="price-slider-active"></div>
-              <input type="range" class="price-slider-input price-slider-min" min="${PRICE_BOUND.min}" max="${PRICE_BOUND.max}" step="100" value="${state.priceMin}" aria-label="Minimum price">
-              <input type="range" class="price-slider-input price-slider-max" min="${PRICE_BOUND.min}" max="${PRICE_BOUND.max}" step="100" value="${state.priceMax}" aria-label="Maximum price">
+              <input type="range" class="price-slider-input price-slider-min" min="${PRICE_BOUND.min}" max="${PRICE_BOUND.max}" step="1" value="${state.priceMin}" aria-label="Minimum price">
+              <input type="range" class="price-slider-input price-slider-max" min="${PRICE_BOUND.min}" max="${PRICE_BOUND.max}" step="1" value="${state.priceMax}" aria-label="Maximum price">
             </div>
           </div>
         </div>
@@ -1566,34 +1575,71 @@
     const minInput = root.querySelector('.price-slider-min');
     const maxInput = root.querySelector('.price-slider-max');
     const active = root.querySelector('.price-slider-active');
-    const minLabel = root.querySelector('.price-min-label');
-    const maxLabel = root.querySelector('.price-max-label');
+    const minField = root.querySelector('.price-min-field');
+    const maxField = root.querySelector('.price-max-field');
     const bound = PRICE_BOUND.max;
-    const gap = Number(minInput.step || 100);
+    const gap = 100;                                   // closest the two handles may get
+    const snap = (v) => Math.round(v / 100) * 100;     // dragging moves in steps of Tk. 100; typing is exact
+    const fmt = (v) => Number(v).toLocaleString('en-US');
 
     function paint() {
       const minPct = (Number(minInput.value) / bound) * 100;
       const maxPct = (Number(maxInput.value) / bound) * 100;
       active.style.left = minPct + '%';
       active.style.width = (maxPct - minPct) + '%';
-      minLabel.textContent = fmtPrice(minInput.value);
-      maxLabel.textContent = fmtPrice(maxInput.value);
+      if (document.activeElement !== minField) minField.value = fmt(minInput.value);
+      if (document.activeElement !== maxField) maxField.value = fmt(maxInput.value);
+      minField.parentNode.classList.remove('bad'); maxField.parentNode.classList.remove('bad');
     }
 
     function commit() {
       let minV = Number(minInput.value);
       let maxV = Number(maxInput.value);
-      if (minV > maxV - gap) { minV = maxV - gap; minInput.value = minV; }
+      if (minV > maxV - gap) { minV = Math.max(PRICE_BOUND.min, maxV - gap); minInput.value = minV; }
       state.priceMin = minV;
       state.priceMax = maxV;
       paint();
       render();
     }
 
-    minInput.addEventListener('input', () => { paint(); });
-    maxInput.addEventListener('input', () => { paint(); });
+    // sliders: snap while dragging
+    [minInput, maxInput].forEach((el) => el.addEventListener('input', () => {
+      el.value = snap(Number(el.value));
+      if (el === minInput && Number(minInput.value) > Number(maxInput.value) - gap) minInput.value = Math.max(PRICE_BOUND.min, Number(maxInput.value) - gap);
+      if (el === maxInput && Number(maxInput.value) < Number(minInput.value) + gap) maxInput.value = Math.min(PRICE_BOUND.max, Number(minInput.value) + gap);
+      paint();
+    }));
     minInput.addEventListener('change', commit);
     maxInput.addEventListener('change', commit);
+
+    // typed amounts: digits only, applied as you type when valid, clamped when you leave the field
+    function typed(field, isMin, final) {
+      const digits = field.value.replace(/[^0-9]/g, '');
+      if (!final) {
+        field.value = digits === '' ? '' : fmt(Number(digits));
+        const n = Number(digits);
+        const ok = digits !== '' && (isMin ? n <= Number(maxInput.value) - gap && n >= PRICE_BOUND.min : n >= Number(minInput.value) + gap && n <= PRICE_BOUND.max);
+        field.parentNode.classList.toggle('bad', digits !== '' && !ok);
+        if (ok) { (isMin ? minInput : maxInput).value = n; const minPct = (Number(minInput.value) / bound) * 100, maxPct = (Number(maxInput.value) / bound) * 100; active.style.left = minPct + '%'; active.style.width = (maxPct - minPct) + '%'; }
+        return;
+      }
+      let n = digits === '' ? (isMin ? PRICE_BOUND.min : PRICE_BOUND.max) : Number(digits);
+      if (isMin) n = Math.min(Math.max(n, PRICE_BOUND.min), Number(maxInput.value) - gap);
+      else n = Math.max(Math.min(n, PRICE_BOUND.max), Number(minInput.value) + gap);
+      (isMin ? minInput : maxInput).value = n;
+      field.value = fmt(n);
+      commit();
+    }
+    [[minField, true], [maxField, false]].forEach(([f, isMin]) => {
+      f.addEventListener('input', () => typed(f, isMin, false));
+      f.addEventListener('focus', () => f.select());
+      f.addEventListener('blur', () => typed(f, isMin, true));
+      f.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); f.blur(); }
+        else if (e.key === 'Escape') { f.value = fmt((isMin ? minInput : maxInput).value); f.blur(); }
+        else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); const el = isMin ? minInput : maxInput; el.value = Number(el.value) + (e.key === 'ArrowUp' ? 100 : -100); el.dispatchEvent(new Event('input')); f.value = fmt(el.value); f.select(); }
+      });
+    });
     paint();
   }
 
