@@ -1,4 +1,5 @@
 User-agent: *
+Disallow: /admin/
 Allow: /
 Disallow: /my-cart-screen.html
 Disallow: /my-checkout-review.html

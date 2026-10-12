@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Orders · ELARA Admin</title>
+<link rel="icon" href="favicon1.png">
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="admin.css">
+<style>
+  .col-order { width: 100px; } .col-placed { width: 130px; } .col-items { width: 50px; } .col-total { width: 100px; } .col-pay { width: 130px; } .col-status { width: 130px; } .col-menu { width: 24px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="icons.js"></script>
+<script src="admin.js"></script>
+<script>
+A.boot({
+  active: 'orders',
+  crumbs: [{ t: 'Orders' }],
+  render: async function (page, ctx) {
+    var PAGE = 8;
+    var state = { tab: 'all', q: '', pay: 'all', range: '30', page: 0, rows: [] };
+    var TABS = [['all', 'All'], ['placed', 'To confirm'], ['pack', 'To pack'], ['shipped', 'Shipped'], ['delivered', 'Delivered'], ['cancelled', 'Cancelled']];
+    var PAYS = [{ v: 'all', l: 'All payments' }, { v: 'cod', l: 'Cash on delivery' }, { v: 'bkash', l: 'bKash' }, { v: 'nagad', l: 'Nagad' }, { v: 'card', l: 'Card' }];
+    var RANGES = [{ v: '1', l: 'Today' }, { v: '7', l: 'Last 7 days' }, { v: '30', l: 'Last 30 days' }, { v: '90', l: 'Last 90 days' }, { v: 'all', l: 'All time' }];
+    var payLbl = function (v) { return (PAYS.filter(function (p) { return p.v === v; })[0] || {}).l; };
+    var rangeLbl = function (v) { return (RANGES.filter(function (p) { return p.v === v; })[0] || {}).l; };
+
+    page.innerHTML =
+      '<div class="page-head"><div class="t"><h1 class="h1">Orders</h1><p class="sub" id="sub">Loading…</p></div>' +
+      '<button class="btn" id="export">' + A.ic('file-download', 16) + 'Export CSV</button>' +
+      '<button class="btn primary" id="create">' + A.ic('plus-small', 16) + 'Create order</button></div>' +
+      '<div class="tabs" id="tabs"></div>' +
+      '<div class="toolbar"><label class="field-search">' + A.ic('magnifying-glass', 16) + '<input id="q" placeholder="Search order, name or phone" aria-label="Search orders"></label>' +
+      '<div class="pop-wrap" id="payWrap"><button class="btn" id="payBtn">' + A.ic('wallet1', 16) + '<span id="payTxt">Payment</span>' + A.ic('chevron-down-small', 16) + '</button></div>' +
+      '<div class="pop-wrap" id="rangeWrap"><button class="btn" id="rangeBtn">' + A.ic('calendar1', 16) + '<span id="rangeTxt">Last 30 days</span>' + A.ic('chevron-down-small', 16) + '</button></div>' +
+      '<button class="btn" id="more">' + A.ic('filter1', 16) + 'More filters</button></div>' +
+      '<div class="table" id="table"></div>' +
+      '<div class="pager"><p class="info" id="info"></p><button class="btn sm" id="prev">Previous</button><button class="btn sm" id="next">Next</button></div>';
+
+    var $ = function (id) { return document.getElementById(id); };
+    $('table').innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+
+    var res = await A.sb.from('orders').select('id,placed_at,customer_name,customer_phone,payment_method,payment_state,status,total,order_items(qty)').order('placed_at', { ascending: false }).limit(2000);
+    if (res.error) { $('table').innerHTML = '<div class="empty"><b>Could not load orders</b>' + A.esc(res.error.message) + '</div>'; $('sub').textContent = ''; return; }
+    state.rows = res.data.map(function (o) { o.items = (o.order_items || []).reduce(function (s, i) { return s + i.qty; }, 0); return o; });
+
+    function tabOf(o) { return { placed: 'placed', confirmed: 'pack', packed: 'pack', shipped: 'shipped', delivered: 'delivered', cancelled: 'cancelled', returned: 'cancelled' }[o.status]; }
+    function inRange(o) { if (state.range === 'all') return true; var days = +state.range; var start = new Date(); start.setHours(0, 0, 0, 0); start.setDate(start.getDate() - (days - 1)); return new Date(o.placed_at) >= start; }
+    function filtered(ignoreTab) {
+      var q = state.q.trim().toLowerCase();
+      return state.rows.filter(function (o) {
+        if (!ignoreTab && state.tab !== 'all' && tabOf(o) !== state.tab) return false;
+        if (state.pay !== 'all' && o.payment_method !== state.pay) return false;
+        if (!inRange(o)) return false;
+        if (q && (o.id + ' ' + o.customer_name + ' ' + o.customer_phone).toLowerCase().indexOf(q) < 0) return false;
+        return true;
+      });
+    }
+
+    function draw() {
+      var base = filtered(true), list = filtered(false);
+      var cnt = { all: base.length }; base.forEach(function (o) { var t = tabOf(o); cnt[t] = (cnt[t] || 0) + 1; });
+      $('tabs').innerHTML = TABS.map(function (t) {
+        return '<button class="tab' + (state.tab === t[0] ? ' on' : '') + '" data-tab="' + t[0] + '"><span class="l">' + t[1] + '<span class="b">' + (cnt[t[0]] || 0) + '</span></span><span class="bar"></span></button>';
+      }).join('');
+      $('sub').textContent = state.rows.length + ' order' + (state.rows.length === 1 ? '' : 's') + ' · ' + (state.rows.filter(function (o) { return o.status === 'placed'; }).length) + ' need confirming';
+      $('payTxt').textContent = state.pay === 'all' ? 'Payment' : payLbl(state.pay);
+      $('rangeTxt').textContent = rangeLbl(state.range);
+
+      var pages = Math.max(1, Math.ceil(list.length / PAGE));
+      if (state.page >= pages) state.page = pages - 1;
+      var slice = list.slice(state.page * PAGE, state.page * PAGE + PAGE);
+      var head = '<div class="trow head"><span class="c" style="width:16px"></span><span class="c col-order">Order</span><span class="c col-placed">Placed</span><span class="grow">Customer</span><span class="c col-items">Items</span><span class="c col-total">Total</span><span class="c col-pay">Payment</span><span class="c col-status">Status</span><span class="c col-menu"></span></div>';
+      if (!list.length) {
+        $('table').innerHTML = head + '<div class="empty"><b>' + (state.rows.length ? 'No orders match these filters' : 'No orders yet') + '</b>' +
+          (state.rows.length ? 'Try a different tab, date range or search.' : 'New orders from the store show up here the moment a customer places them.') + '</div>';
+      } else {
+        $('table').innerHTML = head + slice.map(function (o) {
+          var b = A.statusBadge(o);
+          return '<div class="trow link" data-id="' + A.esc(o.id) + '"><span class="c" style="width:16px"><span class="chk"></span></span>' +
+            '<span class="c col-order strong">' + A.esc(o.id) + '</span><span class="c col-placed">' + A.when(o.placed_at) + '</span>' +
+            '<span class="grow">' + A.esc(o.customer_name) + '</span><span class="c col-items">' + o.items + '</span>' +
+            '<span class="c col-total">' + A.money(o.total) + '</span><span class="c col-pay">' + A.esc(A.payLabel(o)) + '</span>' +
+            '<span class="c col-status"><span class="badge ' + b.cls + '">' + b.label + '</span></span>' +
+            '<span class="c col-menu"><button class="rowmenu" data-menu="' + A.esc(o.id) + '" aria-label="Order actions">' + A.ic('dot-grid1x3-horizontal', 18) + '</button></span></div>';
+        }).join('');
+      }
+      var from = list.length ? state.page * PAGE + 1 : 0, to = Math.min(list.length, state.page * PAGE + PAGE);
+      $('info').textContent = 'Showing ' + from + ' to ' + to + ' of ' + list.length + ' order' + (list.length === 1 ? '' : 's');
+      $('prev').disabled = state.page === 0; $('next').disabled = state.page >= pages - 1;
+    }
+
+    $('tabs').addEventListener('click', function (e) { var t = e.target.closest('[data-tab]'); if (!t) return; state.tab = t.getAttribute('data-tab'); state.page = 0; draw(); });
+    var tm; $('q').addEventListener('input', function (e) { clearTimeout(tm); tm = setTimeout(function () { state.q = e.target.value; state.page = 0; draw(); }, 120); });
+    $('payBtn').addEventListener('click', function (e) { e.stopPropagation(); A.menu($('payWrap'), PAYS, state.pay, function (v) { state.pay = v; state.page = 0; draw(); }); });
+    $('rangeBtn').addEventListener('click', function (e) { e.stopPropagation(); A.menu($('rangeWrap'), RANGES, state.range, function (v) { state.range = v; state.page = 0; draw(); }); });
+    $('more').addEventListener('click', function () { A.toast('Filters for payment state and delivery zone are coming next.'); });
+    $('prev').addEventListener('click', function () { state.page--; draw(); });
+    $('next').addEventListener('click', function () { state.page++; draw(); });
+    $('create').addEventListener('click', function () { A.toast('Creating an order by hand is coming soon.'); });
+    $('table').addEventListener('click', function (e) {
+      var m = e.target.closest('[data-menu]');
+      if (m) { e.stopPropagation(); location.href = 'order.html?id=' + encodeURIComponent(m.getAttribute('data-menu')); return; }
+      var r = e.target.closest('[data-id]'); if (r) location.href = 'order.html?id=' + encodeURIComponent(r.getAttribute('data-id'));
+    });
+    $('export').addEventListener('click', function () {
+      var list = filtered(false);
+      if (!list.length) { A.toast('Nothing to export for these filters.', true); return; }
+      var q = function (v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; };
+      var csv = ['Order,Placed,Customer,Phone,Items,Total,Payment,Status'].concat(list.map(function (o) {
+        return [o.id, new Date(o.placed_at).toISOString(), o.customer_name, o.customer_phone, o.items, o.total, A.payLabel(o), A.statusBadge(o).label].map(q).join(',');
+      })).join('\r\n');
+      var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv' }));
+      a.download = 'elara-orders-' + new Date().toISOString().slice(0, 10) + '.csv'; a.click(); URL.revokeObjectURL(a.href);
+    });
+    draw();
+  }
+});
+</script>
+</body>
+</html>

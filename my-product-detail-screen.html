@@ -756,6 +756,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite"><span id="toastText">Added to your bag.</span><a href="my-cart-screen.html">View bag</a></div>
 
 <script src="assets/products.js"></script>
+<script src="assets/store-data.js"></script>
 <script>
   // Below 1440 only: shrink the artboard to the viewport (never scales up).
   function fit() { document.documentElement.style.setProperty('--fit', Math.min(1, document.documentElement.clientWidth / 1440)); }
@@ -1107,10 +1108,29 @@
     };
     swatchBox.innerHTML = product.colours.map((c) => '<button class="swatch" role="radio" aria-checked="' + (c === colour) + '" aria-label="' + esc(c.label) + '" data-colour="' + c.id + '"><img src="' + c.tile + '" alt=""></button>').join('');
     const swatches = [...swatchBox.querySelectorAll('.swatch')];
+    // Size chips follow real stock for the chosen colour (only when the live catalogue is loaded).
+    function applyStock() {
+      if (!product.stock) return;
+      const left = product.stock[colour.id] || {};
+      const cs = [...document.querySelectorAll('.chip')];
+      cs.forEach((c) => {
+        const n = left[c.dataset.size];
+        const gone = n != null && n <= 0;
+        c.disabled = gone;
+        if (gone) c.title = 'Out of stock'; else c.removeAttribute('title');
+      });
+      const on = cs.find((c) => c.getAttribute('aria-checked') === 'true');
+      if (!on || on.disabled) {
+        const first = cs.find((c) => !c.disabled);
+        cs.forEach((c) => c.setAttribute('aria-checked', String(c === first)));
+      }
+      const add = $('addBtn'); if (add) add.disabled = !cs.some((c) => !c.disabled);
+    }
     function choose(c, pushUrl) {
       colour = c;
       swatches.forEach((x) => x.setAttribute('aria-checked', String(x.dataset.colour === c.id)));
       heading();
+      applyStock();
       gallery.setColour();
       if (window.__paintWish) window.__paintWish();
       if (pushUrl) { try { history.replaceState(null, '', 'my-product-detail-screen.html?p=' + product.id + '&colour=' + c.id); } catch (e) {} }

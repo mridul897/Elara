@@ -300,6 +300,7 @@
 </style>
 </head>
 <body data-m-back="my-cart-screen.html" data-m-title="Checkout" data-m-nofooter>
+<script src="assets/store-data.js"></script>
 <script src="assets/mobile.js"></script>
 
 <div class="page">
@@ -571,8 +572,10 @@
 
   // ---------------- data ----------------
   const CART_KEY = 'elara.cart.v1', BUY_KEY = 'elara.buynow.v1', PROMO_KEY = 'elara.promo.v1', ORDER_KEY = 'elara.order.v1';
-  const FREE_DELIVERY_AT = 3000;
-  const PROMOS = { MRIDUL13: { label: 'Mridul13', percent: 5 }, WELCOME10: { label: 'WELCOME10', percent: 10 } };
+  const DEL = window.ELARA_DELIVERY || { dhaka: 60, outside: 120, freeOver: 3000, dhakaDays: '1–3', outsideDays: '3–5' };
+  const FREE_DELIVERY_AT = DEL.freeOver;
+  const PROMOS = {};
+  (function () { try { const d = JSON.parse(localStorage.getItem('elara.promo.def.v1')); if (d && d.code) PROMOS[d.code] = { label: d.label || d.code, kind: d.kind, value: d.value }; } catch (e) {} })();
   const DISTRICTS = {
     'Barishal': ['Barguna', 'Barishal', 'Bhola', 'Jhalokati', 'Patuakhali', 'Pirojpur'],
     'Chattogram': ['Bandarban', 'Brahmanbaria', 'Chandpur', 'Chattogram', "Cox's Bazar", 'Cumilla', 'Feni', 'Khagrachhari', 'Lakshmipur', 'Noakhali', 'Rangamati'],
@@ -611,7 +614,7 @@
   const promo = promoCode && PROMOS[promoCode] ? PROMOS[promoCode] : null;
   const count = lines.reduce((n, l) => n + l.qty, 0);
   const subtotal = lines.reduce((n, l) => n + l.price * l.qty, 0);
-  const discount = promo ? Math.round(subtotal * promo.percent / 100) : 0;
+  const discount = !promo ? 0 : promo.kind === 'fixed' ? Math.min(promo.value, subtotal) : Math.round(subtotal * promo.value / 100);
 
   // ---------------- address selects ----------------
   const fDivision = $('fDivision'), fDistrict = $('fDistrict'), fUpazila = $('fUpazila'), fArea = $('fArea');
@@ -647,7 +650,7 @@
   function deliveryInfo() {
     const dhaka = fDivision.value === 'Dhaka' && fDistrict.value === 'Dhaka';
     const free = subtotal >= FREE_DELIVERY_AT;
-    return { dhaka, charge: dhaka ? 60 : 120, days: dhaka ? '1–3' : '3–5', free, zone: dhaka ? 'Dhaka' : 'Outside Dhaka' };
+    return { dhaka, charge: dhaka ? DEL.dhaka : DEL.outside, days: dhaka ? DEL.dhakaDays : DEL.outsideDays, free, zone: dhaka ? 'Dhaka' : 'Outside Dhaka' };
   }
   const PAY = { cod: 'Cash on Delivery', bkash: 'bKash', nagad: 'Nagad', card: 'Credit or debit card' };
   const payValue = () => document.querySelector('input[name="pay"]:checked').value;
@@ -665,7 +668,7 @@
     $('subLabel').textContent = 'Subtotal (' + plural(count) + ')';
     $('subValue').textContent = money(subtotal);
     $('discLine').hidden = !discount;
-    if (discount) { $('discLabel').textContent = 'Discount (' + promo.label + ' · ' + promo.percent + '%)'; $('discValue').textContent = '– ' + money(discount); }
+    if (discount) { $('discLabel').textContent = 'Discount (' + promo.label + ' · ' + (promo.kind === 'fixed' ? money(promo.value) : promo.value + '%') + ')'; $('discValue').textContent = '– ' + money(discount); }
     $('delLabel').textContent = 'Delivery · ' + d.zone;
     $('delValue').textContent = d.free ? 'Free' : money(d.charge);
     $('delValue').classList.add('strong');
@@ -746,8 +749,10 @@
   }
 
   // ---------------- placing the order ----------------
-  $('checkoutForm').addEventListener('submit', (e) => {
+  let placing = false;
+  $('checkoutForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (placing) return;
     const problems = validate();
     if (problems.length) {
       const first = $(problems[0]);
@@ -765,6 +770,34 @@
       customer: { name: $('fName').value.trim(), phone: '+880' + normalisePhone($('fPhone').value), email: $('fEmail').value.trim() || null },
       address: { division: fDivision.value, district: fDistrict.value, upazila: fUpazila.value.trim(), area: fArea.value.trim(), line1: $('fAddress1').value.trim(), line2: $('fAddress2').value.trim() || null },
     };
+    // The order is created on the server first: it recomputes prices, delivery and the promo discount from the database,
+    // checks stock and hands back the real order number. Nothing is taken from the browser's own totals.
+    placing = true;
+    const btn = $('placeBtn'), btnText = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Placing your order…';
+    let err = $('placeError');
+    if (!err) { err = document.createElement('p'); err.id = 'placeError'; err.setAttribute('role', 'alert'); err.style.cssText = 'color:#b3261e;font-size:14px;line-height:1.5;margin:0 0 12px'; btn.parentNode.insertBefore(err, btn); }
+    err.hidden = true;
+    const res = await ElaraDB.rpc('place_order', { p_order: {
+      name: order.customer.name, phone: order.customer.phone, email: order.customer.email,
+      division: order.address.division, district: order.address.district, upazila: order.address.upazila,
+      address: [order.address.area, order.address.line1, order.address.line2].filter(Boolean).join(', '),
+      zone: d.zone, payment: order.payment, promo: promo ? promoCode : null,
+      note: null,
+      items: lines.map((l) => { const p = String(l.id).split('|'); return { id: p[0], colour: p[1], size: l.size, qty: l.qty }; }),
+    } });
+    placing = false; btn.disabled = false; btn.textContent = btnText;
+    if (!res || !res.ok) {
+      err.hidden = false;
+      err.textContent = res && res.error && res.error !== 'network'
+        ? res.error + ' Please update your bag and try again.'
+        : 'We could not reach the shop just now, so your order was not placed. Please check your connection and try again, or message us on WhatsApp.';
+      err.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    order.id = res.id; order.subtotal = res.subtotal; order.discount = res.discount; order.delivery = res.delivery; order.total = res.total;
+    order.placedAt = new Date().toISOString();
+
     // bKash / Nagad: the order is saved, then the wallet's gateway popup opens over this page. The bag stays until the
     // payment actually goes through; closing the popup leaves the shopper here with everything still filled in.
     if (order.payment === 'bkash' || order.payment === 'nagad') {

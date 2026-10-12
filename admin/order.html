@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Order · ELARA Admin</title>
+<link rel="icon" href="favicon1.png">
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="admin.css">
+<style>
+  .title-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .btn.danger { color: var(--bad); border-color: #efc4c4; }
+  .btn.danger:hover { background: var(--bad-bg); }
+  .cols { display: flex; gap: 20px; align-items: flex-start; }
+  .left { flex: 2 1 0; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+  .right { width: 340px; flex: none; display: flex; flex-direction: column; gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); }
+  .card.pad { padding: 16px; }
+  .card h3 { font-size: 15px; font-weight: 600; }
+  .card .hd { display: flex; align-items: center; padding: 16px 16px 12px; }
+  .card .hd h3 { flex: 1; }
+  .card .hd span { font-size: 13px; color: var(--sub); }
+  .hr { height: 1px; background: var(--border); }
+  .item { display: flex; align-items: center; gap: 14px; padding: 16px; }
+  .item + .item { border-top: 1px solid var(--divider); }
+  .item img { width: 56px; height: 70px; border-radius: 8px; object-fit: cover; flex: none; background: var(--canvas); }
+  .item .t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .item .n { font-size: 14px; font-weight: 500; }
+  .item .m { font-size: 13px; color: var(--sub); }
+  .item .s { font-size: 12px; color: var(--mute); }
+  .item .p { font-size: 14px; font-weight: 500; }
+  .totals { display: flex; flex-direction: column; gap: 8px; padding: 16px; }
+  .totals .r { display: flex; font-size: 13px; }
+  .totals .r span:first-child { flex: 1; color: var(--sub); }
+  .totals .tot { padding-top: 6px; font-weight: 600; }
+  .totals .tot span:first-child { color: var(--text); font-size: 14px; }
+  .totals .tot span:last-child { font-size: 16px; }
+  .timeline { display: flex; flex-direction: column; gap: 14px; }
+  .step { display: flex; gap: 12px; align-items: flex-start; }
+  .dot { width: 20px; height: 20px; border-radius: 999px; border: 1.2px solid var(--check); flex: none; display: flex; align-items: center; justify-content: center; }
+  .dot.done { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+  .step .t { display: flex; flex-direction: column; gap: 2px; }
+  .step .a { font-size: 13px; font-weight: 500; }
+  .step .a.mute { font-weight: 400; color: var(--sub); }
+  .step .b { font-size: 12px; color: var(--mute); }
+  .notes textarea { width: 100%; min-height: 44px; resize: vertical; background: var(--head); border: 1px solid var(--border); border-radius: var(--r); padding: 12px; font: inherit; font-size: 13px; color: var(--text); margin-top: 10px; }
+  .notes textarea:focus { outline: 0; border-color: var(--accent); }
+  .notes .saved { font-size: 12px; color: var(--mute); margin-top: 6px; min-height: 16px; }
+  .cust { display: flex; align-items: center; gap: 10px; }
+  .cust .avatar { width: 36px; height: 36px; font-size: 14.4px; }
+  .cust .n { font-size: 14px; font-weight: 500; }
+  .cust .s { font-size: 12px; color: var(--mute); }
+  .kv { display: flex; flex-direction: column; gap: 2px; }
+  .kv .k { font-size: 12px; color: var(--mute); }
+  .kv .v { font-size: 13px; }
+  .stack { display: flex; flex-direction: column; gap: 12px; }
+  .stack.t10 { gap: 10px; }
+  .phead { display: flex; align-items: center; }
+  .phead h3 { flex: 1; }
+  .link-a { color: var(--accent); }
+  @media (max-width: 1100px) { .cols { flex-direction: column; } .right { width: 100%; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="icons.js"></script>
+<script src="admin.js"></script>
+<script>
+var ORDER_ID = new URLSearchParams(location.search).get('id') || '';
+A.boot({
+  active: 'orders',
+  crumbs: [{ t: 'Orders', href: 'orders.html' }, { t: ORDER_ID || 'Order' }],
+  render: async function (page, ctx) {
+    var $ = function (id) { return document.getElementById(id); };
+    var r = await A.sb.from('orders').select('*, order_items(*)').eq('id', ORDER_ID).maybeSingle();
+    if (r.error || !r.data) {
+      page.innerHTML = '<div class="empty card"><b>Order not found</b>We could not find ' + A.esc(ORDER_ID) + '. <a class="link-a" href="orders.html">Back to orders</a></div>';
+      return;
+    }
+    var o = r.data, items = o.order_items || [];
+    var ev = (await A.sb.from('order_events').select('*').eq('order_id', o.id).order('at')).data || [];
+    var hist = (await A.sb.from('orders').select('id,total,status').eq('customer_phone', o.customer_phone)).data || [];
+    // stock left for each line (by product + colour label + size)
+    var stockMap = {};
+    var pids = items.map(function (i) { return i.product_id; });
+    if (pids.length) {
+      var cols = (await A.sb.from('product_colours').select('product_id,id,label').in('product_id', pids)).data || [];
+      var vars = (await A.sb.from('product_variants').select('product_id,colour_id,size,stock').in('product_id', pids)).data || [];
+      items.forEach(function (i) {
+        var c = cols.filter(function (c) { return c.product_id === i.product_id && c.label === i.colour; })[0];
+        var v = c && vars.filter(function (v) { return v.product_id === i.product_id && v.colour_id === c.id && v.size === i.size; })[0];
+        if (v) stockMap[i.id] = v.stock;
+      });
+    }
+
+    var FLOW = { placed: 'confirmed', confirmed: 'packed', packed: 'shipped', shipped: 'delivered' };
+    var NEXT_LABEL = { placed: 'Confirm order', confirmed: 'Mark as packed', packed: 'Mark as shipped', shipped: 'Mark as delivered' };
+    var ZONE_DAYS = o.zone === 'Dhaka' ? '1 to 3' : '3 to 5';
+
+    function sku(i) { var p = String(i.product_id).split('-')[0].slice(0, 3).toUpperCase(), c = String(i.colour || '').slice(0, 3).toUpperCase(); return p + '-' + c + '-' + String(i.size || '').charAt(0).toUpperCase(); }
+    function initials(n) { var p = String(n).trim().split(/\s+/); return (p.length > 1 ? p[0][0] + p[1][0] : n.slice(0, 2)).toUpperCase(); }
+    function phone(p) { var d = String(p).replace(/[^0-9]/g, ''); return d.length === 13 && d.indexOf('880') === 0 ? '+880 ' + d.slice(3, 7) + ' ' + d.slice(7, 10) + ' ' + d.slice(10) : p; }
+    function evAt(kind, to) { var m = ev.filter(function (e) { return e.kind === kind && (to == null || e.to_value === to); }); return m.length ? m[m.length - 1] : null; }
+
+    function timeline() {
+      var steps = [];
+      var created = evAt('created');
+      steps.push({ done: true, a: 'Order placed', b: A.when(o.placed_at) + ' · by customer' });
+      var paidEv = evAt('payment', 'paid');
+      if (o.payment_state === 'paid') steps.push({ done: true, a: 'Payment received', b: A.payName(o.payment_method) + (o.payment_ref ? ' · ' + o.payment_ref : '') + (paidEv ? ' · ' + A.when(paidEv.at) : '') });
+      else if (o.payment_state === 'refunded') steps.push({ done: true, a: 'Payment refunded', b: A.payName(o.payment_method) });
+      else if (o.payment_method === 'cod') steps.push({ done: false, a: 'Cash to collect on delivery', b: A.money(o.total), mute: true });
+      else steps.push({ done: false, a: o.payment_state === 'failed' ? 'Payment failed' : 'Waiting for payment', b: A.payName(o.payment_method) + ' · check the payment and mark it as paid', mute: true });
+      var order = ['confirmed', 'packed', 'shipped', 'delivered'], labels = { confirmed: 'Confirmed', packed: 'Packed', shipped: 'Shipped', delivered: 'Delivered' };
+      var rank = { placed: 0, confirmed: 1, packed: 2, shipped: 3, delivered: 4 };
+      var cancelled = o.status === 'cancelled' || o.status === 'returned';
+      var firstPending = true;
+      order.forEach(function (s) {
+        var reached = !cancelled && rank[o.status] >= rank[s];
+        var e = evAt('status', s);
+        if (reached) steps.push({ done: true, a: labels[s], b: e ? A.when(e.at) + (e.actor_name ? ' · by ' + e.actor_name : '') : '' });
+        else if (!cancelled) {
+          var step = { done: false, a: labels[s], mute: true };
+          if (firstPending) { step.a = s === 'confirmed' ? 'Waiting for you to confirm' : 'Waiting to be ' + s; step.b = s === 'confirmed' ? 'Confirm the order to start packing' : ''; firstPending = false; }
+          steps.push(step);
+        }
+      });
+      if (cancelled) { var ce = evAt('status', o.status); steps.push({ done: true, a: o.status === 'cancelled' ? 'Order cancelled' : 'Order returned', b: ce ? A.when(ce.at) + (ce.actor_name ? ' · by ' + ce.actor_name : '') : '' }); }
+      return steps.map(function (s) {
+        return '<div class="step"><div class="dot' + (s.done ? ' done' : '') + '">' + (s.done ? A.ic('checkmark1-small', 14) : '') + '</div><div class="t"><p class="a' + (s.mute ? ' mute' : '') + '">' + A.esc(s.a) + '</p>' + (s.b ? '<p class="b">' + A.esc(s.b) + '</p>' : '') + '</div></div>';
+      }).join('');
+    }
+
+    function draw() {
+      var b = A.statusBadge(o);
+      var qty = items.reduce(function (s, i) { return s + i.qty; }, 0);
+      var spent = hist.filter(function (h) { return h.status !== 'cancelled' && h.status !== 'returned'; }).reduce(function (s, h) { return s + h.total; }, 0);
+      var payBadge = { paid: ['Paid', 'b-ok'], pending: ['Pending', 'b-warn'], failed: ['Failed', 'b-bad'], refunded: ['Refunded', 'b-mute'] }[o.payment_state];
+      var canMove = FLOW[o.status], canCancel = o.status === 'placed' || o.status === 'confirmed' || o.status === 'packed';
+      var addr = [o.address, o.upazila, o.district, o.division].filter(Boolean).join(', ');
+      var payAction = o.payment_state === 'paid' ? '<button class="btn sm" id="payAct" data-to="refunded">Mark as refunded</button>' :
+        (o.payment_state === 'refunded' ? '' : '<button class="btn sm" id="payAct" data-to="paid">Mark as paid</button>');
+
+      page.innerHTML =
+        '<div class="page-head"><div class="t"><div class="title-row"><h1 class="h1">Order ' + A.esc(o.id) + '</h1><span class="badge ' + b.cls + '">' + b.label + '</span></div>' +
+        '<p class="sub">Placed ' + A.when(o.placed_at) + ' · ' + A.esc(o.zone) + '</p></div>' +
+        '<button class="btn" id="print">' + A.ic('printer', 16) + 'Print slip</button>' +
+        (canCancel ? '<button class="btn danger" id="cancel">Cancel order</button>' : '') +
+        (canMove ? '<button class="btn primary" id="advance">' + NEXT_LABEL[o.status] + '</button>' : '') + '</div>' +
+        '<div class="cols"><div class="left">' +
+        '<section class="card"><div class="hd"><h3>Items</h3><span>' + qty + ' item' + (qty === 1 ? '' : 's') + '</span></div><div class="hr"></div>' +
+        items.map(function (i) {
+          var left = stockMap[i.id];
+          return '<div class="item">' + (i.img ? '<img src="' + A.esc(A.img(i.img)) + '" alt="">' : '<img alt="">') +
+            '<div class="t"><p class="n">' + A.esc(i.name) + '</p><p class="m">' + A.esc([i.colour, i.size].filter(Boolean).join(' · ')) + ' · Qty ' + i.qty + '</p>' +
+            '<p class="s">SKU ' + sku(i) + (left != null ? ' · ' + left + ' in stock' : '') + '</p></div><p class="p">' + A.money(i.unit_price * i.qty) + '</p></div>';
+        }).join('') + '<div class="hr"></div>' +
+        '<div class="totals"><div class="r"><span>Subtotal</span><span>' + A.money(o.subtotal) + '</span></div>' +
+        '<div class="r"><span>Delivery · ' + A.esc(o.zone) + '</span><span>' + (o.delivery ? A.money(o.delivery) : 'Free') + '</span></div>' +
+        '<div class="r"><span>Discount' + (o.promo_code ? ' · ' + A.esc(o.promo_code) : '') + '</span><span>' + (o.discount ? '– ' + A.money(o.discount) : 'Tk. 0') + '</span></div>' +
+        '<div class="r tot"><span>Total</span><span>' + A.money(o.total) + '</span></div></div></section>' +
+        '<section class="card pad"><div class="timeline"><h3>Timeline</h3>' + timeline() + '</div></section>' +
+        '<section class="card pad notes"><h3>Internal notes</h3><textarea id="note" placeholder="Only your team sees this" aria-label="Internal notes">' + A.esc(o.internal_note || '') + '</textarea><p class="saved" id="saved"></p></section>' +
+        '</div><div class="right">' +
+        '<section class="card pad stack"><div class="cust"><div class="avatar">' + A.esc(initials(o.customer_name)) + '</div><div><p class="n">' + A.esc(o.customer_name) + '</p><p class="s">' + hist.length + ' order' + (hist.length === 1 ? '' : 's') + ' · ' + A.money(spent) + '</p></div></div>' +
+        '<div class="kv"><span class="k">Phone</span><span class="v">' + A.esc(phone(o.customer_phone)) + '</span></div>' +
+        (o.email ? '<div class="kv"><span class="k">Email</span><span class="v">' + A.esc(o.email) + '</span></div>' : '') + '</section>' +
+        '<section class="card pad stack t10"><h3>Delivery address</h3><div class="kv"><span class="k">Address</span><span class="v">' + A.esc(addr || 'Not given') + '</span></div>' +
+        '<div class="kv"><span class="k">Delivery</span><span class="v">' + A.esc(o.zone) + ' · ' + ZONE_DAYS + ' working days</span></div>' +
+        (o.note ? '<div class="kv"><span class="k">Customer note</span><span class="v">' + A.esc(o.note) + '</span></div>' : '') + '</section>' +
+        '<section class="card pad stack t10"><div class="phead"><h3>Payment</h3><span class="badge ' + payBadge[1] + '">' + payBadge[0] + '</span></div>' +
+        '<div class="kv"><span class="k">Method</span><span class="v">' + A.esc(A.payName(o.payment_method)) + '</span></div>' +
+        (o.payment_ref ? '<div class="kv"><span class="k">Transaction ID</span><span class="v">' + A.esc(o.payment_ref) + '</span></div>' : '') +
+        '<div class="kv"><span class="k">Amount</span><span class="v">' + A.money(o.total) + '</span></div>' + (payAction ? '<div>' + payAction + '</div>' : '') + '</section>' +
+        '</div></div>';
+
+      var adv = $('advance'); if (adv) adv.addEventListener('click', function () { setStatus(FLOW[o.status]); });
+      var can = $('cancel'); if (can) can.addEventListener('click', function () { if (confirm('Cancel order ' + o.id + '? The items go back into stock.')) setStatus('cancelled'); });
+      var pa = $('payAct'); if (pa) pa.addEventListener('click', function () {
+        var to = pa.getAttribute('data-to');
+        if (to === 'refunded' && !confirm('Mark this payment as refunded?')) return;
+        update({ payment_state: to }, to === 'paid' ? 'Payment marked as paid' : 'Payment marked as refunded');
+      });
+      $('print').addEventListener('click', printSlip);
+      var note = $('note');
+      note.addEventListener('blur', async function () {
+        if (note.value === (o.internal_note || '')) return;
+        $('saved').textContent = 'Saving…';
+        var u = await A.sb.from('orders').update({ internal_note: note.value }).eq('id', o.id);
+        if (u.error) { $('saved').textContent = 'Could not save: ' + u.error.message; return; }
+        o.internal_note = note.value; $('saved').textContent = 'Saved';
+      });
+    }
+
+    async function refreshEvents() { ev = (await A.sb.from('order_events').select('*').eq('order_id', o.id).order('at')).data || []; }
+    async function update(patch, okMsg) {
+      var u = await A.sb.from('orders').update(patch).eq('id', o.id).select().maybeSingle();
+      if (u.error || !u.data) { A.toast('Could not save: ' + ((u.error && u.error.message) || 'no permission'), true); return; }
+      Object.assign(o, u.data, { order_items: items });
+      await refreshEvents(); draw(); A.toast(okMsg || 'Saved');
+    }
+    function setStatus(s) { update({ status: s }, 'Order moved to ' + s); }
+
+    function printSlip() {
+      var w = window.open('', '_blank'); if (!w) { A.toast('Allow pop-ups to print the slip.', true); return; }
+      w.document.write('<!doctype html><title>' + A.esc(o.id) + '</title><style>body{font:14px Inter,Arial,sans-serif;color:#1f2328;margin:32px}h1{font-size:22px;margin:0 0 4px}table{width:100%;border-collapse:collapse;margin-top:16px}td,th{padding:8px 0;border-bottom:1px solid #ddd;text-align:left}td:last-child,th:last-child{text-align:right}.m{color:#656a73}</style>' +
+        '<h1>ELARA · Packing slip</h1><p class="m">' + A.esc(o.id) + ' · ' + A.when(o.placed_at) + '</p>' +
+        '<p><b>' + A.esc(o.customer_name) + '</b><br>' + A.esc(phone(o.customer_phone)) + '<br>' + A.esc([o.address, o.upazila, o.district, o.division].filter(Boolean).join(', ')) + '</p>' +
+        '<table><tr><th>Item</th><th>Qty</th><th>Price</th></tr>' + items.map(function (i) { return '<tr><td>' + A.esc(i.name) + '<br><span class="m">' + A.esc([i.colour, i.size].filter(Boolean).join(' · ')) + '</span></td><td>' + i.qty + '</td><td>' + A.money(i.unit_price * i.qty) + '</td></tr>'; }).join('') + '</table>' +
+        '<p style="text-align:right">Subtotal ' + A.money(o.subtotal) + '<br>Delivery ' + (o.delivery ? A.money(o.delivery) : 'Free') + '<br>Discount ' + A.money(o.discount) + '<br><b>Total ' + A.money(o.total) + '</b></p>' +
+        '<p class="m">' + (o.payment_method === 'cod' ? 'Collect cash on delivery: ' + A.money(o.total) : 'Paid by ' + A.esc(A.payName(o.payment_method)) + ' (' + o.payment_state + ')') + '</p>');
+      w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 250);
+    }
+    draw();
+  }
+});
+</script>
+</body>
+</html>

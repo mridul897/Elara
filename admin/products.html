@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Products · ELARA Admin</title>
+<link rel="icon" href="favicon1.png">
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="admin.css">
+<style>
+  .trow.prow { padding: 10px 16px; }
+  .prod { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; }
+  .prod img { width: 40px; height: 50px; border-radius: 6px; object-fit: cover; flex: none; background: var(--canvas); }
+  .prod .t { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .prod .n { font-size: 13px; font-weight: 500; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .prod .m { font-size: 12px; color: var(--mute); }
+  .c-cat { width: 120px; } .c-price { width: 110px; } .c-stock { width: 110px; } .c-live { width: 56px; } .c-menu { width: 24px; }
+  .price .now { font-size: 13px; font-weight: 500; color: var(--text); display: block; }
+  .price .was { font-size: 12px; color: var(--mute); display: block; }
+  .tog { width: 36px; height: 20px; border-radius: 10px; border: 0; padding: 0; background: #d5d8de; position: relative; transition: background .15s; flex: none; }
+  .tog::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s; }
+  .tog[aria-checked="true"] { background: var(--accent); }
+  .tog[aria-checked="true"]::after { left: 18px; }
+  .tog[disabled] { opacity: .5; cursor: default; }
+  .btn.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="icons.js"></script>
+<script src="admin.js"></script>
+<script>
+A.boot({
+  active: 'products',
+  crumbs: [{ t: 'Products' }],
+  render: async function (page, ctx) {
+    var PAGE = 10, LOW = 5;
+    var state = { tab: 'all', q: '', cat: 'all', sale: false, sort: 'best', page: 0, rows: [] };
+    var TABS = [['all', 'All'], ['published', 'Published'], ['draft', 'Draft'], ['archived', 'Archived'], ['low', 'Low stock']];
+    var CATS = [{ v: 'all', l: 'All categories' }, { v: 'tote', l: 'Tote' }, { v: 'shoulder', l: 'Shoulder' }, { v: 'crossbody', l: 'Crossbody' }, { v: 'mini', l: 'Mini' }, { v: 'travel-work', l: 'Travel & Work' }];
+    var SORTS = [{ v: 'best', l: 'Best selling' }, { v: 'new', l: 'Newest first' }, { v: 'low', l: 'Price: low to high' }, { v: 'high', l: 'Price: high to low' }, { v: 'az', l: 'Name A to Z' }];
+    var catName = function (v) { return (CATS.filter(function (c) { return c.v === v; })[0] || {}).l || v; };
+    var sortName = function (v) { return SORTS.filter(function (c) { return c.v === v; })[0].l; };
+    var $ = function (id) { return document.getElementById(id); };
+
+    page.innerHTML =
+      '<div class="page-head"><div class="t"><h1 class="h1">Products</h1><p class="sub" id="sub">Loading…</p></div>' +
+      '<button class="btn" id="import">' + A.ic('arrow-out-of-box', 16) + 'Import</button>' +
+      '<a class="btn primary" href="product.html?new=1">' + A.ic('plus-small', 16) + 'Add product</a></div>' +
+      '<div class="tabs" id="tabs"></div>' +
+      '<div class="toolbar"><label class="field-search">' + A.ic('magnifying-glass', 16) + '<input id="q" placeholder="Search products" aria-label="Search products"></label>' +
+      '<div class="pop-wrap" id="catWrap"><button class="btn" id="catBtn"><span id="catTxt">Category</span>' + A.ic('chevron-down-small', 16) + '</button></div>' +
+      '<button class="btn" id="saleBtn">' + A.ic('percent16', 16) + 'On sale</button>' +
+      '<div class="pop-wrap" id="sortWrap"><button class="btn" id="sortBtn"><span id="sortTxt">Best selling</span>' + A.ic('chevron-down-small', 16) + '</button></div></div>' +
+      '<div class="table" id="table"></div>' +
+      '<div class="pager"><p class="info" id="info"></p><button class="btn sm" id="prev">Previous</button><button class="btn sm" id="next">Next</button></div>';
+    $('table').innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+
+    var res = await A.sb.from('products').select('id,name,cat,price,sale_price,sale_starts,sale_ends,status,position,product_colours(id,card,position,product_variants(size,stock))').order('position').limit(1000);
+    if (res.error) { $('table').innerHTML = '<div class="empty"><b>Could not load products</b>' + A.esc(res.error.message) + '</div>'; $('sub').textContent = ''; return; }
+    var sold = {};
+    var oi = await A.sb.from('order_items').select('product_id,qty').limit(5000);
+    (oi.data || []).forEach(function (i) { sold[i.product_id] = (sold[i.product_id] || 0) + i.qty; });
+
+    var now = Date.now();
+    state.rows = res.data.map(function (p) {
+      var cols = (p.product_colours || []).slice().sort(function (a, b) { return a.position - b.position; });
+      var allVars = []; cols.forEach(function (c) { (c.product_variants || []).forEach(function (v) { allVars.push(v); }); });
+      var sizes = {}; allVars.forEach(function (v) { sizes[v.size] = 1; });
+      var onSale = p.sale_price != null && (!p.sale_starts || new Date(p.sale_starts) <= now) && (!p.sale_ends || new Date(p.sale_ends) >= now);
+      return Object.assign(p, {
+        thumb: cols[0] && cols[0].card, nCol: cols.length, nSize: Object.keys(sizes).length,
+        stock: allVars.reduce(function (s, v) { return s + v.stock; }, 0),
+        onSale: onSale, now: onSale ? p.sale_price : p.price, sold: sold[p.id] || 0
+      });
+    });
+
+    function visible() {
+      var q = state.q.trim().toLowerCase();
+      var list = state.rows.filter(function (p) {
+        if (state.tab === 'published' && p.status !== 'published') return false;
+        if (state.tab === 'draft' && p.status !== 'draft') return false;
+        if (state.tab === 'archived' && p.status !== 'archived') return false;
+        if (state.tab === 'low' && !(p.status === 'published' && p.stock <= LOW)) return false;
+        if (state.cat !== 'all' && p.cat !== state.cat) return false;
+        if (state.sale && !p.onSale) return false;
+        if (q && (p.name + ' ' + p.id).toLowerCase().indexOf(q) < 0) return false;
+        return true;
+      });
+      var by = { best: function (a, b) { return b.sold - a.sold || a.position - b.position; }, 'new': function (a, b) { return a.position - b.position; },
+        low: function (a, b) { return a.now - b.now; }, high: function (a, b) { return b.now - a.now; }, az: function (a, b) { return a.name.localeCompare(b.name); } };
+      return list.sort(by[state.sort]);
+    }
+
+    function draw() {
+      var cnt = { all: state.rows.length, published: 0, draft: 0, archived: 0, low: 0 };
+      state.rows.forEach(function (p) { cnt[p.status]++; if (p.status === 'published' && p.stock <= LOW) cnt.low++; });
+      $('sub').textContent = state.rows.length + ' products · ' + cnt.low + ' low on stock';
+      $('tabs').innerHTML = TABS.map(function (t) { return '<button class="tab' + (state.tab === t[0] ? ' on' : '') + '" data-tab="' + t[0] + '"><span class="l">' + t[1] + '<span class="b">' + cnt[t[0]] + '</span></span><span class="bar"></span></button>'; }).join('');
+      $('catTxt').textContent = state.cat === 'all' ? 'Category' : catName(state.cat);
+      $('sortTxt').textContent = sortName(state.sort);
+      $('saleBtn').classList.toggle('on', state.sale);
+
+      var list = visible(), pages = Math.max(1, Math.ceil(list.length / PAGE));
+      if (state.page >= pages) state.page = pages - 1;
+      var slice = list.slice(state.page * PAGE, state.page * PAGE + PAGE);
+      var head = '<div class="trow head"><span class="c" style="width:16px"></span><span class="grow">Product</span><span class="c c-cat">Category</span><span class="c c-price">Price</span><span class="c c-stock">Stock</span><span class="c c-live">Live</span><span class="c c-menu"></span></div>';
+      if (!slice.length) {
+        $('table').innerHTML = head + '<div class="empty"><b>' + (state.rows.length ? 'No products match these filters' : 'No products yet') + '</b>' + (state.rows.length ? 'Try a different tab, category or search.' : 'Add your first product to start selling.') + '</div>';
+      } else {
+        $('table').innerHTML = head + slice.map(function (p) {
+          var sb = p.stock <= 0 ? ['Out of stock', 'b-bad'] : p.stock <= LOW ? [p.stock + ' in stock', 'b-warn'] : [p.stock + ' in stock', 'b-mute'];
+          return '<div class="trow prow link" data-id="' + A.esc(p.id) + '"><span class="c" style="width:16px"><span class="chk"></span></span>' +
+            '<div class="prod">' + (p.thumb ? '<img src="' + A.esc(A.img(p.thumb)) + '" alt="" loading="lazy">' : '<img alt="">') + '<div class="t"><p class="n">' + A.esc(p.name) + '</p><p class="m">' + p.nCol + ' colour' + (p.nCol === 1 ? '' : 's') + ' · ' + p.nSize + ' size' + (p.nSize === 1 ? '' : 's') + '</p></div></div>' +
+            '<span class="c c-cat">' + A.esc(catName(p.cat)) + '</span>' +
+            '<span class="c c-price price"><span class="now">' + A.money(p.now) + '</span>' + (p.onSale ? '<span class="was">' + A.money(p.price) + '</span>' : '') + '</span>' +
+            '<span class="c c-stock"><span class="badge ' + sb[1] + '">' + sb[0] + '</span></span>' +
+            '<span class="c c-live"><button class="tog" role="switch" aria-label="Live on the store" aria-checked="' + (p.status === 'published') + '" data-live="' + A.esc(p.id) + '"' + (p.status === 'archived' || ctx.role !== 'owner' ? ' disabled' : '') + '></button></span>' +
+            '<span class="c c-menu"><button class="rowmenu" data-menu="' + A.esc(p.id) + '" aria-label="Product actions">' + A.ic('dot-grid1x3-horizontal', 18) + '</button></span></div>';
+        }).join('');
+      }
+      var from = list.length ? state.page * PAGE + 1 : 0, to = Math.min(list.length, state.page * PAGE + PAGE);
+      $('info').textContent = 'Showing ' + from + ' to ' + to + ' of ' + list.length + ' product' + (list.length === 1 ? '' : 's');
+      $('prev').disabled = state.page === 0; $('next').disabled = state.page >= pages - 1;
+    }
+
+    async function setStatus(p, status) {
+      var u = await A.sb.from('products').update({ status: status }).eq('id', p.id).select('id,status').maybeSingle();
+      if (u.error || !u.data) { A.toast('Could not save: ' + ((u.error && u.error.message) || 'no permission'), true); return false; }
+      p.status = status; return true;
+    }
+    var byId = function (id) { return state.rows.filter(function (p) { return p.id === id; })[0]; };
+
+    $('tabs').addEventListener('click', function (e) { var t = e.target.closest('[data-tab]'); if (!t) return; state.tab = t.getAttribute('data-tab'); state.page = 0; draw(); });
+    var tm; $('q').addEventListener('input', function (e) { clearTimeout(tm); tm = setTimeout(function () { state.q = e.target.value; state.page = 0; draw(); }, 120); });
+    $('catBtn').addEventListener('click', function (e) { e.stopPropagation(); A.menu($('catWrap'), CATS, state.cat, function (v) { state.cat = v; state.page = 0; draw(); }); });
+    $('sortBtn').addEventListener('click', function (e) { e.stopPropagation(); A.menu($('sortWrap'), SORTS, state.sort, function (v) { state.sort = v; state.page = 0; draw(); }); });
+    $('saleBtn').addEventListener('click', function () { state.sale = !state.sale; state.page = 0; draw(); });
+    $('prev').addEventListener('click', function () { state.page--; draw(); });
+    $('next').addEventListener('click', function () { state.page++; draw(); });
+    $('import').addEventListener('click', function () { A.toast('Import from a spreadsheet is coming soon.'); });
+    $('table').addEventListener('click', async function (e) {
+      var lv = e.target.closest('[data-live]');
+      if (lv) {
+        e.stopPropagation();
+        var p = byId(lv.getAttribute('data-live')), to = p.status === 'published' ? 'draft' : 'published';
+        if (await setStatus(p, to)) { draw(); A.toast(p.name + (to === 'published' ? ' is live on the store' : ' is hidden from the store')); }
+        return;
+      }
+      var m = e.target.closest('[data-menu]');
+      if (m) {
+        e.stopPropagation();
+        var p2 = byId(m.getAttribute('data-menu'));
+        var items = [{ v: 'edit', l: 'Edit product' }, { v: 'view', l: 'View on store' }];
+        if (ctx.role === 'owner') items.push(p2.status === 'archived' ? { v: 'restore', l: 'Restore to draft' } : { v: 'archive', l: 'Archive' });
+        var wrap = m.parentNode; wrap.classList.add('pop-wrap'); wrap.style.position = 'relative';
+        A.menu(wrap, items, null, async function (v) {
+          if (v === 'edit') location.href = 'product.html?id=' + encodeURIComponent(p2.id);
+          else if (v === 'view') window.open('../my-product-detail-screen.html?p=' + encodeURIComponent(p2.id), '_blank');
+          else if (v === 'archive' || v === 'restore') { if (await setStatus(p2, v === 'archive' ? 'archived' : 'draft')) { draw(); A.toast(v === 'archive' ? 'Archived ' + p2.name : p2.name + ' restored to draft'); } }
+        });
+        var pop = wrap.querySelector('.pop'); if (pop) pop.classList.add('right');
+        return;
+      }
+      var r = e.target.closest('[data-id]'); if (r) location.href = 'product.html?id=' + encodeURIComponent(r.getAttribute('data-id'));
+    });
+    draw();
+  }
+});
+</script>
+</body>
+</html>

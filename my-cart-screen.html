@@ -351,6 +351,7 @@
 </style>
 </head>
 <body>
+<script src="assets/store-data.js"></script>
 <script src="assets/mobile.js"></script>
 
 <div class="page">
@@ -577,7 +578,7 @@
   // product page can add to the bag and it renders here with its own data.
   const CART_KEY = 'elara.cart.v1';
   const SAVED_KEY = 'elara.saved.v1';
-  const FREE_DELIVERY_AT = 3000;
+  const FREE_DELIVERY_AT = (window.ELARA_DELIVERY || {}).freeOver || 3000;
   const MAX_QTY = 5;
   const SEED = [
     { id: 'nafisa-tote|camel|medium', name: 'Nafisa Tote', price: 4200, img: 'assets/plp/tote/70c84.jpg', colour: 'Camel', size: 'Medium', qty: 1 },
@@ -595,12 +596,17 @@
 
   // Promo codes. Matching ignores case and spaces; the discount is a percentage of the subtotal.
   const PROMO_KEY = 'elara.promo.v1';
-  const PROMOS = { MRIDUL13: { label: 'Mridul13', percent: 5 }, WELCOME10: { label: 'WELCOME10', percent: 10, welcome: true } };
+  // Codes live in the database (owner edits them in Promotions). A code is checked on the server when it is applied and its
+  // terms are kept here so the bag can show the discount without another request.
+  const PROMO_DEF = 'elara.promo.def.v1';
+  const PROMOS = {};
+  (function () { const d = read(PROMO_DEF, null); if (d && d.code) PROMOS[d.code] = { label: d.label || d.code, kind: d.kind, value: d.value, welcome: d.code === 'WELCOME10' }; })();
+  const promoText = (p) => p.label + ' · ' + (p.kind === 'fixed' ? money(p.value) : p.value + '%') + ' off';
   // The welcome code only works once it has been claimed on this device (welcome popup) and has not been used on an order yet.
   const welcomeOk = () => { const w = read('elara.welcome.v1', null); return !!(w && w.status === 'claimed' && !w.used); };
   let promo = read(PROMO_KEY, null);          // stored as the normalised code, e.g. "MRIDUL13"
   if (promo && (!PROMOS[promo] || (PROMOS[promo].welcome && !welcomeOk()))) promo = null;
-  const discountFor = (subtotal) => promo ? Math.round(subtotal * PROMOS[promo].percent / 100) : 0;
+  const discountFor = (subtotal) => !promo ? 0 : PROMOS[promo].kind === 'fixed' ? Math.min(PROMOS[promo].value, subtotal) : Math.round(subtotal * PROMOS[promo].value / 100);
 
   const money = (n) => 'Tk. ' + Number(n).toLocaleString('en-US') + '/-';
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -698,13 +704,13 @@
       const discount = discountFor(subtotal);
       document.getElementById('discountLine').hidden = !discount;
       if (discount) {
-        document.getElementById('discountLabel').textContent = 'Discount (' + PROMOS[promo].label + ' · ' + PROMOS[promo].percent + '%)';
+        document.getElementById('discountLabel').textContent = 'Discount (' + promoText(PROMOS[promo]).replace(' off', '') + ')';
         document.getElementById('discountValue').textContent = '– ' + money(discount);
       }
       document.getElementById('totalValue').textContent = money(subtotal - discount);
       document.getElementById('promoEntry').hidden = !!promo;
       document.getElementById('promoApplied').hidden = !promo;
-      if (promo) document.getElementById('promoAppliedText').textContent = PROMOS[promo].label + ' · ' + PROMOS[promo].percent + '% off';
+      if (promo) document.getElementById('promoAppliedText').textContent = promoText(PROMOS[promo]);
       const msg = document.getElementById('progressMsg');
       document.getElementById('shipBanner').classList.toggle('done', free);
       msg.innerHTML = free
@@ -896,14 +902,20 @@
   });
 
   // Promo form: a valid code is applied; anything else is answered, never silently ignored.
-  document.getElementById('promoForm').addEventListener('submit', (e) => {
+  document.getElementById('promoForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const msg = document.getElementById('promoMsg');
     const input = document.getElementById('promoInput');
     const code = input.value.replace(/\s+/g, '').toUpperCase();
     if (!code) { msg.hidden = false; msg.textContent = 'Enter a promo code first.'; return; }
-    if (!PROMOS[code] || (PROMOS[code].welcome && !welcomeOk())) { msg.hidden = false; msg.textContent = "Sorry, that code isn't valid."; return; }
-    promo = code;
+    if (code === 'WELCOME10' && !welcomeOk()) { msg.hidden = false; msg.textContent = "Sorry, that code isn't valid."; return; }
+    msg.hidden = false; msg.textContent = 'Checking…';
+    const sub = cart.reduce((n, l) => n + l.price * l.qty, 0);
+    const res = await ElaraDB.rpc('validate_promo', { p_code: code, p_subtotal: sub });
+    if (!res || !res.ok) { msg.textContent = res && res.error && res.error !== 'network' ? res.error : (res && res.error === 'network' ? 'Could not check the code right now. Please try again.' : "Sorry, that code isn't valid."); return; }
+    PROMOS[res.code] = { label: res.label, kind: res.kind, value: res.value, welcome: res.code === 'WELCOME10' };
+    write(PROMO_DEF, { code: res.code, label: res.label, kind: res.kind, value: res.value });
+    promo = res.code;
     write(PROMO_KEY, promo);
     input.value = '';
     msg.hidden = true;

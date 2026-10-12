@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Sign in · ELARA Admin</title>
+<link rel="icon" href="favicon1.png">
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="login">
+  <div class="panel">
+    <div id="brand"></div>
+    <div class="q">
+      <h2>Everything about the shop, in one calm place.</h2>
+      <p>Orders, products, prices and what is selling.</p>
+    </div>
+    <p class="copy">© 2026 ELARA</p>
+  </div>
+  <div class="side">
+    <form class="signin" id="form" novalidate>
+      <h1 id="title">Sign in</h1>
+      <p class="lead" id="lead">Use the email and password for your admin account.</p>
+      <p class="err" id="err" hidden role="alert"></p>
+      <p class="lead" id="okmsg" hidden style="color:var(--ok)"></p>
+      <div class="field" id="fEmail">
+        <label for="email">Email</label>
+        <div class="input"><input id="email" type="email" autocomplete="username" inputmode="email" placeholder="you@example.com" required></div>
+      </div>
+      <div class="field" id="fPass">
+        <label for="pass" id="passLbl">Password</label>
+        <div class="input"><input id="pass" type="password" autocomplete="current-password" required><button type="button" class="link" id="show">Show</button></div>
+      </div>
+      <div class="row" id="rowKeep">
+        <label class="keep"><input type="checkbox" id="keep"><span>Keep me signed in</span></label>
+        <button type="button" class="link" id="forgot">Forgot password?</button>
+      </div>
+      <button class="go" id="go" type="submit">Sign in</button>
+      <p class="note" id="note">Only invited team members can sign in.</p>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="icons.js"></script>
+<script src="admin.js"></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  $('brand').innerHTML = A.brand(false);
+  var mode = 'signin';   // signin | reset-request | set-password
+  var form = $('form');
+  function err(m) { $('err').textContent = m; $('err').hidden = !m; $('okmsg').hidden = true; }
+  function ok(m) { $('okmsg').textContent = m; $('okmsg').hidden = false; $('err').hidden = true; }
+
+  var qs = new URLSearchParams(location.search);
+  if (qs.get('denied')) err('This account is not set up for the admin. Ask the owner to invite you.');
+
+  // already signed in -> straight to the app
+  A.session().then(function (s) { if (s && !qs.get('denied') && mode === 'signin' && !/type=recovery/.test(location.hash)) location.replace('orders.html'); });
+
+  // password-reset link lands here with #type=recovery
+  if (/type=recovery/.test(location.hash)) {
+    var p = new URLSearchParams(location.hash.slice(1));
+    mode = 'set-password';
+    A.sb.auth.setSession({ access_token: p.get('access_token'), refresh_token: p.get('refresh_token') });
+    $('title').textContent = 'Set a new password'; $('lead').textContent = 'Choose a password with at least 8 characters.';
+    $('fEmail').hidden = true; $('rowKeep').hidden = true; $('passLbl').textContent = 'New password';
+    $('pass').autocomplete = 'new-password'; $('go').textContent = 'Save password'; $('note').hidden = true;
+  }
+
+  $('show').addEventListener('click', function () {
+    var t = $('pass').type === 'password';
+    $('pass').type = t ? 'text' : 'password'; $('show').textContent = t ? 'Hide' : 'Show';
+  });
+
+  $('forgot').addEventListener('click', async function () {
+    var email = $('email').value.trim();
+    if (!email) { err('Type your email first, then press "Forgot password?".'); $('email').focus(); return; }
+    var r = await A.sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+    if (r.error) err('Could not send the email. Try again in a minute.'); else ok('If that email has an account, a reset link is on its way.');
+  });
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault(); err('');
+    $('go').disabled = true;
+    try {
+      if (mode === 'set-password') {
+        if ($('pass').value.length < 8) { err('Use at least 8 characters.'); return; }
+        var u = await A.sb.auth.updateUser({ password: $('pass').value });
+        if (u.error) { err(u.error.message); return; }
+        try { sessionStorage.setItem('elara.admin.alive', '1'); } catch (x) {}
+        location.replace('orders.html'); return;
+      }
+      var email = $('email').value.trim(), pass = $('pass').value;
+      if (!email || !pass) { err('Enter your email and password.'); return; }
+      var r = await A.sb.auth.signInWithPassword({ email: email, password: pass });
+      if (r.error) { err(/invalid/i.test(r.error.message) ? 'That email or password is not right.' : r.error.message); return; }
+      try { localStorage.setItem('elara.admin.keep', $('keep').checked ? '1' : '0'); sessionStorage.setItem('elara.admin.alive', '1'); } catch (x) {}
+      location.replace('orders.html');
+    } finally { $('go').disabled = false; }
+  });
+})();
+</script>
+</body>
+</html>

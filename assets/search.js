@@ -277,7 +277,7 @@
     var el = document.createElement('script'); el.src = src; el.onload = cb; el.onerror = cb; document.head.appendChild(el);
   }
   function ensureCatalog(cb) {
-    function needProducts() { if (window.ELARA_PRODUCTS) return cb(); loadScript('assets/products.js', cb); }
+    function needProducts() { if (window.ELARA_PRODUCTS) return cb(); loadScript('assets/products.js', function () { loadScript('assets/store-data.js', cb); }); }
     if (window.ELARA_CATALOG) return needProducts();
     loadScript('assets/catalog.js', needProducts);
   }
