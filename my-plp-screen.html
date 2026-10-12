@@ -1406,7 +1406,7 @@
     document.querySelectorAll('.fs-sort .sort-label').forEach((l) => { l.textContent = 'Sort: ' + SORT_LABEL[state.sort]; });
   }
   document.querySelectorAll('.sort-native').forEach((sel) => sel.addEventListener('change', (e) => { state.sort = e.target.value; syncSort(); render(); }));
-  document.getElementById('sortSelect').addEventListener('change', syncSort);
+  document.getElementById('sortSelect').addEventListener('change', (e) => { state.sort = e.target.value; syncSort(); render(); });
   document.getElementById('loadMore').addEventListener('click', () => { shown += PAGE; render(); });
   (function () {
     const row = document.querySelector('.filter-sort-row');
@@ -1652,7 +1652,6 @@
     document.getElementById('mobileFilterCount2').textContent = activeCount;
   }
 
-  document.getElementById('sortSelect').addEventListener('change', (e) => { state.sort = e.target.value; render(); });
 
   function openDrawer() { document.body.classList.add('drawer-open'); }
   function closeDrawer() { document.body.classList.remove('drawer-open'); }
