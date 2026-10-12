@@ -1529,16 +1529,16 @@
         <summary>Price</summary>
         <div class="body">
           <div class="price-slider" data-prefix="${idPrefix}">
+            <div class="price-inputs">
+              <label class="price-box" for="${idPrefix}PriceMin"><span class="micro">Min price</span><span class="price-field"><span class="u">Tk.</span><input id="${idPrefix}PriceMin" class="price-min-field" type="text" inputmode="numeric" autocomplete="off" value="${Number(state.priceMin).toLocaleString('en-US')}" aria-label="Minimum price in taka"></span></label>
+              <span class="price-dash" aria-hidden="true">–</span>
+              <label class="price-box" for="${idPrefix}PriceMax"><span class="micro">Max price</span><span class="price-field"><span class="u">Tk.</span><input id="${idPrefix}PriceMax" class="price-max-field" type="text" inputmode="numeric" autocomplete="off" value="${Number(state.priceMax).toLocaleString('en-US')}" aria-label="Maximum price in taka"></span></label>
+            </div>
             <div class="price-slider-track-wrap">
               <div class="price-slider-track"></div>
               <div class="price-slider-active"></div>
               <input type="range" class="price-slider-input price-slider-min" min="${PRICE_BOUND.min}" max="${PRICE_BOUND.max}" step="1" value="${state.priceMin}" aria-label="Minimum price">
               <input type="range" class="price-slider-input price-slider-max" min="${PRICE_BOUND.min}" max="${PRICE_BOUND.max}" step="1" value="${state.priceMax}" aria-label="Maximum price">
-            </div>
-            <div class="price-inputs">
-              <label class="price-box" for="${idPrefix}PriceMin"><span class="micro">Min price</span><span class="price-field"><span class="u">Tk.</span><input id="${idPrefix}PriceMin" class="price-min-field" type="text" inputmode="numeric" autocomplete="off" value="${Number(state.priceMin).toLocaleString('en-US')}" aria-label="Minimum price in taka"></span></label>
-              <span class="price-dash" aria-hidden="true">–</span>
-              <label class="price-box" for="${idPrefix}PriceMax"><span class="micro">Max price</span><span class="price-field"><span class="u">Tk.</span><input id="${idPrefix}PriceMax" class="price-max-field" type="text" inputmode="numeric" autocomplete="off" value="${Number(state.priceMax).toLocaleString('en-US')}" aria-label="Maximum price in taka"></span></label>
             </div>
             <p class="price-hint">Drag the handles or type an amount</p>
           </div>
