@@ -7,9 +7,24 @@
 (function () {
   var URL_ = 'https://sxwniigfrjzxryhuavev.supabase.co';
   var KEY = 'sb_publishable_rAfRs-tHq_DNYBBqiNIOwA_AW1EauJs'; // publishable key: read-only for the public thanks to row-level security
-  var CACHE = 'elara.catalog.v2', TTL = 60000;
+  var CACHE = 'elara.catalog.v2', TTL = 30000;
 
-  function headers() { return { apikey: KEY, Authorization: 'Bearer ' + KEY }; }
+  // Preview mode: opened from Admin ("Preview on store"). It always asks the shop for fresh data, never uses or writes the
+  // shared copy, and, when the owner is signed in to the admin in this browser, also shows products still saved as drafts.
+  var PREVIEW = false;
+  try {
+    if (/[?&]preview=1\b/.test(location.search)) sessionStorage.setItem('elara.preview', '1');
+    PREVIEW = sessionStorage.getItem('elara.preview') === '1';
+  } catch (e) {}
+  function adminToken() {
+    try {
+      var s = JSON.parse(localStorage.getItem('sb-sxwniigfrjzxryhuavev-auth-token'));
+      return s && s.access_token && s.expires_at * 1000 > Date.now() ? s.access_token : null;
+    } catch (e) { return null; }
+  }
+  var TOKEN = PREVIEW ? adminToken() : null;
+
+  function headers() { return { apikey: KEY, Authorization: 'Bearer ' + (TOKEN || KEY) }; }
 
   function fetchSync(path) {
     try {
@@ -35,7 +50,10 @@
         badge: on ? 'off' : (p.badge === 'off' ? null : p.badge),
         rating: Number(p.rating) || 0, reviews: p.reviews_count || 0,
         desc: p.description || '', dims: p.dims || [], fits: p.fits || '', care: p.care || '', ship: p.ship || '', legacy: p.legacy || [],
-        colours: cols.map(function (c) { return { id: c.id, label: c.label, hex: c.hex, card: c.card, tile: c.tile || c.card, guideBg: c.guide_bg, photos: c.photos || [], slides: (c.slides && c.slides.length) ? c.slides : [c.card] }; }),
+        colours: cols.filter(function (c) { return c.card || (c.photos && c.photos.length); }).map(function (c) {
+          var ph = c.photos || [], card = c.card || (ph[0] && ph[0].src);
+          return { id: c.id, label: c.label, hex: c.hex, card: card, tile: c.tile || card, guideBg: c.guide_bg, photos: ph.length ? ph : [{ src: card, alt: 'front view', contain: false }], slides: (c.slides && c.slides.length) ? c.slides : [card] };
+        }),
         stock: stock
       };
       var ex = p.extra || {}; for (var k in ex) out[k] = ex[k];
@@ -44,15 +62,16 @@
   }
 
   var list = null, cached = null, settings = null;
-  try { cached = JSON.parse(localStorage.getItem(CACHE)); } catch (e) {}
+  try { if (!PREVIEW) cached = JSON.parse(localStorage.getItem(CACHE)); } catch (e) {}
   if (cached && Date.now() - cached.t < TTL && cached.v && cached.v.length) { list = cached.v; settings = cached.s || null; }
   if (!list) {
-    var rows = fetchSync('products?select=*,product_colours(*,product_variants(size,stock))&status=eq.published&order=position.asc&limit=1000');
+    var statusFilter = TOKEN ? 'status=in.(published,draft)' : 'status=eq.published';
+    var rows = fetchSync('products?select=*,product_colours(*,product_variants(size,stock))&' + statusFilter + '&order=position.asc&limit=1000');
     if (rows && rows.length) {
       list = build(rows);
       var st = fetchSync('settings?select=key,value');
       if (st) { settings = {}; st.forEach(function (r) { settings[r.key] = r.value; }); }
-      try { localStorage.setItem(CACHE, JSON.stringify({ t: Date.now(), v: list, s: settings })); } catch (e) {}
+      try { if (!PREVIEW) localStorage.setItem(CACHE, JSON.stringify({ t: Date.now(), v: list, s: settings })); } catch (e) {}
     } else if (cached && cached.v && cached.v.length) { list = cached.v; settings = cached.s || null; }
   }
   if (list && list.length) window.ELARA_PRODUCTS = list;
@@ -62,6 +81,20 @@
   window.ELARA_DELIVERY = { dhaka: +dv.dhaka || 60, outside: +dv.outside || 120, freeOver: +dv.free_over || 3000, dhakaDays: dv.dhaka_days || '1–3', outsideDays: dv.outside_days || '3–5' };
 
   window.ELARA_SETTINGS = settings || {};
+  window.ELARA_PREVIEW = PREVIEW;
+  if (PREVIEW) {
+    var pv = function () {
+      if (document.querySelector('.elara-preview')) return;
+      var d = document.createElement('div'); d.className = 'elara-preview';
+      d.style.cssText = 'position:fixed;left:12px;bottom:12px;z-index:2147483000;background:#1f2328;color:#fff;font:500 12px/1 Inter,sans-serif;padding:9px 12px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.25);display:flex;gap:10px;align-items:center';
+      d.innerHTML = '<span>Preview' + (TOKEN ? ' · drafts visible' : '') + '</span>';
+      var x = document.createElement('button'); x.type = 'button'; x.textContent = 'Exit';
+      x.style.cssText = 'border:0;background:rgba(255,255,255,.18);color:#fff;border-radius:999px;padding:4px 10px;font:inherit;cursor:pointer';
+      x.addEventListener('click', function () { try { sessionStorage.removeItem('elara.preview'); } catch (e) {} location.href = location.pathname; });
+      d.appendChild(x); document.body.appendChild(d);
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pv); else pv();
+  }
 
   // Contact details from Admin > Content: phone / WhatsApp, e-mail and support hours replace the numbers and addresses
   // printed on the pages (text and links), so the owner never needs a developer for a new number.

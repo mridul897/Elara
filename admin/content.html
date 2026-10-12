@@ -85,7 +85,7 @@ A.boot({
     page.innerHTML =
       '<div class="page-head keep"><div class="t"><h1 style="font-size:22px;font-weight:600;letter-spacing:-0.4px">Content</h1><p class="sub">Change what the store says without touching code</p></div>' +
       '<span class="dirty" id="dirty" hidden>Unpublished changes</span>' +
-      '<a class="btn" href="../index.html" target="_blank" rel="noopener">' + A.ic('eye-open', 16) + 'Preview store</a>' +
+      '<a class="btn" href="../index.html?preview=1" target="_blank" rel="noopener">' + A.ic('eye-open', 16) + 'Preview store</a>' +
       (ctx.role === 'owner' ? '<button class="btn primary" id="publish">Publish changes</button>' : '') + '</div>' +
       '<div class="cols"><div class="left">' +
       '<section class="card"><div class="hd"><h3>Announcement bar</h3><button class="tog" id="annOn" role="switch" aria-checked="' + !!S.announcement.active + '" aria-label="Show announcement bar"></button></div>' +

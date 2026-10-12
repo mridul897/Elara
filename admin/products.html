@@ -272,7 +272,7 @@ A.boot({
         var wrap = m.parentNode; wrap.classList.add('pop-wrap'); wrap.style.position = 'relative';
         A.menu(wrap, items, null, async function (v) {
           if (v === 'edit') location.href = 'product.html?id=' + encodeURIComponent(p2.id);
-          else if (v === 'view') window.open('../my-product-detail-screen.html?p=' + encodeURIComponent(p2.id), '_blank');
+          else if (v === 'view') window.open('../my-product-detail-screen.html?p=' + encodeURIComponent(p2.id) + '&preview=1', '_blank');
           else if (v === 'archive' || v === 'restore') { if (await setStatus(p2, v === 'archive' ? 'archived' : 'draft')) { draw(); A.toast(v === 'archive' ? 'Archived ' + p2.name : p2.name + ' restored to draft'); } }
         });
         var pop = wrap.querySelector('.pop'); if (pop) pop.classList.add('right');

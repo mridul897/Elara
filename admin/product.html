@@ -129,7 +129,7 @@ A.boot({
       page.innerHTML =
         '<div class="page-head keep"><div class="t"><div class="title-row"><h1 class="h1" id="h1">' + A.esc(P.name || 'New product') + '</h1><span class="badge ' + (P.status === 'published' ? 'b-ok' : P.status === 'draft' ? 'b-warn' : 'b-mute') + '" id="stBadge">' + { published: 'Published', draft: 'Draft', archived: 'Archived' }[P.status] + '</span></div>' +
         '<p class="sub">' + (P._new ? 'Not saved yet' : 'Last saved ' + A.ago(P.updated_at)) + '</p></div>' +
-        (!P._new ? '<a class="btn" href="../my-product-detail-screen.html?p=' + encodeURIComponent(P.id) + '" target="_blank" rel="noopener">' + A.ic('eye-open', 16) + 'Preview on store</a>' : '') +
+        (!P._new ? '<a class="btn" href="../my-product-detail-screen.html?p=' + encodeURIComponent(P.id) + '&preview=1" target="_blank" rel="noopener">' + A.ic('eye-open', 16) + 'Preview on store</a>' : '') +
         (!readonly ? '<button class="btn" id="saveDraft">Save as draft</button><button class="btn primary" id="save">Save changes</button>' : '') + '</div>' +
         '<div class="cols"><div class="left">' +
         '<section class="card pad stack14"><h3>Basic information</h3>' +
@@ -201,6 +201,8 @@ A.boot({
       $('save').addEventListener('click', function () { save(); });
       $('saveDraft').addEventListener('click', function () { if (P.status === 'published') P.status = 'draft'; save(); });
       $('addVar').addEventListener('click', addVariant);
+      var pl = page.querySelector('a[href*="preview=1"]');
+      if (pl) pl.addEventListener('click', function (e) { if (dirty) { e.preventDefault(); A.toast('Save your changes first, then preview. The store shows what is saved.', true); } });
       var chips = $('colChips'); if (chips) chips.addEventListener('click', function (e) { var b = e.target.closest('[data-col]'); if (!b) return; curCol = b.getAttribute('data-col'); draw(); });
       page.querySelectorAll('[data-stock]').forEach(function (inp) {
         inp.addEventListener('input', function () { var v = vars[+inp.getAttribute('data-stock')]; v.stock = Math.max(0, parseInt(inp.value, 10) || 0); inp.className = 'stock ' + stockClass(v.stock); mark(); });
@@ -298,7 +300,11 @@ A.boot({
       if (!name) { A.toast('Give the product a name first.', true); return; }
       if (P.price <= 0) { A.toast('Set a price above zero.', true); return; }
       if (P.sale_price != null && P.sale_price >= P.price) { A.toast('The sale price must be lower than the price.', true); return; }
-      if (P.status === 'published' && !cols.some(function (c) { return (c.photos || []).length; })) { A.toast('Add at least one photo before publishing.', true); return; }
+      if (P.status === 'published') {
+        var bare = cols.filter(function (c) { return !(c.photos || []).length; });
+        if (!cols.length || bare.length === cols.length) { A.toast('Add at least one photo before publishing.', true); return; }
+        if (bare.length) { A.toast('Add a photo for ' + bare.map(function (c) { return c.label; }).join(', ') + ' (or remove that colour) before publishing.', true); return; }
+      }
       var btn = $('save'); if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
       try {
         if (P._new && !P.id) P.id = A.slug(name) || 'product-' + Date.now();

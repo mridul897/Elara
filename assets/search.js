@@ -90,7 +90,8 @@
     return c.slides.map(function (u, k) { return '<img ' + (k === 0 ? 'src="' + u + '"' : 'data-src="' + u + '"') + ' alt="' + esc(name) + '" draggable="false">'; }).join('');
   }
   function card(p) {
-    var badge = p.badge ? '<span class="sx-badge ' + p.badge + '">' + BADGE[p.badge] + '</span>' : '';
+    var offLbl = p.badge === 'off' && p.was && p.was > p.price ? Math.round((1 - p.price / p.was) * 100) + '% OFF' : '';
+    var badge = p.badge ? '<span class="sx-badge ' + p.badge + '">' + (offLbl || BADGE[p.badge]) + '</span>' : '';
     var price = p.was ? '<s>' + money(p.was) + '</s><b>' + money(p.price) + '</b>' : '<b>' + money(p.price) + '</b>';
     var d = p.id ? prod(p.id) : null;
     if (d && d.colours && d.colours.length) {

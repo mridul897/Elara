@@ -975,10 +975,24 @@
       p.img = p.colours[0].img;
       delete p.dots;
     }));
+    // Live shop (Admin): the listing is built from what the owner has published, so a new bag shows up in its category,
+    // a price or badge change shows up here, and a hidden or archived bag disappears. Each bag appears once.
+    if (window.ELARA_LIVE && data.length) {
+      const make = (d) => {
+        const colours = d.colours.map((c) => ({ id: c.id, label: c.label, hex: c.hex, img: c.card, urls: c.slides }));
+        const o = { cat: d.cat, key: d.id, name: d.name, price: d.price, img: colours[0].img, rating: d.rating, reviews: d.reviews, colours };
+        if (d.was) o.was = d.was;
+        if (d.badge) o.badge = d.badge;
+        return o;
+      };
+      [PRODUCTS, ALL_PRODUCTS].forEach((list) => { list.length = 0; data.forEach((d) => list.push(make(d))); });
+    }
   })();
 
   const BADGE_LABEL = { best: 'Best Seller', new: 'New', off: '20% OFF' };
-  const PRICE_BOUND = { min: 0, max: 8000 }; // covers every real price above (max 7,000) with headroom
+  // The slider ends at the dearest bag in the shop (rounded up to the next 1,000, never below 8,000), so a new expensive
+  // bag added in Admin is never filtered out by a fixed ceiling.
+  const PRICE_BOUND = { min: 0, max: Math.max(8000, Math.ceil(Math.max.apply(null, [0].concat((window.ELARA_PRODUCTS || []).map((d) => d.price))) / 1000) * 1000) };
 
   const state = {
     categories: new Set(), // multi-select: any product in ANY checked category matches.
@@ -1269,7 +1283,8 @@
   }, true);
 
   function cardHTML(p, i) {
-    const badge = p.badge ? `<span class="p-badge ${p.badge}">${BADGE_LABEL[p.badge]}</span>` : '';
+    const offPct = p.was && p.was > p.price ? Math.round((1 - p.price / p.was) * 100) : 0;
+    const badge = p.badge ? `<span class="p-badge ${p.badge}">${p.badge === 'off' && offPct ? offPct + '% OFF' : BADGE_LABEL[p.badge]}</span>` : '';
     const priceRow = p.was
       ? `<span class="was">${fmtPrice(p.was)}</span><span class="price">${fmtPrice(p.price)}</span>`
       : `<span class="price">${fmtPrice(p.price)}</span>`;

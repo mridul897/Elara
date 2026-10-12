@@ -26,7 +26,10 @@
     var d = new Date(iso), h = d.getHours(), m = d.getMinutes();
     return d.getDate() + ' ' + MON[d.getMonth()] + ', ' + (h % 12 || 12) + ':' + (m < 10 ? '0' : '') + m + ' ' + (h < 12 ? 'am' : 'pm');
   };
+  // The store keeps a short-lived copy of the catalogue in this browser. Clear it after any successful save.
+  A.bust = function () { try { localStorage.removeItem('elara.catalog.v2'); } catch (e) {} };
   A.toast = function (msg, err) {
+    if (!err) A.bust();
     var t = document.createElement('div'); t.className = 'toast' + (err ? ' err' : ''); t.textContent = msg; t.setAttribute('role', 'status');
     document.body.appendChild(t); setTimeout(function () { t.remove(); }, 2800);
   };
