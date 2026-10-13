@@ -765,6 +765,10 @@
 
   // ----- which bag, which colour -----------------------------------------------------------------------------
   // my-product-detail-screen.html?p=<id>&colour=<colour id>. Data: assets/products.js (generated from the Figma PDP frames).
+  // One broken section must never leave the photo, title and colours blank: sections run inside try/catch.
+  window.__pdpErr = function (where, e) {
+    try { console.error('PDP ' + where, e); if (window.ElaraDB && ElaraDB.logError) ElaraDB.logError('PDP ' + where + ': ' + (e && (e.stack || e.message) || e)); } catch (x) {}
+  };
   const ALL = window.ELARA_PRODUCTS || [];
   const query = new URLSearchParams(location.search);
   const product = ALL.find((x) => x.id === query.get('p')) || ALL[0];
@@ -785,6 +789,7 @@
     var ti = document.querySelector('meta[name="twitter:image"]'); if (ti) ti.setAttribute('content', 'https://elarabags.vercel.app/' + product.colours[0].card);
   })();
   (function () { var d = document.querySelector('meta[name="description"]'); if (d) d.setAttribute('content', product.name + ': ' + product.desc); })();
+  try {
   $('crumbCat').textContent = crumb[product.cat] || product.crumb;
   $('crumbCat').href = 'my-plp-screen.html?category=' + product.cat;
   $('crumbName').textContent = product.name;
@@ -797,7 +802,9 @@
   $('descBody').textContent = product.desc;
   $('dimBody').textContent = 'Width ' + dw + ' cm · Height ' + dh + ' cm · Depth ' + dd + ' cm';
   $('careBody').textContent = product.care;
+  } catch (e) { window.__pdpErr('facts', e); }
   // three other bags from the same category
+  try {
   (function () {
     const same = ALL.filter((x) => x.cat === product.cat && x.id !== product.id);
     const others = same.concat(ALL.filter((x) => x.cat !== product.cat && x.id !== product.id));
@@ -805,10 +812,12 @@
     const pick = same.slice(start).concat(same.slice(0, start)).concat(others).slice(0, 3);
     $('relatedCards').innerHTML = pick.map((x) => '<a class="rcard" href="my-product-detail-screen.html?p=' + x.id + '"><div class="rcard-media"><img src="' + x.colours[0].card + '" alt="' + esc(x.name) + '" loading="lazy"></div><div class="rcard-meta"><span>' + esc(x.name) + '</span><b>' + money(x.price) + '</b></div></a>').join('');
   })();
+  } catch (e) { window.__pdpErr('related', e); }
 
   // ----- reviews ---------------------------------------------------------------------------------------------
   // Placeholder review data, generated per bag (seeded by product id so it is stable). The star counts add up to
   // product.reviews and average to product.rating. A review written on this page is kept in localStorage only.
+  try {
   (function () {
     const LS_R = 'elara.reviews.v1', LS_V = 'elara.reviewVotes.v1';
     const rd = (k, f) => { try { return JSON.parse(localStorage.getItem(k)) || f; } catch (e) { return f; } };
@@ -899,7 +908,7 @@
 
     // ----- state + helpers
     const real = [];   // approved reviews written by real customers, loaded from the shop database
-    const mine = () => (rd(LS_R, {})[product.id] || []);
+    const mine = () => { const m = (rd(LS_R, {}) || {})[product.id]; return Array.isArray(m) ? m : []; };
     const votes = rd(LS_V, {});
     const all = () => mine().map((r, i) => Object.assign({ id: 'mine-' + r.ts, mine: true }, r)).concat(real, generated);
     const state = { star: 0, kw: '', sort: 'recent', shown: 6 };
@@ -1031,6 +1040,7 @@
       if (rows.length) renderAll();
     });
   })();
+  } catch (e) { window.__pdpErr('reviews', e); }
 
   // ----- gallery ---------------------------------------------------------------------------------------------
   const gallery = (function () {
