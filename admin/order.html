@@ -62,6 +62,9 @@
   @media (max-width: 1100px) { .cols { flex-direction: column; } .right { width: 100%; } }
 
   @media (max-width: 899.98px) { .page-head .btn { flex: 1; } .h1 { font-size: 26px; line-height: 30px; } }
+
+  .two2 { display: flex; gap: 12px; } .two2 > * { flex: 1; min-width: 0; }
+  .f { display: flex; flex-direction: column; gap: 6px; } .f > label { font-size: 13px; font-weight: 500; }
 </style>
 </head>
 <body>
@@ -164,10 +167,15 @@ A.boot({
         '<div class="r"><span>Discount' + (o.promo_code ? ' · ' + A.esc(o.promo_code) : '') + '</span><span>' + (o.discount ? '– ' + A.money(o.discount) : 'Tk. 0') + '</span></div>' +
         '<div class="r tot"><span>Total</span><span>' + A.money(o.total) + '</span></div></div></section>' +
         '<section class="card pad"><div class="timeline"><h3>Timeline</h3>' + timeline() + '</div></section>' +
+        (canMove || o.status === 'shipped' || o.status === 'delivered' ? '<section class="card pad stack12"><h3>Courier</h3><div class="two2"><div class="f"><label for="cou">Courier</label><select class="select" id="cou"><option value="">Not set</option>' +
+          ['Pathao', 'RedX', 'Steadfast', 'eCourier', 'Sundarban', 'SA Paribahan', 'Paperfly', 'Own delivery', 'Other'].map(function (c) { return '<option' + (o.courier === c ? ' selected' : '') + '>' + c + '</option>'; }).join('') + '</select></div>' +
+          '<div class="f"><label for="trk">Tracking number</label><input class="text" id="trk" value="' + A.esc(o.tracking_no || '') + '" placeholder="Optional"></div></div><p class="saved" id="couSaved"></p></section>' : '') +
         '<section class="card pad notes"><h3>Internal notes</h3><textarea id="note" placeholder="Only your team sees this" aria-label="Internal notes">' + A.esc(o.internal_note || '') + '</textarea><p class="saved" id="saved"></p></section>' +
         '</div><div class="right">' +
         '<section class="card pad stack"><div class="cust"><div class="avatar">' + A.esc(initials(o.customer_name)) + '</div><div><p class="n">' + A.esc(o.customer_name) + '</p><p class="s">' + hist.length + ' order' + (hist.length === 1 ? '' : 's') + ' · ' + A.money(spent) + '</p></div></div>' +
         '<div class="kv"><span class="k">Phone</span><span class="v">' + A.esc(phone(o.customer_phone)) + '</span></div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn sm" href="tel:' + A.esc(o.customer_phone) + '">' + A.ic('phone', 16) + 'Call</a><a class="btn sm" target="_blank" rel="noopener" href="' + A.esc(A.waLink(o.customer_phone, 'Hello ' + o.customer_name.split(' ')[0] + ', this is ELARA about your order ' + o.id + '.')) + '">' + A.ic('whatsapp', 16) + 'WhatsApp</a>' +
+        (ctx.role === 'owner' ? '<button class="btn sm" id="editCust">Edit details</button>' : '') + '</div>' +
         (o.email ? '<div class="kv"><span class="k">Email</span><span class="v">' + A.esc(o.email) + '</span></div>' : '') + '</section>' +
         '<section class="card pad stack t10"><h3>Delivery address</h3><div class="kv"><span class="k">Address</span><span class="v">' + A.esc(addr || 'Not given') + '</span></div>' +
         '<div class="kv"><span class="k">Delivery</span><span class="v">' + A.esc(o.zone) + ' · ' + ZONE_DAYS + ' working days</span></div>' +
@@ -186,6 +194,16 @@ A.boot({
         update({ payment_state: to }, to === 'paid' ? 'Payment marked as paid' : 'Payment marked as refunded');
       });
       $('print').addEventListener('click', printSlip);
+      var cou = $('cou'), trk = $('trk');
+      if (cou) {
+        var saveCourier = async function () {
+          var u = await A.sb.from('orders').update({ courier: cou.value || null, tracking_no: trk.value.trim() || null }).eq('id', o.id).select('id').maybeSingle();
+          if (u.error || !u.data) { $('couSaved').textContent = 'Could not save: ' + ((u.error && u.error.message) || 'no permission') + (/column/i.test((u.error && u.error.message) || '') ? ' (run supabase/11-launch-ready.sql once)' : ''); return; }
+          o.courier = cou.value || null; o.tracking_no = trk.value.trim() || null; $('couSaved').textContent = 'Saved';
+        };
+        cou.addEventListener('change', saveCourier); trk.addEventListener('blur', function () { if ((trk.value.trim() || null) !== (o.tracking_no || null)) saveCourier(); });
+      }
+      var ecu = $('editCust'); if (ecu) ecu.addEventListener('click', editCustomer);
       var note = $('note');
       note.addEventListener('blur', async function () {
         if (note.value === (o.internal_note || '')) return;
@@ -206,6 +224,25 @@ A.boot({
     function setStatus(s) { update({ status: s }, 'Order moved to ' + s); }
 
     function printSlip() { A.printSlip(o, items); }
+    function editCustomer() {
+      var f = function (id, label, val, type) { return '<div class="f"><label for="' + id + '">' + label + '</label><input class="text" id="' + id + '" type="' + (type || 'text') + '" value="' + A.esc(val || '') + '"></div>'; };
+      A.modal('<h3>Edit customer details</h3>' + f('eN', 'Name', o.customer_name) + f('eP', 'Mobile number', o.customer_phone, 'tel') + f('eE', 'Email', o.email, 'email') +
+        f('eD', 'Division', o.division) + f('eI', 'District', o.district) + f('eU', 'Upazila / thana', o.upazila) + f('eA', 'House, road, area', o.address) +
+        '<div class="f"><label for="eZ">Delivery area</label><select class="select" id="eZ"><option' + (o.zone === 'Dhaka' ? ' selected' : '') + '>Dhaka</option><option' + (o.zone !== 'Dhaka' ? ' selected' : '') + '>Outside Dhaka</option></select></div>' +
+        '<p class="sub" style="font-size:12px">The delivery charge already on this order does not change.</p><p class="err-text" id="eErr" hidden style="color:var(--bad);font-size:12px"></p>' +
+        '<div class="actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="eOk">Save</button></div>', function (m, close) {
+          m.querySelector('#eOk').addEventListener('click', async function () {
+            var v = function (id) { return m.querySelector('#' + id).value.trim(); };
+            var ph = v('eP').replace(/\D/g, ''); if (ph.indexOf('880') === 0) ph = ph.slice(3); if (ph.indexOf('0') === 0) ph = ph.slice(1);
+            if (v('eN').length < 2 || !/^1[3-9]\d{8}$/.test(ph)) { var er = m.querySelector('#eErr'); er.textContent = 'Enter a name and a valid mobile number.'; er.hidden = false; return; }
+            var patch = { customer_name: v('eN'), customer_phone: '+880' + ph, email: v('eE') || null, division: v('eD') || null, district: v('eI') || null, upazila: v('eU') || null, address: v('eA') || null, zone: m.querySelector('#eZ').value };
+            if (patch.customer_phone !== o.customer_phone) await A.sb.from('customers').upsert({ phone: patch.customer_phone, name: patch.customer_name, email: patch.email }, { onConflict: 'phone' });
+            var u = await A.sb.from('orders').update(patch).eq('id', o.id).select().maybeSingle();
+            if (u.error || !u.data) { var e2 = m.querySelector('#eErr'); e2.textContent = (u.error && u.error.message) || 'Could not save.'; e2.hidden = false; return; }
+            Object.assign(o, u.data, { order_items: items }); close(); draw(); A.toast('Details updated');
+          });
+        });
+    }
     draw();
   }
 });

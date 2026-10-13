@@ -143,7 +143,7 @@ A.boot({
         '<div class="money-in"><span>D</span><input id="d2" inputmode="numeric" value="' + A.esc((P.dims || [])[2] || '') + '" aria-label="Depth in cm"><span>cm</span></div></div>' +
         '<input class="text" id="fits" placeholder="Fits, e.g. a 13-inch laptop" value="' + A.esc(P.fits || '') + '" style="margin-top:2px"></div></section>' +
 
-        '<section class="card pad stack12"><div class="hd"><h3>Photos</h3><span class="mute">Drag to reorder</span></div>' +
+        '<section class="card pad stack12"><div class="hd"><h3>Photos</h3>' + (cc && !readonly ? '<button class="btn sm" id="editCol" style="margin-right:10px">Edit colour</button>' : '') + '<span class="mute">Drag to reorder</span></div>' +
         (cols.length > 1 ? '<div class="chips" id="colChips">' + cols.map(function (c) { return '<button class="chip' + (c.id === (cc && cc.id) ? ' on' : '') + '" data-col="' + A.esc(c.id) + '"><span class="sw" style="background:' + A.esc(c.hex || '#ddd') + '"></span>' + A.esc(c.label) + '</button>'; }).join('') + '</div>' : '') +
         (cc ? '<div class="photos" id="photos">' + photos.map(function (ph, i) {
           return '<div class="pimg" draggable="true" data-i="' + i + '"><img src="' + A.esc(A.img(ph.src)) + '" alt="' + A.esc(ph.alt || '') + '">' + (i === 0 ? '<span class="first">Main</span>' : '') + '<button class="x" data-rm="' + i + '" aria-label="Remove photo">×</button></div>';
@@ -201,6 +201,7 @@ A.boot({
       $('save').addEventListener('click', function () { save(); });
       $('saveDraft').addEventListener('click', function () { if (P.status === 'published') P.status = 'draft'; save(); });
       $('addVar').addEventListener('click', addVariant);
+      var ec = $('editCol'); if (ec) ec.addEventListener('click', editColour);
       var pl = page.querySelector('a[href*="preview=1"]');
       if (pl) pl.addEventListener('click', function (e) { if (dirty) { e.preventDefault(); A.toast('Save your changes first, then preview. The store shows what is saved.', true); } });
       var chips = $('colChips'); if (chips) chips.addEventListener('click', function (e) { var b = e.target.closest('[data-col]'); if (!b) return; curCol = b.getAttribute('data-col'); draw(); });
@@ -267,6 +268,28 @@ A.boot({
       draw();
     }
 
+    function editColour() {
+      var c = cols.filter(function (x) { return x.id === curCol; })[0] || cols[0]; if (!c) return;
+      A.modal('<h3>Edit colour</h3><div class="f"><label for="ecN">Name</label><input class="text" id="ecN" value="' + A.esc(c.label) + '"></div>' +
+        '<div class="f"><label for="ecH">Shade</label><input class="text" id="ecH" type="color" value="' + A.esc(/^#[0-9a-f]{6}$/i.test(c.hex || '') ? c.hex : '#c9c4bb') + '" style="padding:2px 4px;max-width:90px"></div>' +
+        '<p class="err-text" id="ecE" hidden></p>' +
+        '<div class="actions" style="justify-content:space-between"><button class="btn danger" id="ecD">Delete colour</button><span style="display:flex;gap:8px"><button class="btn" data-close>Cancel</button><button class="btn primary" id="ecS">Save</button></span></div>',
+        function (o, close) {
+          o.querySelector('#ecS').addEventListener('click', function () {
+            var nm = o.querySelector('#ecN').value.trim();
+            if (!nm) { var er = o.querySelector('#ecE'); er.textContent = 'Give the colour a name.'; er.hidden = false; return; }
+            c.label = nm; c.hex = o.querySelector('#ecH').value; mark(); close(); draw();
+          });
+          o.querySelector('#ecD').addEventListener('click', function () {
+            if (!confirm('Delete the colour ' + c.label + ' with its photos and stock? This is saved when you press Save changes.')) return;
+            cols = cols.filter(function (x) { return x !== c; });
+            vars = vars.filter(function (v) { return v.colour_id !== c.id; });
+            if (!c._new) delCols.push(c);
+            curCol = cols[0] && cols[0].id; mark(); close(); draw();
+          });
+        });
+    }
+
     function addVariant() {
       var colOpts = cols.map(function (c) { return '<option value="' + A.esc(c.id) + '">' + A.esc(c.label) + '</option>'; }).join('') + '<option value="__new">+ New colour…</option>';
       A.modal('<h3>Add variant</h3>' +
@@ -286,13 +309,20 @@ A.boot({
               if (!nm) { err.hidden = false; err.textContent = 'Give the new colour a name.'; return; }
               id = A.slug(nm);
               if (cols.some(function (c) { return c.id === id; })) { err.hidden = false; err.textContent = 'That colour already exists. Pick it from the list.'; return; }
-              cols.push({ product_id: P.id, id: id, label: nm, hex: o.querySelector('#vHex').value, card: null, tile: null, guide_bg: '#eeebda', photos: [], slides: [], position: cols.length });
+              cols.push({ product_id: P.id, id: id, label: nm, hex: o.querySelector('#vHex').value, card: null, tile: null, guide_bg: '#eeebda', photos: [], slides: [], position: cols.length, _new: true });
               curCol = id;
             }
             if (vars.some(function (v) { return v.colour_id === id && v.size === size; })) { err.hidden = false; err.textContent = 'That colour and size is already in the list.'; return; }
             vars.push({ product_id: P.id, colour_id: id, size: size, stock: stock }); mark(); close(); draw();
           });
         });
+    }
+
+    // hover photos on the listing: uploaded gallery photos in order (size-guide images left out); older colours keep theirs
+    function slidesFor(c) {
+      var up = (c.photos || []).some(function (x) { return /^https?:/.test(x.src || ''); });
+      if (up) { var l = (c.photos || []).filter(function (x) { return !x.contain; }).slice(0, 6).map(function (x) { return x.src; }); if (l.length) return l; }
+      return c.slides && c.slides.length ? c.slides : (c.card ? [c.card] : []);
     }
 
     async function save(msg) {
@@ -319,7 +349,7 @@ A.boot({
         // colours
         if (delCols.length) { var dc = await A.sb.from('product_colours').delete().eq('product_id', P.id).in('id', delCols.map(function (c) { return c.id; })); if (dc.error) throw dc.error; }
         if (cols.length) {
-          var cr = await A.sb.from('product_colours').upsert(cols.map(function (c, i) { return { product_id: P.id, id: c.id, label: c.label, hex: c.hex, card: c.card, tile: c.tile, guide_bg: c.guide_bg, photos: c.photos || [], slides: c.slides && c.slides.length ? c.slides : (c.card ? [c.card] : []), position: i }; }), { onConflict: 'product_id,id' });
+          var cr = await A.sb.from('product_colours').upsert(cols.map(function (c, i) { return { product_id: P.id, id: c.id, label: c.label, hex: c.hex, card: c.card, tile: c.tile, guide_bg: c.guide_bg, photos: c.photos || [], slides: slidesFor(c), position: i }; }), { onConflict: 'product_id,id' });
           if (cr.error) throw cr.error;
         }
         // variants

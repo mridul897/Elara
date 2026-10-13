@@ -369,14 +369,14 @@
   new ResizeObserver(fit).observe(document.documentElement);
   const $ = (id) => document.getElementById(id);
 
-  // ---- contact form (kept on this device only) ----
+  // ---- contact form: goes to the shop's inbox (Admin > Messages) ----
   const form = $('cForm');
   function setErr(f, e, m) { $(f).classList.add('bad'); $(e).textContent = m; }
   function clr(f, e) { $(f).classList.remove('bad'); $(e).textContent = ''; }
   $('cName').addEventListener('input', () => clr('fName', 'eName'));
   $('cPhone').addEventListener('input', () => clr('fPhone', 'ePhone'));
   $('cMsg').addEventListener('input', () => clr('fMsg', 'eMsg'));
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = $('cName').value.trim(), phone = $('cPhone').value.replace(/[\s-]/g, ''), msg = $('cMsg').value.trim();
     let first = null;
@@ -384,11 +384,15 @@
     if (!/^(\+?88)?01[3-9]\d{8}$/.test(phone)) { setErr('fPhone', 'ePhone', 'Enter a valid Bangladeshi mobile number.'); first = first || $('cPhone'); }
     if (msg.length < 10) { setErr('fMsg', 'eMsg', 'Please write a few words so we can help.'); first = first || $('cMsg'); }
     if (first) { first.focus(); return; }
-    try {
-      const all = JSON.parse(localStorage.getItem('elara.messages.v1') || '[]');
-      all.push({ ts: Date.now(), name, phone, topic: $('cTopic').value, order: $('cOrder').value.trim(), msg });
-      localStorage.setItem('elara.messages.v1', JSON.stringify(all));
-    } catch (err) {}
+    const btn = form.querySelector('.c-send'), label = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Sending…';
+    const order = $('cOrder').value.trim();
+    const res = window.ElaraDB ? await ElaraDB.sendMessage({ name, phone, subject: $('cTopic').value + (order ? ' · ' + order : ''), body: msg }) : { ok: false, error: 'network' };
+    btn.disabled = false; btn.textContent = label;
+    if (!res || !res.ok) {
+      setErr('fMsg', 'eMsg', res && res.error && res.error !== 'network' ? res.error : 'We could not send your message just now. Please try again, or message us on WhatsApp.');
+      return;
+    }
     $('tName').textContent = name.split(' ')[0];
     form.hidden = true; $('cThanks').classList.add('show'); $('cThanks').focus({ preventScroll: true });
   });

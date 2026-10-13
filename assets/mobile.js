@@ -27,7 +27,7 @@
     '<div class="mh-menu" id="mhMenu" aria-hidden="true"><div class="mh-scrim" data-close></div>' +
     '<nav aria-label="Main menu"><button type="button" class="mh-close" data-close aria-label="Close menu">×</button>' +
     '<a href="my-plp-screen.html?collection=new">New Arrivals</a><a href="my-plp-screen.html">Bags</a>' +
-    '<a href="#" data-soon="Collections">Collections</a><a href="#" data-soon="Best Sellers">Best Sellers</a>' +
+    '<a href="#" data-soon="Collections">Collections</a><a href="my-plp-screen.html?collection=best">Best Sellers</a>' +
     '<a href="my-order-tracking.html">Track my order</a><a href="my-contact-screen.html">Contact Us</a></nav></div>';
 
   var footer =
@@ -35,7 +35,7 @@
     '<div class="mf-brand"><span class="mf-wm">ELARA</span><p>Premium leather bags for the routine you actually have: work, weekend, and everything between. Designed in Bangladesh.</p></div>' +
     '<div class="mf-help"><b>Need help deciding?</b><p>Message us on WhatsApp or email: we reply within 1 business day.</p><a href="my-contact-screen.html">WhatsApp: +880 1320575476</a><a href="my-contact-screen.html">hello@elara.com.bd</a></div>' +
     '<div class="mf-cols">' +
-    '<div><h5>Shop</h5><a href="my-plp-screen.html?collection=new">New Arrivals</a><a href="#" data-soon="Best Sellers">Best Sellers</a><a href="#" data-soon="Collections">Collections</a><a href="my-plp-screen.html">All Bags</a></div>' +
+    '<div><h5>Shop</h5><a href="my-plp-screen.html?collection=new">New Arrivals</a><a href="my-plp-screen.html?collection=best">Best Sellers</a><a href="#" data-soon="Collections">Collections</a><a href="my-plp-screen.html">All Bags</a></div>' +
     '<div><h5>Customer Service</h5><a href="#" data-soon="Shipping &amp; Delivery" data-soon-page>Shipping &amp; Delivery</a><a href="#" data-soon="Returns &amp; Exchange" data-soon-page>Returns &amp; Exchange</a><a href="my-order-tracking.html">Order Tracking</a><a href="my-contact-screen.html">Contact Us</a></div>' +
     '<div><h5>About</h5><a href="#" data-soon="Our Story" data-soon-page>Our Story</a><a href="my-contact-screen.html">Contact</a></div>' +
     '<div><h5>Legal</h5><a href="#" data-soon="Privacy Policy" data-soon-page>Privacy Policy</a><a href="#" data-soon="Terms of Service" data-soon-page>Terms of Service</a></div>' +

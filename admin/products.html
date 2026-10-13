@@ -39,6 +39,12 @@
   #table .trow.head { position: sticky; top: 0; z-index: 2; }
   .pcount { font-size: 13px; color: var(--sub); margin: 0; }
   @media (max-width: 899.98px) { #table { max-height: none; overflow: visible; } }
+
+  .chk { cursor: pointer; position: relative; }
+  .chk.on { background: var(--accent); border-color: var(--accent); }
+  .chk.on::after { content: ''; position: absolute; left: 4px; top: 2px; width: 4px; height: 8px; border: solid #fff; border-width: 0 1.6px 1.6px 0; transform: rotate(45deg); }
+  .bulk { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px 12px; background: var(--accent-soft); border: 1px solid #c9d5fa; border-radius: var(--r-card); font-size: 13px; }
+  .bulk b { margin-right: 8px; }
 </style>
 </head>
 <body>
@@ -52,7 +58,7 @@ A.boot({
   crumbs: [{ t: 'Products' }],
   render: async function (page, ctx) {
     var CHUNK = 30, LOW = 5;
-    var state = { tab: 'all', q: '', cat: 'all', sale: false, sort: 'best', limit: 30, total: 0, rows: [] };
+    var state = { tab: 'all', q: '', cat: 'all', sale: false, sort: 'best', limit: 30, total: 0, sel: {}, rows: [] };
     var TABS = [['all', 'All'], ['published', 'Published'], ['draft', 'Draft'], ['archived', 'Archived'], ['low', 'Low stock']];
     var CATS = [{ v: 'all', l: 'All categories' }, { v: 'tote', l: 'Tote' }, { v: 'shoulder', l: 'Shoulder' }, { v: 'crossbody', l: 'Crossbody' }, { v: 'mini', l: 'Mini' }, { v: 'travel-work', l: 'Travel & Work' }];
     var SORTS = [{ v: 'best', l: 'Best selling' }, { v: 'new', l: 'Newest first' }, { v: 'low', l: 'Price: low to high' }, { v: 'high', l: 'Price: high to low' }, { v: 'az', l: 'Name A to Z' }];
@@ -69,10 +75,11 @@ A.boot({
       '<div class="pop-wrap" id="catWrap"><button class="btn" id="catBtn"><span id="catTxt">Category</span>' + A.ic('chevron-down-small', 16) + '</button></div>' +
       '<button class="btn" id="saleBtn">' + A.ic('percent16', 16) + 'On sale</button>' +
       '<div class="pop-wrap" id="sortWrap"><button class="btn" id="sortBtn"><span id="sortTxt">Best selling</span>' + A.ic('chevron-down-small', 16) + '</button></div></div>' +
-      '<div class="table" id="table"></div>' +
+      '<div class="bulk" id="bulk" hidden></div><div class="table" id="table"></div>' +
       '<p class="pcount" id="info"></p>';
     $('table').innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
 
+    try { var inv = await A.sb.from('settings').select('value').eq('key', 'inventory').maybeSingle(); if (inv.data && inv.data.value && +inv.data.value.low >= 0) LOW = +inv.data.value.low; } catch (e) {}
     var res = await A.sb.from('products').select('id,name,cat,price,sale_price,sale_starts,sale_ends,status,position,product_colours(id,card,position,product_variants(size,stock))').order('position').limit(1000);
     if (res.error) { $('table').innerHTML = '<div class="empty"><b>Could not load products</b>' + A.esc(res.error.message) + '</div>'; $('sub').textContent = ''; return; }
     var sold = {};
@@ -121,13 +128,14 @@ A.boot({
       var list = visible(), keepTop = $('table').scrollTop;
       state.total = list.length;
       var slice = list.slice(0, state.limit);
-      var head = '<div class="trow head"><span class="c" style="width:16px"></span><span class="grow">Product</span><span class="c c-cat">Category</span><span class="c c-price">Price</span><span class="c c-stock">Stock</span><span class="c c-live">Live</span><span class="c c-menu"></span></div>';
+      var allSel = slice.length && slice.every(function (p) { return state.sel[p.id]; });
+      var head = '<div class="trow head"><span class="c" style="width:16px">' + (ctx.role === 'owner' ? '<span class="chk' + (allSel ? ' on' : '') + '" data-selall="1" role="checkbox" aria-checked="' + !!allSel + '" aria-label="Select all"></span>' : '') + '</span><span class="grow">Product</span><span class="c c-cat">Category</span><span class="c c-price">Price</span><span class="c c-stock">Stock</span><span class="c c-live">Live</span><span class="c c-menu"></span></div>';
       if (!slice.length) {
         $('table').innerHTML = head + '<div class="empty"><b>' + (state.rows.length ? 'No products match these filters' : 'No products yet') + '</b>' + (state.rows.length ? 'Try a different tab, category or search.' : 'Add your first product to start selling.') + '</div>';
       } else {
         $('table').innerHTML = head + slice.map(function (p) {
           var sb = p.stock <= 0 ? ['Out of stock', 'b-bad'] : p.stock <= LOW ? [p.stock + ' in stock', 'b-warn'] : [p.stock + ' in stock', 'b-mute'];
-          return '<div class="trow prow link" data-id="' + A.esc(p.id) + '"><span class="c" style="width:16px"><span class="chk"></span></span>' +
+          return '<div class="trow prow link" data-id="' + A.esc(p.id) + '"><span class="c" style="width:16px">' + (ctx.role === 'owner' ? '<span class="chk' + (state.sel[p.id] ? ' on' : '') + '" data-sel="' + A.esc(p.id) + '" role="checkbox" aria-checked="' + !!state.sel[p.id] + '"></span>' : '') + '</span>' +
             '<div class="prod">' + (p.thumb ? '<img src="' + A.esc(A.img(p.thumb)) + '" alt="" loading="lazy">' : '<img alt="">') + '<div class="t"><p class="n">' + A.esc(p.name) + '</p><p class="m">' + p.nCol + ' colour' + (p.nCol === 1 ? '' : 's') + ' · ' + p.nSize + ' size' + (p.nSize === 1 ? '' : 's') + '</p></div></div>' +
             '<span class="c c-cat">' + A.esc(catName(p.cat)) + '</span>' +
             '<span class="c c-price price"><span class="now">' + A.money(p.now) + '</span>' + (p.onSale ? '<span class="was">' + A.money(p.price) + '</span>' : '') + '</span>' +
@@ -137,6 +145,7 @@ A.boot({
         }).join('');
       }
       $('table').scrollTop = keepTop;
+      drawBulk();
       $('info').textContent = list.length + ' product' + (list.length === 1 ? '' : 's') + (list.length > slice.length ? ' · scroll for more' : '');
     }
 
@@ -146,6 +155,47 @@ A.boot({
       p.status = status; return true;
     }
     var byId = function (id) { return state.rows.filter(function (p) { return p.id === id; })[0]; };
+    function selected() { return state.rows.filter(function (p) { return state.sel[p.id]; }); }
+    function drawBulk() {
+      var sel = selected(), box = $('bulk'); box.hidden = !sel.length; if (!sel.length) return;
+      box.innerHTML = '<b>' + sel.length + ' selected</b><button class="btn sm" data-b="pub">Publish</button><button class="btn sm" data-b="hide">Hide</button><button class="btn sm" data-b="sale">Set sale %</button><button class="btn sm" data-b="nosale">End sale</button><button class="btn sm" data-b="arch">Archive</button><button class="btn sm" data-b="clr">Clear</button>';
+    }
+    async function bulkUpdate(list, patchFor) {
+      var res = await Promise.all(list.map(function (p) { var patch = patchFor(p); if (!patch) return Promise.resolve({ p: p, skip: true }); return A.sb.from('products').update(patch).eq('id', p.id).select('id').maybeSingle().then(function (u) { return { p: p, ok: !u.error && !!u.data, patch: patch }; }); }));
+      var ok = 0, skipped = 0; res.forEach(function (x) { if (x.skip) skipped++; else if (x.ok) { Object.assign(x.p, x.patch); ok++; } });
+      state.sel = {}; draw(); A.toast(ok + ' product' + (ok === 1 ? '' : 's') + ' updated' + (skipped ? ' · ' + skipped + ' skipped (no photo yet)' : ''), false);
+    }
+    $('bulk').addEventListener('click', async function (e) {
+      var b = e.target.closest('[data-b]'); if (!b) return; var k = b.getAttribute('data-b'), sel = selected();
+      if (k === 'clr') { state.sel = {}; draw(); return; }
+      if (k === 'pub') return bulkUpdate(sel, function (p) { return p.thumb ? { status: 'published' } : null; });
+      if (k === 'hide') return bulkUpdate(sel, function () { return { status: 'draft' }; });
+      if (k === 'arch') { if (!confirm('Archive ' + sel.length + ' product' + (sel.length === 1 ? '' : 's') + '? They disappear from the store.')) return; return bulkUpdate(sel, function () { return { status: 'archived' }; }); }
+      if (k === 'nosale') return bulkUpdate(sel, function () { return { sale_price: null, sale_starts: null, sale_ends: null }; });
+      if (k === 'sale') {
+        A.modal('<h3>Set a sale</h3><p class="sub">Takes this much off the regular price of ' + sel.length + ' product' + (sel.length === 1 ? '' : 's') + '. You can end it any time.</p><div class="f"><label for="spc">Percent off</label><input class="text" id="spc" type="number" min="1" max="90" value="10"></div><p class="hint" style="font-size:12px;color:var(--bad)" id="spe"></p><div class="actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="spo">Apply</button></div>', function (o, close) {
+          o.querySelector('#spo').addEventListener('click', function () {
+            var pc = parseInt(o.querySelector('#spc').value, 10);
+            if (!(pc >= 1 && pc <= 90)) { o.querySelector('#spe').textContent = 'Enter a number from 1 to 90.'; return; }
+            close(); bulkUpdate(sel, function (p) { return { sale_price: Math.round(p.price * (100 - pc) / 100), sale_starts: null, sale_ends: null }; });
+          });
+        });
+      }
+    });
+    async function duplicate(p) {
+      var base = p.id.replace(/-copy(-\d+)?$/, ''), n = 1, id = base + '-copy';
+      while (state.rows.some(function (x) { return x.id === id; })) { n++; id = base + '-copy-' + n; }
+      var src = await A.sb.from('products').select('*, product_colours(*, product_variants(size,stock))').eq('id', p.id).maybeSingle();
+      if (src.error || !src.data) { A.toast('Could not read the product.', true); return; }
+      var d = src.data, row = Object.assign({}, d); delete row.product_colours; delete row.created_at; delete row.updated_at;
+      Object.assign(row, { id: id, name: d.name + ' (copy)', status: 'draft', position: 0, rating: 0, reviews_count: 0 });
+      var r1 = await A.sb.from('products').insert(row); if (r1.error) { A.toast('Could not duplicate: ' + r1.error.message, true); return; }
+      var cols = (d.product_colours || []).map(function (c) { var o = Object.assign({}, c); delete o.product_variants; o.product_id = id; return o; });
+      var vars = []; (d.product_colours || []).forEach(function (c) { (c.product_variants || []).forEach(function (v) { vars.push({ product_id: id, colour_id: c.id, size: v.size, stock: v.stock }); }); });
+      if (cols.length) { var r2 = await A.sb.from('product_colours').insert(cols); if (r2.error) { A.toast('Copied the details but not the colours: ' + r2.error.message, true); return; } }
+      if (vars.length) await A.sb.from('product_variants').insert(vars);
+      location.href = 'product.html?id=' + encodeURIComponent(id);
+    }
 
     $('tabs').addEventListener('click', function (e) { var t = e.target.closest('[data-tab]'); if (!t) return; state.tab = t.getAttribute('data-tab'); state.limit = CHUNK; $('table').scrollTop = 0; draw(); });
     var tm; $('q').addEventListener('input', function (e) { clearTimeout(tm); tm = setTimeout(function () { state.q = e.target.value; state.limit = CHUNK; $('table').scrollTop = 0; draw(); }, 120); });
@@ -255,6 +305,10 @@ A.boot({
       });
     });
     $('table').addEventListener('click', async function (e) {
+      var sa = e.target.closest('[data-selall]');
+      if (sa) { e.stopPropagation(); var vis = visible().slice(0, state.limit), all = vis.length && vis.every(function (x) { return state.sel[x.id]; }); vis.forEach(function (x) { if (all) delete state.sel[x.id]; else state.sel[x.id] = 1; }); draw(); return; }
+      var sc = e.target.closest('[data-sel]');
+      if (sc) { e.stopPropagation(); var k2 = sc.getAttribute('data-sel'); if (state.sel[k2]) delete state.sel[k2]; else state.sel[k2] = 1; draw(); return; }
       var lv = e.target.closest('[data-live]');
       if (lv) {
         e.stopPropagation();
@@ -268,11 +322,12 @@ A.boot({
         e.stopPropagation();
         var p2 = byId(m.getAttribute('data-menu'));
         var items = [{ v: 'edit', l: 'Edit product' }, { v: 'view', l: 'View on store' }];
-        if (ctx.role === 'owner') items.push(p2.status === 'archived' ? { v: 'restore', l: 'Restore to draft' } : { v: 'archive', l: 'Archive' });
+        if (ctx.role === 'owner') items.push({ v: 'dup', l: 'Duplicate' }, p2.status === 'archived' ? { v: 'restore', l: 'Restore to draft' } : { v: 'archive', l: 'Archive' });
         var wrap = m.parentNode; wrap.classList.add('pop-wrap'); wrap.style.position = 'relative';
         A.menu(wrap, items, null, async function (v) {
           if (v === 'edit') location.href = 'product.html?id=' + encodeURIComponent(p2.id);
           else if (v === 'view') window.open('../my-product-detail-screen.html?p=' + encodeURIComponent(p2.id) + '&preview=1', '_blank');
+          else if (v === 'dup') duplicate(p2);
           else if (v === 'archive' || v === 'restore') { if (await setStatus(p2, v === 'archive' ? 'archived' : 'draft')) { draw(); A.toast(v === 'archive' ? 'Archived ' + p2.name : p2.name + ' restored to draft'); } }
         });
         var pop = wrap.querySelector('.pop'); if (pop) pop.classList.add('right');

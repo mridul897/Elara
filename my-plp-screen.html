@@ -680,7 +680,7 @@
       <a href="my-plp-screen.html?collection=new">New Arrivals</a>
       <a href="my-plp-screen.html">Bags</a>
       <a href="#" data-soon="Collections">Collections</a>
-      <a href="#" data-soon="Best Sellers">Best Sellers</a>
+      <a href="my-plp-screen.html?collection=best">Best Sellers</a>
       <a href="my-contact-screen.html">Contact Us</a>
     </nav>
   </div>
@@ -751,7 +751,7 @@
     <div class="mf-brand"><span class="mf-wm">ELARA</span><p>Premium leather bags for the routine you actually have: work, weekend, and everything between. Designed in Bangladesh.</p></div>
     <div class="mf-help"><b>Need help deciding?</b><p>Message us on WhatsApp or email: we reply within 1 business day.</p><a href="my-contact-screen.html">WhatsApp: +880 1320575476</a><a href="my-contact-screen.html">hello@elara.com.bd</a></div>
     <div class="mf-cols">
-      <div><h5>Shop</h5><a href="my-plp-screen.html?collection=new">New Arrivals</a><a href="#" data-soon="Best Sellers">Best Sellers</a><a href="#" data-soon="Collections">Collections</a><a href="my-plp-screen.html">All Bags</a></div>
+      <div><h5>Shop</h5><a href="my-plp-screen.html?collection=new">New Arrivals</a><a href="my-plp-screen.html?collection=best">Best Sellers</a><a href="#" data-soon="Collections">Collections</a><a href="my-plp-screen.html">All Bags</a></div>
       <div><h5>Customer Service</h5><a href="#" data-soon="Shipping &amp; Delivery" data-soon-page>Shipping &amp; Delivery</a><a href="#" data-soon="Returns &amp; Exchange" data-soon-page>Returns &amp; Exchange</a><a href="my-order-tracking.html">Order Tracking</a><a href="my-contact-screen.html">Contact Us</a></div>
       <div><h5>About</h5><a href="#" data-soon="Our Story" data-soon-page>Our Story</a><a href="my-contact-screen.html">Contact</a></div>
       <div><h5>Legal</h5><a href="#" data-soon="Privacy Policy" data-soon-page>Privacy Policy</a><a href="#" data-soon="Terms of Service" data-soon-page>Terms of Service</a></div>
@@ -1006,6 +1006,7 @@
   // Deep link from the homepage "Shop by Category" cards: my-plp-screen.html?category=tote (comma-separate for several).
   // "Shop All New Arrivals" in the navigation: my-plp-screen.html?collection=new shows only the bags marked New.
   if (new URLSearchParams(location.search).get('collection') === 'new') state.avail.add('new-in');
+  if (new URLSearchParams(location.search).get('collection') === 'best') state.avail.add('best');
   (new URLSearchParams(location.search).get('category') || '').split(',').forEach((id) => {
     if (CATEGORIES.some((c) => c.id === id.trim())) state.categories.add(id.trim());
   });
@@ -1041,13 +1042,13 @@
   const MATERIALS = [['leather', 'Smooth leather'], ['suede', 'Suede'], ['woven', 'Woven'], ['quilted', 'Quilted & puffed'], ['nylon', 'Nylon & canvas']];
   const SIZES = [['mini', 'Mini', 'under 22 cm wide'], ['small', 'Small', '22–29 cm wide'], ['medium', 'Medium', '30–35 cm wide'], ['large', 'Large', '36 cm and wider']];
   const sizeOf = (w) => w < 22 ? 'mini' : w <= 29 ? 'small' : w <= 35 ? 'medium' : 'large';
-  const AVAIL = [['in-stock', 'In stock'], ['on-sale', 'On sale'], ['new-in', 'New in']];
+  const AVAIL = [['in-stock', 'In stock'], ['on-sale', 'On sale'], ['new-in', 'New in'], ['best', 'Best sellers']];
   const FACETS = {};   // product key -> { colours:Set, material, size, avail:Set }
   (window.ELARA_PRODUCTS || []).forEach((d) => {
     FACETS[d.id] = {
       colours: new Set(d.colours.map((c) => familyOf(c.label)).filter(Boolean)),
       material: materialOf(d.id), size: sizeOf(d.dims[0]),
-      avail: new Set(['in-stock'].concat(d.badge === 'off' ? ['on-sale'] : [], d.badge === 'new' ? ['new-in'] : [])),
+      avail: new Set(['in-stock'].concat(d.badge === 'off' ? ['on-sale'] : [], d.badge === 'new' ? ['new-in'] : [], d.badge === 'best' ? ['best'] : [])),
     };
   });
   const attrActive = () => state.colours.size + state.materials.size + state.sizes.size + state.avail.size > 0;
@@ -1456,6 +1457,10 @@
     if (selected.length === 0 && state.avail.size === 1 && state.avail.has('new-in') && !state.colours.size && !state.materials.size && !state.sizes.size) {
       titleText = 'New Arrivals';
       crumbText = 'New Arrivals';
+    }
+    if (selected.length === 0 && state.avail.size === 1 && state.avail.has('best') && !state.colours.size && !state.materials.size && !state.sizes.size) {
+      titleText = 'Best Sellers';
+      crumbText = 'Best Sellers';
     }
     document.getElementById('pageTitle').textContent = titleText;
     document.getElementById('crumbCategory').textContent = crumbText;

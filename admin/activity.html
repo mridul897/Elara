@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Activity · ELARA Admin</title>
+<link rel="icon" href="favicon1.png">
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="admin.css">
+<style>
+  #log { max-height: calc(100vh - 300px); min-height: 240px; overflow-y: auto; }
+  #log .trow.head { position: sticky; top: 0; z-index: 2; }
+  .c-when { width: 150px; } .c-who { width: 130px; } .c-ent { width: 120px; }
+  .errm { flex: 1; min-width: 0; } .errm b { display: block; font-weight: 500; color: var(--text); word-break: break-word; } .errm small { color: var(--mute); word-break: break-all; }
+  @media (max-width: 899.98px) { #log { max-height: none; } .c-who, .c-ent { display: none; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="icons.js"></script>
+<script src="admin.js"></script>
+<script>
+A.boot({
+  active: 'settings',
+  mtitle: 'Activity',
+  crumbs: [{ t: 'Settings', href: 'settings.html' }, { t: 'Activity' }],
+  render: async function (page, ctx) {
+    var $ = function (id) { return document.getElementById(id); };
+    if (ctx.role !== 'owner') { page.innerHTML = '<div class="empty card"><b>Owner only</b>The activity log is visible to the owner.</div>'; return; }
+    var state = { tab: 'log', ent: 'all', limit: 60, log: [], errs: [] };
+    var ENTS = [['all', 'Everything'], ['products', 'Products'], ['orders', 'Orders'], ['promo_codes', 'Promotions'], ['reviews', 'Reviews'], ['settings', 'Settings']];
+    page.innerHTML = '<div class="page-head keep"><div class="t"><h1 class="h1">Activity</h1><p class="sub">Who changed what, and problems the store ran into</p></div></div><div class="tabs" id="tabs"></div><div id="body"></div>';
+    var r = await Promise.all([
+      A.sb.from('activity_log').select('*').order('at', { ascending: false }).limit(500),
+      A.sb.from('error_log').select('*').order('at', { ascending: false }).limit(200)
+    ]);
+    state.log = r[0].data || []; state.errs = r[1].data || [];
+    function line(a) {
+      var d = a.detail || {}, n = (d.after && (d.after.name || d.after.id || d.after.code)) || a.entity_id;
+      if (a.entity === 'products' && a.action === 'update' && d.before && d.after && d.before.price !== d.after.price) return 'changed the price of ' + n + ' (' + A.money(d.before.price) + ' to ' + A.money(d.after.price) + ')';
+      if (a.entity === 'products') return (a.action === 'insert' ? 'added product ' : a.action === 'delete' ? 'deleted product ' : 'updated ') + n;
+      if (a.entity === 'orders') { var st = d.before && d.after && d.before.status !== d.after.status ? ' to ' + d.after.status : ''; return 'updated order ' + a.entity_id + st; }
+      if (a.entity === 'promo_codes') return (a.action === 'insert' ? 'created' : a.action === 'delete' ? 'deleted' : 'changed') + ' promo code ' + a.entity_id;
+      if (a.entity === 'reviews') return 'moderated a review' + (d.after ? ' (' + d.after.status + ')' : '');
+      if (a.entity === 'settings') return 'changed the ' + a.entity_id + ' settings';
+      return a.action + ' ' + a.entity;
+    }
+    function draw() {
+      $('tabs').innerHTML = [['log', 'Changes', state.log.length], ['errs', 'Problems', state.errs.length]].map(function (t) { return '<button class="tab' + (state.tab === t[0] ? ' on' : '') + '" data-tab="' + t[0] + '"><span class="l">' + t[1] + '<span class="b">' + t[2] + '</span></span><span class="bar"></span></button>'; }).join('');
+      if (state.tab === 'errs') {
+        $('body').innerHTML = '<div class="table">' + (state.errs.length ? state.errs.map(function (e) { return '<div class="trow"><span class="c c-when">' + A.when(e.at) + '</span><span class="errm"><b>' + A.esc(e.message) + '</b><small>' + A.esc(e.url || '') + '</small></span></div>'; }).join('') : '<div class="empty"><b>No problems reported</b>If a page on the store breaks for a customer, it is noted here.</div>') + '</div>' +
+          (state.errs.length && true ? '<p style="margin-top:12px"><button class="btn sm" id="clr">Clear list</button></p>' : '');
+        return;
+      }
+      var list = state.log.filter(function (a) { return state.ent === 'all' || a.entity === state.ent; });
+      $('body').innerHTML = '<div class="toolbar" style="margin-bottom:12px">' + ENTS.map(function (e) { return '<button class="btn sm' + (state.ent === e[0] ? ' on' : '') + '" data-ent="' + e[0] + '">' + e[1] + '</button>'; }).join('') + '</div>' +
+        '<div class="table" id="log"><div class="trow head"><span class="c c-when">When</span><span class="c c-who">Who</span><span class="grow">What</span></div>' +
+        (list.length ? list.slice(0, state.limit).map(function (a) { return '<div class="trow"><span class="c c-when">' + A.when(a.at) + '</span><span class="c c-who strong">' + A.esc(a.actor_name || 'System') + '</span><span class="grow" style="white-space:normal">' + A.esc(line(a)) + '</span></div>'; }).join('') : '<div class="empty"><b>Nothing yet</b>Changes your team makes show up here.</div>') + '</div>' +
+        '<p class="sub" style="margin-top:8px">' + list.length + ' change' + (list.length === 1 ? '' : 's') + (list.length > state.limit ? ' · scroll for more' : '') + '</p>';
+      var lg = $('log'); if (lg) lg.addEventListener('scroll', function () { if (lg.scrollHeight - lg.scrollTop - lg.clientHeight < 200 && state.limit < list.length) { state.limit += 60; var top = lg.scrollTop; draw(); $('log').scrollTop = top; } });
+    }
+    page.addEventListener('click', async function (e) {
+      var t = e.target.closest('[data-tab]'); if (t) { state.tab = t.getAttribute('data-tab'); draw(); return; }
+      var en = e.target.closest('[data-ent]'); if (en) { state.ent = en.getAttribute('data-ent'); state.limit = 60; draw(); return; }
+      if (e.target.id === 'clr') { if (!confirm('Clear the list of problems?')) return; await A.sb.from('error_log').delete().gte('id', 0); state.errs = []; draw(); }
+    });
+    draw();
+  }
+});
+</script>
+</body>
+</html>

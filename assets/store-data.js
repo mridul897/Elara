@@ -171,6 +171,29 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', add); else add();
   })();
 
+  // Studio address (Admin > Content > Contact details) replaces the placeholder on the contact page.
+  (function () {
+    var c = (settings && settings.contact) || null, addr = c && String(c.address || '').trim();
+    if (!addr) return;
+    function put() { document.querySelectorAll('p').forEach(function (p) { if (p.textContent.trim() === 'House 00, Road 00, Dhaka, Bangladesh') p.textContent = addr; }); }
+    if (document.readyState === 'complete') put(); else window.addEventListener('load', put);
+  })();
+
+  // Analytics: paste the IDs in Admin > Settings > Analytics. Nothing loads until an ID is saved.
+  (function () {
+    var a = (settings && settings.analytics) || null; if (!a) return;
+    var ga = String(a.ga_id || '').trim(), fb = String(a.fb_pixel || '').trim();
+    if (/^G-[A-Z0-9]{4,}$/i.test(ga)) {
+      var s = document.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(ga); document.head.appendChild(s);
+      window.dataLayer = window.dataLayer || []; window.gtag = function () { window.dataLayer.push(arguments); };
+      window.gtag('js', new Date()); window.gtag('config', ga);
+    }
+    if (/^\d{8,20}$/.test(fb)) {
+      !function (f, b, e, v, n, t, s) { if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); }; if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = []; t = b.createElement(e); t.async = !0; t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s); }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+      window.fbq('init', fb); window.fbq('track', 'PageView');
+    }
+  })();
+
   // Bag lines saved earlier hold the price of that day. Bring them in line with today's catalogue and drop anything
   // that is no longer sold, so the bag never shows a stale price.
   if (window.ELARA_LIVE) {
@@ -191,15 +214,25 @@
     });
   }
 
+  var __errs = 0;
+  function reportError(msg) {
+    if (__errs >= 3 || !window.ElaraDB) return;   // at most three per page view
+    __errs++; window.ElaraDB.logError(msg);
+  }
+  window.addEventListener('error', function (e) { reportError((e.message || 'error') + ' @ ' + String(e.filename || '').split('/').pop() + ':' + (e.lineno || 0)); });
+  window.addEventListener('unhandledrejection', function (e) { reportError('promise: ' + ((e.reason && e.reason.message) || e.reason || 'rejected')); });
+
   window.ElaraDB = {
     url: URL_,
     // POST to a database function. Returns a Promise of the JSON result (never rejects: { ok:false, error } instead).
     // Send a customer review. It waits for the owner's approval before anyone sees it.
+    // Every public action goes through a server function that checks the input and limits how often it can be used.
     submitReview: function (r) {
-      return fetch(URL_ + '/rest/v1/reviews', { method: 'POST', headers: Object.assign({ 'Content-Type': 'application/json', Prefer: 'return=minimal' }, headers()),
-        body: JSON.stringify({ product_id: r.product_id, author: r.author, rating: r.rating, title: r.title || null, body: r.body, status: 'pending' }) })
-        .then(function (res) { return res.ok; }).catch(function () { return false; });
+      return window.ElaraDB.rpc('submit_review', { p: { product_id: r.product_id, author: r.author, rating: r.rating, title: r.title || null, body: r.body, website: '' } }).then(function (x) { return !!(x && x.ok); });
     },
+    sendMessage: function (m) { return window.ElaraDB.rpc('send_message', { p: Object.assign({ website: '' }, m) }); },
+    subscribe: function (email, source) { return window.ElaraDB.rpc('subscribe', { p_email: email, p_source: source || 'site' }); },
+    logError: function (msg) { return window.ElaraDB.rpc('log_error', { p_message: String(msg), p_url: location.href, p_ua: navigator.userAgent }); },
     // Approved reviews for one product (newest first).
     reviews: function (productId) {
       return fetch(URL_ + '/rest/v1/reviews?select=id,author,rating,title,body,created_at&status=eq.approved&product_id=eq.' + encodeURIComponent(productId) + '&order=created_at.desc&limit=100', { headers: headers() })

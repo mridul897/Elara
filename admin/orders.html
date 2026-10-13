@@ -17,6 +17,18 @@
   .ocard .r { display: flex; align-items: center; font-size: 14px; margin-bottom: 8px; } .ocard .r span { flex: 1; } .ocard .r b { font-weight: 600; }
   .ocard .m { font-size: 12px; color: var(--mute); }
   @media (max-width: 899.98px) { #table { display: none; } .ocards { display: flex; } .pager .btn { flex: 1; } }
+
+  #table { max-height: calc(100vh - 360px); min-height: 240px; overflow-y: auto; overscroll-behavior: contain; }
+  #table .trow.head { position: sticky; top: 0; z-index: 2; }
+  .pcount { font-size: 13px; color: var(--sub); margin: 0; }
+  .chk { cursor: pointer; position: relative; }
+  .chk.on { background: var(--accent); border-color: var(--accent); }
+  .chk.on::after { content: ''; position: absolute; left: 4px; top: 2px; width: 4px; height: 8px; border: solid #fff; border-width: 0 1.6px 1.6px 0; transform: rotate(45deg); }
+  .morebox { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); }
+  .morebox .f { display: flex; flex-direction: column; gap: 6px; min-width: 180px; } .morebox label { font-size: 12px; font-weight: 500; color: var(--sub); }
+  .bulk { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px 12px; background: var(--accent-soft); border: 1px solid #c9d5fa; border-radius: var(--r-card); font-size: 13px; }
+  .bulk b { margin-right: 8px; }
+  @media (max-width: 899.98px) { #table { max-height: none; } }
 </style>
 </head>
 <body>
@@ -29,8 +41,8 @@ A.boot({
   active: 'orders',
   crumbs: [{ t: 'Orders' }],
   render: async function (page, ctx) {
-    var PAGE = 8;
-    var state = { tab: 'all', q: '', pay: 'all', range: '30', page: 0, rows: [] };
+    var CHUNK = 30;
+    var state = { tab: 'all', q: '', pay: 'all', range: '30', pstate: 'all', zone: 'all', limit: 30, total: 0, sel: {}, rows: [] };
     var TABS = [['all', 'All'], ['placed', 'To confirm'], ['pack', 'To pack'], ['shipped', 'Shipped'], ['delivered', 'Delivered'], ['cancelled', 'Cancelled']];
     var PAYS = [{ v: 'all', l: 'All payments' }, { v: 'cod', l: 'Cash on delivery' }, { v: 'bkash', l: 'bKash' }, { v: 'nagad', l: 'Nagad' }, { v: 'card', l: 'Card' }];
     var RANGES = [{ v: '1', l: 'Today' }, { v: '7', l: 'Last 7 days' }, { v: '30', l: 'Last 30 days' }, { v: '90', l: 'Last 90 days' }, { v: 'all', l: 'All time' }];
@@ -46,13 +58,15 @@ A.boot({
       '<div class="pop-wrap" id="payWrap"><button class="btn" id="payBtn">' + A.ic('wallet1', 16) + '<span id="payTxt">Payment</span>' + A.ic('chevron-down-small', 16) + '</button></div>' +
       '<div class="pop-wrap" id="rangeWrap"><button class="btn" id="rangeBtn">' + A.ic('calendar1', 16) + '<span id="rangeTxt">Last 30 days</span>' + A.ic('chevron-down-small', 16) + '</button></div>' +
       '<button class="btn" id="more">' + A.ic('filter1', 16) + 'More filters</button></div>' +
-      '<div class="table" id="table"></div><div class="ocards" id="cards"></div>' +
-      '<div class="pager"><p class="info" id="info"></p><button class="btn sm" id="prev">Previous</button><button class="btn sm" id="next">Next</button></div>';
+      '<div class="morebox" id="moreBox" hidden><div class="f"><label for="fState">Payment state</label><select class="select" id="fState"><option value="all">Any</option><option value="pending">Pending</option><option value="paid">Paid</option><option value="failed">Failed</option><option value="refunded">Refunded</option></select></div>' +
+      '<div class="f"><label for="fZone">Delivery area</label><select class="select" id="fZone"><option value="all">Anywhere</option><option value="Dhaka">Dhaka</option><option value="Outside Dhaka">Outside Dhaka</option></select></div><button class="btn sm" id="fClear">Clear</button></div>' +
+      '<div class="bulk" id="bulk" hidden></div>' +
+      '<div class="table" id="table"></div><div class="ocards" id="cards"></div><p class="pcount" id="info"></p>';
 
     var $ = function (id) { return document.getElementById(id); };
     $('table').innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
 
-    var res = await A.sb.from('orders').select('id,placed_at,customer_name,customer_phone,payment_method,payment_state,status,total,order_items(qty)').order('placed_at', { ascending: false }).limit(2000);
+    var res = await A.sb.from('orders').select('id,placed_at,customer_name,customer_phone,payment_method,payment_state,status,total,zone,order_items(qty)').order('placed_at', { ascending: false }).limit(2000);
     if (res.error) { $('table').innerHTML = '<div class="empty"><b>Could not load orders</b>' + A.esc(res.error.message) + '</div>'; $('sub').textContent = ''; return; }
     state.rows = res.data.map(function (o) { o.items = (o.order_items || []).reduce(function (s, i) { return s + i.qty; }, 0); return o; });
 
@@ -63,6 +77,8 @@ A.boot({
       return state.rows.filter(function (o) {
         if (!ignoreTab && state.tab !== 'all' && tabOf(o) !== state.tab) return false;
         if (state.pay !== 'all' && o.payment_method !== state.pay) return false;
+        if (state.pstate !== 'all' && o.payment_state !== state.pstate) return false;
+        if (state.zone !== 'all' && o.zone !== state.zone) return false;
         if (!inRange(o)) return false;
         if (q && (o.id + ' ' + o.customer_name + ' ' + o.customer_phone).toLowerCase().indexOf(q) < 0) return false;
         return true;
@@ -79,17 +95,20 @@ A.boot({
       $('payTxt').textContent = state.pay === 'all' ? 'Payment' : payLbl(state.pay);
       $('rangeTxt').textContent = rangeLbl(state.range);
 
-      var pages = Math.max(1, Math.ceil(list.length / PAGE));
-      if (state.page >= pages) state.page = pages - 1;
-      var slice = list.slice(state.page * PAGE, state.page * PAGE + PAGE);
-      var head = '<div class="trow head"><span class="c" style="width:16px"></span><span class="c col-order">Order</span><span class="c col-placed">Placed</span><span class="grow">Customer</span><span class="c col-items">Items</span><span class="c col-total">Total</span><span class="c col-pay">Payment</span><span class="c col-status">Status</span><span class="c col-menu"></span></div>';
+      var keepTop = $('table').scrollTop;
+      state.total = list.length;
+      var slice = list.slice(0, state.limit);
+      var activeF = (state.pstate !== 'all' ? 1 : 0) + (state.zone !== 'all' ? 1 : 0);
+      $('more').lastChild.textContent = 'More filters' + (activeF ? ' · ' + activeF : '');
+      var allSel = slice.length && slice.every(function (o) { return state.sel[o.id]; });
+      var head = '<div class="trow head"><span class="c" style="width:16px"><span class="chk' + (allSel ? ' on' : '') + '" data-selall="1" role="checkbox" aria-checked="' + !!allSel + '" aria-label="Select all"></span></span><span class="c col-order">Order</span><span class="c col-placed">Placed</span><span class="grow">Customer</span><span class="c col-items">Items</span><span class="c col-total">Total</span><span class="c col-pay">Payment</span><span class="c col-status">Status</span><span class="c col-menu"></span></div>';
       if (!list.length) {
         $('table').innerHTML = head + '<div class="empty"><b>' + (state.rows.length ? 'No orders match these filters' : 'No orders yet') + '</b>' +
           (state.rows.length ? 'Try a different tab, date range or search.' : 'New orders from the store show up here the moment a customer places them.') + '</div>';
       } else {
         $('table').innerHTML = head + slice.map(function (o) {
           var b = A.statusBadge(o);
-          return '<div class="trow link" data-id="' + A.esc(o.id) + '"><span class="c" style="width:16px"><span class="chk"></span></span>' +
+          return '<div class="trow link" data-id="' + A.esc(o.id) + '"><span class="c" style="width:16px"><span class="chk' + (state.sel[o.id] ? ' on' : '') + '" data-sel="' + A.esc(o.id) + '" role="checkbox" aria-checked="' + !!state.sel[o.id] + '"></span></span>' +
             '<span class="c col-order strong">' + A.esc(o.id) + '</span><span class="c col-placed">' + A.when(o.placed_at) + '</span>' +
             '<span class="grow">' + A.esc(o.customer_name) + '</span><span class="c col-items">' + o.items + '</span>' +
             '<span class="c col-total">' + A.money(o.total) + '</span><span class="c col-pay">' + A.esc(A.payLabel(o)) + '</span>' +
@@ -103,36 +122,75 @@ A.boot({
           '<div class="r"><span>' + A.esc(o.customer_name) + '</span><b>' + A.money(o.total) + '</b></div>' +
           '<p class="m">' + o.items + ' item' + (o.items === 1 ? '' : 's') + ' · ' + A.esc(A.payLabel(o)) + ' · ' + A.when(o.placed_at) + '</p></a>';
       }).join('') : '<div class="empty"><b>' + (state.rows.length ? 'No orders match these filters' : 'No orders yet') + '</b></div>';
-      var from = list.length ? state.page * PAGE + 1 : 0, to = Math.min(list.length, state.page * PAGE + PAGE);
-      $('info').textContent = 'Showing ' + from + ' to ' + to + ' of ' + list.length + ' order' + (list.length === 1 ? '' : 's');
-      $('prev').disabled = state.page === 0; $('next').disabled = state.page >= pages - 1;
+      $('table').scrollTop = keepTop;
+      $('info').textContent = list.length + ' order' + (list.length === 1 ? '' : 's') + (list.length > slice.length ? ' · scroll for more' : '');
+      drawBulk();
     }
 
-    $('tabs').addEventListener('click', function (e) { var t = e.target.closest('[data-tab]'); if (!t) return; state.tab = t.getAttribute('data-tab'); state.page = 0; draw(); });
-    var tm; $('q').addEventListener('input', function (e) { clearTimeout(tm); tm = setTimeout(function () { state.q = e.target.value; state.page = 0; draw(); }, 120); });
-    $('payBtn').addEventListener('click', function (e) { e.stopPropagation(); A.menu($('payWrap'), PAYS, state.pay, function (v) { state.pay = v; state.page = 0; draw(); }); });
-    $('rangeBtn').addEventListener('click', function (e) { e.stopPropagation(); A.menu($('rangeWrap'), RANGES, state.range, function (v) { state.range = v; state.page = 0; draw(); }); });
-    $('more').addEventListener('click', function () { A.toast('Filters for payment state and delivery zone are coming next.'); });
-    $('prev').addEventListener('click', function () { state.page--; draw(); });
-    $('next').addEventListener('click', function () { state.page++; draw(); });
+    // ----- select rows, then act on all of them at once
+    var NEXT = { placed: ['confirmed', 'Confirm order', 'check16'], confirmed: ['packed', 'Mark as packed', 'package24'], packed: ['shipped', 'Mark as shipped', 'package24'], shipped: ['delivered', 'Mark as delivered', 'check16'] };
+    function selected() { return state.rows.filter(function (o) { return state.sel[o.id]; }); }
+    function drawBulk() {
+      var sel = selected(), box = $('bulk');
+      box.hidden = !sel.length; if (!sel.length) return;
+      var movable = sel.filter(function (o) { return NEXT[o.status]; }).length;
+      box.innerHTML = '<b>' + sel.length + ' selected</b><button class="btn sm" id="bNext"' + (movable ? '' : ' disabled') + '>Move ' + movable + ' to next step</button><button class="btn sm" id="bSlip">Print slips</button><button class="btn sm" id="bCsv">Export selected</button><button class="btn sm" id="bClr">Clear</button>';
+    }
+    $('bulk').addEventListener('click', async function (e) {
+      var id = e.target.id, sel = selected();
+      if (id === 'bClr') { state.sel = {}; draw(); return; }
+      if (id === 'bCsv') { exportRows(sel, 'selected'); return; }
+      if (id === 'bSlip') {
+        var ids = sel.map(function (o) { return o.id; }).slice(0, 30);
+        var r = await A.sb.from('orders').select('*, order_items(*)').in('id', ids);
+        if (r.error) { A.toast('Could not load the orders.', true); return; }
+        A.printSlips(r.data || []); return;
+      }
+      if (id === 'bNext') {
+        var mv = sel.filter(function (o) { return NEXT[o.status]; });
+        if (!confirm('Move ' + mv.length + ' order' + (mv.length === 1 ? '' : 's') + ' to the next step?')) return;
+        var res = await Promise.all(mv.map(function (o) { return A.sb.from('orders').update({ status: NEXT[o.status][0] }).eq('id', o.id).select('id').maybeSingle().then(function (u) { return { o: o, ok: !u.error && !!u.data }; }); }));
+        var ok = 0; res.forEach(function (x) { if (x.ok) { x.o.status = NEXT[x.o.status][0]; ok++; } });
+        state.sel = {}; draw(); A.toast(ok + ' order' + (ok === 1 ? '' : 's') + ' moved' + (ok < mv.length ? ' (' + (mv.length - ok) + ' could not be changed)' : ''), ok < mv.length);
+      }
+    });
+
+    $('tabs').addEventListener('click', function (e) { var t = e.target.closest('[data-tab]'); if (!t) return; state.tab = t.getAttribute('data-tab'); state.limit = CHUNK; $('table').scrollTop = 0; draw(); });
+    var tm; $('q').addEventListener('input', function (e) { clearTimeout(tm); tm = setTimeout(function () { state.q = e.target.value; state.limit = CHUNK; $('table').scrollTop = 0; draw(); }, 120); });
+    $('payBtn').addEventListener('click', function (e) { e.stopPropagation(); A.menu($('payWrap'), PAYS, state.pay, function (v) { state.pay = v; state.limit = CHUNK; $('table').scrollTop = 0; draw(); }); });
+    $('rangeBtn').addEventListener('click', function (e) { e.stopPropagation(); A.menu($('rangeWrap'), RANGES, state.range, function (v) { state.range = v; state.limit = CHUNK; $('table').scrollTop = 0; draw(); }); });
+    $('more').addEventListener('click', function () { $('moreBox').hidden = !$('moreBox').hidden; });
+    $('fState').addEventListener('change', function (e) { state.pstate = e.target.value; state.limit = CHUNK; draw(); });
+    $('fZone').addEventListener('change', function (e) { state.zone = e.target.value; state.limit = CHUNK; draw(); });
+    $('fClear').addEventListener('click', function () { state.pstate = 'all'; state.zone = 'all'; $('fState').value = 'all'; $('fZone').value = 'all'; state.limit = CHUNK; draw(); });
+    function moreRows() {
+      if (state.limit >= state.total) return;
+      var t = $('table'), r = t.getBoundingClientRect();
+      if (t.scrollHeight - t.scrollTop - t.clientHeight < 240 && r.bottom < window.innerHeight + 240) { state.limit += CHUNK; draw(); }
+    }
+    $('table').addEventListener('scroll', moreRows); window.addEventListener('scroll', moreRows, { passive: true }); window.addEventListener('resize', moreRows);
     $('create').addEventListener('click', function () { location.href = 'order-new.html'; });
     $('table').addEventListener('click', function (e) {
+      var sa = e.target.closest('[data-selall]');
+      if (sa) { e.stopPropagation(); var list = filtered(false).slice(0, state.limit), all = list.length && list.every(function (o) { return state.sel[o.id]; }); list.forEach(function (o) { if (all) delete state.sel[o.id]; else state.sel[o.id] = 1; }); draw(); return; }
+      var sc = e.target.closest('[data-sel]');
+      if (sc) { e.stopPropagation(); var k = sc.getAttribute('data-sel'); if (state.sel[k]) delete state.sel[k]; else state.sel[k] = 1; draw(); return; }
       var m = e.target.closest('[data-menu]');
       if (m) { e.stopPropagation(); openRowMenu(m); return; }
       var r = e.target.closest('[data-id]'); if (r) location.href = 'order.html?id=' + encodeURIComponent(r.getAttribute('data-id'));
     });
     // Row menu (Figma "Orders / Row menu open"): view, print slip, next step, call, cancel
-    var NEXT = { placed: ['confirmed', 'Confirm order', 'check16'], confirmed: ['packed', 'Mark as packed', 'package24'], packed: ['shipped', 'Mark as shipped', 'package24'], shipped: ['delivered', 'Mark as delivered', 'check16'] };
     function openRowMenu(btn) {
       var id = btn.getAttribute('data-menu'), o = state.rows.filter(function (x) { return x.id === id; })[0]; if (!o) return;
       var items = [{ v: 'view', l: 'View order', icon: 'eye-open' }, { v: 'slip', l: 'Print packing slip', icon: 'printer' }];
       if (NEXT[o.status]) items.push({ v: 'next', l: NEXT[o.status][1], icon: NEXT[o.status][2] });
-      items.push({ v: 'call', l: 'Contact customer', icon: 'phone' });
+      items.push({ v: 'call', l: 'Call customer', icon: 'phone' }, { v: 'wa', l: 'WhatsApp customer', icon: 'whatsapp' });
       if (o.status === 'placed' || o.status === 'confirmed' || o.status === 'packed') items.push({ v: 'cancel', l: 'Cancel order', icon: 'trash-can', danger: true, divider: true });
       var wrap = btn.parentNode; wrap.style.position = 'relative';
       A.menu(wrap, items, null, async function (v) {
         if (v === 'view') { location.href = 'order.html?id=' + encodeURIComponent(id); return; }
         if (v === 'call') { location.href = 'tel:' + o.customer_phone; return; }
+        if (v === 'wa') { window.open(A.waLink(o.customer_phone, 'Hello ' + o.customer_name.split(' ')[0] + ', this is ELARA about your order ' + o.id + '.'), '_blank'); return; }
         if (v === 'slip') {
           var r = await A.sb.from('orders').select('*, order_items(*)').eq('id', id).maybeSingle();
           if (r.error || !r.data) { A.toast('Could not load the order.', true); return; }
@@ -146,16 +204,16 @@ A.boot({
       });
       var pop = wrap.querySelector('.pop'); if (pop) pop.classList.add('right');
     }
-    $('export').addEventListener('click', function () {
-      var list = filtered(false);
+    $('export').addEventListener('click', function () { exportRows(filtered(false), 'orders'); });
+    function exportRows(list, name) {
       if (!list.length) { A.toast('Nothing to export for these filters.', true); return; }
       var q = function (v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; };
       var csv = ['Order,Placed,Customer,Phone,Items,Total,Payment,Status'].concat(list.map(function (o) {
         return [o.id, new Date(o.placed_at).toISOString(), o.customer_name, o.customer_phone, o.items, o.total, A.payLabel(o), A.statusBadge(o).label].map(q).join(',');
       })).join('\r\n');
       var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv' }));
-      a.download = 'elara-orders-' + new Date().toISOString().slice(0, 10) + '.csv'; a.click(); URL.revokeObjectURL(a.href);
-    });
+      a.download = 'elara-' + name + '-' + new Date().toISOString().slice(0, 10) + '.csv'; a.click(); URL.revokeObjectURL(a.href);
+    }
     draw();
   }
 });

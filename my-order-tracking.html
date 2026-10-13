@@ -525,7 +525,7 @@
       'We received your order.',
       'Our team confirmed your order and your address.',
       'Packed with care and handed to the courier.',
-      'Your delivery person will call before arriving. Keep your phone nearby.',
+      'Your delivery person will call before arriving. Keep your phone nearby.' + (o.courier ? ' Courier: ' + o.courier + (o.trackingNo ? ', tracking number ' + o.trackingNo : '') + '.' : ''),
       o.payment === 'cod' ? 'Pay ' + money(o.total) + ' in cash when it arrives.' : 'Your order arrives at your door.',
     ];
     const lastDone = stage === 5;
@@ -597,7 +597,7 @@
     return {
       id: r.id, placedAt: r.placed_at, zone: r.zone, payment: r.payment, paymentState: r.payment_state, total: r.total, subtotal: r.subtotal,
       discount: r.discount, delivery: r.delivery, promo: r.promo, status: r.status, realStage: STAGE[r.status] || 1, events: r.events || [],
-      customer: { name: r.name, phone: r.phone },
+      customer: { name: r.name, phone: r.phone }, courier: r.courier || '', trackingNo: r.tracking_no || '',
       address: { line1: r.address || '', line2: null, area: null, upazila: r.upazila || '', district: r.district || '', division: r.division || '' },
       items: (r.items || []).map((i) => ({ name: i.name, colour: i.colour, size: i.size, qty: i.qty, price: i.price, img: i.img || '' })),
     };

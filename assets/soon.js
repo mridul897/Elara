@@ -49,6 +49,9 @@
       var v = input.value.trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { errEl.textContent = 'Please enter a valid e-mail address.'; input.focus(); return; }
       try {
+        fetch('https://sxwniigfrjzxryhuavev.supabase.co/rest/v1/rpc/subscribe', { method: 'POST',
+          headers: { 'Content-Type': 'application/json', apikey: 'sb_publishable_rAfRs-tHq_DNYBBqiNIOwA_AW1EauJs', Authorization: 'Bearer sb_publishable_rAfRs-tHq_DNYBBqiNIOwA_AW1EauJs' },
+          body: JSON.stringify({ p_email: v, p_source: 'notify:' + titleEl.textContent }) }).catch(function () {});
         var all = JSON.parse(localStorage.getItem(KEY) || '[]');
         all.push({ ts: Date.now(), email: v, collection: titleEl.textContent });
         localStorage.setItem(KEY, JSON.stringify(all));

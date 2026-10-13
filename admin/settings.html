@@ -49,7 +49,9 @@ A.boot({
     var S = {
       store: { name: 'ELARA', currency: 'BDT', timezone: 'Asia/Dhaka' },
       payments: { cod: { on: true }, bkash: { on: true, number: '' }, nagad: { on: true, number: '' }, card: { on: false } },
-      notifications: { new_order: true, low_stock: true, payment_failed: true, new_review: false }
+      notifications: { new_order: true, low_stock: true, payment_failed: true, new_review: false },
+      analytics: { ga_id: '', fb_pixel: '' },
+      inventory: { low: 5 }
     };
     var owner = ctx.role === 'owner', dirty = false;
     var res = await A.sb.from('settings').select('key,value');
@@ -84,7 +86,8 @@ A.boot({
         '<div class="cols"><div class="left">' +
         '<section class="card" id="general"><h3>Store</h3><div class="f"><label for="sName">Store name</label><input class="text" id="sName" value="' + A.esc(S.store.name) + '"' + (owner ? '' : ' disabled') + '></div>' +
         '<div class="two"><div class="f"><label for="sCur">Currency</label><select class="select" id="sCur"><option value="BDT" selected>BDT · Tk.</option></select></div>' +
-        '<div class="f"><label for="sTz">Time zone</label><select class="select" id="sTz"><option value="Asia/Dhaka" selected>Asia/Dhaka</option></select></div></div></section>' +
+        '<div class="f"><label for="sTz">Time zone</label><select class="select" id="sTz"><option value="Asia/Dhaka" selected>Asia/Dhaka</option></select></div></div>' +
+        '<div class="f"><label for="sLow">Low stock alert</label><div style="display:flex;align-items:center;gap:8px"><input class="text" id="sLow" type="number" min="0" max="999" value="' + (+S.inventory.low || 5) + '" style="max-width:110px"><span class="note">Warn me when a bag has this many left or fewer.</span></div></div></section>' +
         '<section class="card" id="payments" style="gap:0"><h3 style="margin-bottom:10px">Payment methods</h3><div class="list">' + PAYROWS.map(function (p) {
           var sub = p[0] === 'bkash' || p[0] === 'nagad' ? '<button data-num="' + p[0] + '"' + (owner ? '' : ' disabled') + '>' + (S.payments[p[0]].number ? 'Merchant number ' + A.esc(S.payments[p[0]].number) : 'Add merchant number') + '</button>' : p[2];
           return '<div class="li"><div class="t"><span class="n">' + p[1] + '</span><span class="s">' + sub + '</span></div><span class="badge ' + p[3][1] + '">' + p[3][0] + '</span>' + toggle('pay_' + p[0], S.payments[p[0]].on, p[0] === 'card') + '</div>';
@@ -95,9 +98,12 @@ A.boot({
         '<section class="card" id="notifications"><h3>Notifications</h3>' + NOTIFS.map(function (n) {
           return '<div class="nrow"><div class="t"><span class="n">' + n[1] + '</span><span class="s" id="ns_' + n[0] + '">' + (S.notifications[n[0]] ? 'Email me' : 'Off') + '</span></div>' + toggle('nt_' + n[0], S.notifications[n[0]]) + '</div>';
         }).join('') + '<p class="note">Your choices are saved. Email sending is switched on once the store has its own email service.</p></section>' +
+        '<section class="card" id="analytics"><h3>Analytics</h3><p class="note">Paste your IDs to measure visits and Facebook ads. Nothing is loaded until you add one.</p>' +
+        '<div class="f"><label for="gaId">Google Analytics ID</label><input class="text" id="gaId" placeholder="G-XXXXXXXXXX" value="' + A.esc(S.analytics.ga_id || '') + '"' + (owner ? '' : ' disabled') + '></div>' +
+        '<div class="f"><label for="fbId">Facebook Pixel ID</label><input class="text" id="fbId" inputmode="numeric" placeholder="1234567890123456" value="' + A.esc(S.analytics.fb_pixel || '') + '"' + (owner ? '' : ' disabled') + '></div></section>' +
         '<section class="card"><h3>Your account</h3><div class="f"><label>Email</label><input class="text" value="' + A.esc(ctx.user.email) + '" disabled></div>' +
         '<button class="btn block" id="chpw">Change password</button><button class="btn block" id="soAll">Sign out everywhere</button></section>' +
-        (owner ? '<section class="card" style="gap:8px"><h3>Recent activity</h3>' + (log.length ? log.slice(0, 5).map(function (a) { return '<p class="act">' + A.esc(activityLine(a)) + '</p>'; }).join('') : '<p class="act">Nothing yet. Changes your team makes show up here.</p>') + '</section>' : '') +
+        (owner ? '<section class="card" style="gap:8px"><h3>Recent activity</h3><a href="activity.html" style="font-size:13px;color:var(--accent);font-weight:500">View all activity and problems</a>' + (log.length ? log.slice(0, 5).map(function (a) { return '<p class="act">' + A.esc(activityLine(a)) + '</p>'; }).join('') : '<p class="act">Nothing yet. Changes your team makes show up here.</p>') + '</section>' : '') +
         '</div></div>';
       drawTeam(); wire();
     }
@@ -115,6 +121,9 @@ A.boot({
       page.querySelectorAll('.tab').forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); page.querySelectorAll('.tab').forEach(function (x) { x.classList.toggle('on', x === a); }); var el = $(a.getAttribute('data-tab')); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }); });
       if (!owner) return;
       $('sName').addEventListener('input', function (e) { S.store.name = e.target.value; mark(); });
+      $('sLow').addEventListener('input', function (e) { S.inventory.low = Math.max(0, parseInt(e.target.value, 10) || 0); mark(); });
+      $('gaId').addEventListener('input', function (e) { S.analytics.ga_id = e.target.value.trim(); mark(); });
+      $('fbId').addEventListener('input', function (e) { S.analytics.fb_pixel = e.target.value.trim(); mark(); });
       ['cod', 'bkash', 'nagad'].forEach(function (k) { $('pay_' + k).addEventListener('click', function () { S.payments[k].on = !S.payments[k].on; $('pay_' + k).setAttribute('aria-checked', S.payments[k].on); mark(); }); });
       NOTIFS.forEach(function (n) { $('nt_' + n[0]).addEventListener('click', function () { S.notifications[n[0]] = !S.notifications[n[0]]; $('nt_' + n[0]).setAttribute('aria-checked', S.notifications[n[0]]); $('ns_' + n[0]).textContent = S.notifications[n[0]] ? 'Email me' : 'Off'; mark(); }); });
       page.querySelectorAll('[data-num]').forEach(function (b) { b.addEventListener('click', function () {
@@ -125,7 +134,7 @@ A.boot({
       }); });
       $('save').addEventListener('click', async function () {
         var btn = $('save'); btn.disabled = true; btn.textContent = 'Saving…';
-        var u = await A.sb.from('settings').upsert(['store', 'payments', 'notifications'].map(function (k) { return { key: k, value: S[k] }; }), { onConflict: 'key' });
+        var u = await A.sb.from('settings').upsert(['store', 'payments', 'notifications', 'analytics', 'inventory'].map(function (k) { return { key: k, value: S[k] }; }), { onConflict: 'key' });
         btn.disabled = false; btn.textContent = 'Save settings';
         if (u.error) { A.toast('Could not save: ' + u.error.message, true); return; }
         dirty = false; A.toast('Settings saved');

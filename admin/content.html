@@ -60,7 +60,7 @@ A.boot({
       announcement: { text: 'Free delivery over Tk. 3,000 · Cash on delivery across Bangladesh', active: true },
       hero: { eyebrow: 'The Everyday Collection', headline: 'Bags built for every chapter.', text: 'Premium leather, considered detail, made for the routine you actually have: work, weekend, and everything between.', button_label: 'Shop New Collection', button_link: 'my-plp-screen.html', image: '' },
       new_arrivals: { ids: [] },
-      contact: { whatsapp: '+880 1320 575476', email: 'hello@elara.com.bd', hours: 'Sat to Thu, 10 am to 7 pm' }
+      contact: { whatsapp: '+880 1320 575476', email: 'hello@elara.com.bd', hours: 'Sat to Thu, 10 am to 7 pm', address: '' }
     };
     var pages = {}, products = [], dirty = {}, saving = false;
 
@@ -103,7 +103,8 @@ A.boot({
       '<section class="card"><h3>Contact details</h3>' +
       '<div class="f"><label for="cWa">WhatsApp</label><input class="text" id="cWa" value="' + A.esc(S.contact.whatsapp) + '"></div>' +
       '<div class="f"><label for="cEm">Email</label><input class="text" id="cEm" type="email" value="' + A.esc(S.contact.email) + '"></div>' +
-      '<div class="f"><label for="cHo">Support hours</label><input class="text" id="cHo" value="' + A.esc(S.contact.hours) + '"></div></section>' +
+      '<div class="f"><label for="cHo">Support hours</label><input class="text" id="cHo" value="' + A.esc(S.contact.hours) + '"></div>' +
+      '<div class="f"><label for="cAd">Studio address</label><input class="text" id="cAd" placeholder="House 12, Road 5, Dhanmondi, Dhaka" value="' + A.esc(S.contact.address || '') + '"></div></section>' +
       '</div></div>';
 
     function drawPicks() {
@@ -126,7 +127,7 @@ A.boot({
     $('annOn').addEventListener('click', function () { S.announcement.active = !S.announcement.active; $('annOn').setAttribute('aria-checked', S.announcement.active); mark(); });
     bind('hEy', function (v) { S.hero.eyebrow = v; }); bind('hHe', function (v) { S.hero.headline = v; }); bind('hTx', function (v) { S.hero.text = v; }); bind('hBl', function (v) { S.hero.button_label = v; });
     $('hLk').addEventListener('change', function (e) { S.hero.button_link = e.target.value; mark(); });
-    bind('cWa', function (v) { S.contact.whatsapp = v; }); bind('cEm', function (v) { S.contact.email = v; }); bind('cHo', function (v) { S.contact.hours = v; });
+    bind('cWa', function (v) { S.contact.whatsapp = v; }); bind('cEm', function (v) { S.contact.email = v; }); bind('cHo', function (v) { S.contact.hours = v; }); bind('cAd', function (v) { S.contact.address = v; });
 
     $('hImg').addEventListener('click', function () { $('hFile').click(); });
     $('hFile').addEventListener('change', async function (e) {

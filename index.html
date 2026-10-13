@@ -1304,12 +1304,13 @@
       let list = []; try { list = JSON.parse(localStorage.getItem('elara.welcomeEmails.v1')) || []; } catch (er) {}
       if (list.includes(v)) { say('You are already signed up. Check your inbox for your 10% code.', true); return; }
       list.push(v);
+      if (window.ElaraDB) ElaraDB.subscribe(v, 'newsletter');
       try {
         localStorage.setItem('elara.welcomeEmails.v1', JSON.stringify(list));
         if (!localStorage.getItem('elara.welcome.v1') || JSON.parse(localStorage.getItem('elara.welcome.v1')).status !== 'claimed')
           localStorage.setItem('elara.welcome.v1', JSON.stringify({ status: 'claimed', email: v, code: 'WELCOME10', at: new Date().toISOString() }));
       } catch (er) {}
-      input.value = ''; say('Thank you. Your 10% code is on its way to ' + v + '.', true);
+      input.value = ''; say('Thank you. Your 10% code is WELCOME10. Paste it in your bag at checkout.', true);
     });
     input.addEventListener('input', () => { msg.hidden = true; });
   })();

@@ -137,12 +137,14 @@ A.boot({
     var oRes = await A.sb.from('orders').select('id,placed_at,customer_name,total,status,payment_method,payment_state,order_items(product_id,name,qty,unit_price)').order('placed_at', { ascending: false }).limit(5000);
     if (oRes.error) { page.innerHTML = '<div class="empty card"><b>Could not load the dashboard</b>' + A.esc(oRes.error.message) + '</div>'; return; }
     orders = oRes.data;
+    var LOWAT = 5;
+    try { var inv = await A.sb.from('settings').select('value').eq('key', 'inventory').maybeSingle(); if (inv.data && inv.data.value && +inv.data.value.low >= 0) LOWAT = +inv.data.value.low; } catch (e) {}
     var pRes = await A.sb.from('products').select('id,name,status,product_colours(id,card,position,product_variants(stock))').limit(1000);
     (pRes.data || []).forEach(function (p) {
       var cols = (p.product_colours || []).slice().sort(function (a, b) { return a.position - b.position; });
       var stock = 0; cols.forEach(function (c) { (c.product_variants || []).forEach(function (v) { stock += v.stock; }); });
       products[p.id] = { name: p.name, img: cols[0] && cols[0].card };
-      if (p.status === 'published' && stock <= 5) lowStock.push({ name: p.name, stock: stock });
+      if (p.status === 'published' && stock <= LOWAT) lowStock.push({ name: p.name, stock: stock });
     });
     lowStock.sort(function (a, b) { return a.stock - b.stock; });
     var rv = await A.sb.from('reviews').select('id', { count: 'exact', head: true }).eq('status', 'pending');

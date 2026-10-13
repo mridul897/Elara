@@ -89,6 +89,7 @@
       var list = read(EMAILS) || [];
       if (!force && list.indexOf(v) !== -1) { bad('This email has already received its code. Check your inbox.'); return; }
       list.push(v); write(EMAILS, list);
+      if (window.ElaraDB) ElaraDB.subscribe(v, 'welcome-popup');
       write(KEY, { status: 'claimed', email: v, code: CODE, at: new Date().toISOString() });
       sent(v);
     });
@@ -98,9 +99,9 @@
   function sent(email) {
     var b = document.getElementById('wpBody');
     b.innerHTML = '<p class="wp-eyebrow">First timer?</p>' + TICK +
-      '<h2 class="wp-title" id="wpTitle" tabindex="-1">Check your inbox</h2>' +
-      '<p class="wp-sub">We have emailed your 10% code to <b style="font-weight:500;color:#4a4741">' + esc(email) + '</b>. It can take a minute to arrive.</p>' +
-      '<div class="wp-hint"><span>Use it at checkout</span>Open the email, copy the code, and paste it in your bag.</div>' +
+      '<h2 class="wp-title" id="wpTitle" tabindex="-1">Here is your 10% code</h2>' +
+      '<p class="wp-sub">Thank you, <b style="font-weight:500;color:#4a4741">' + esc(email) + '</b>. Your one-time code is <b style="font-weight:600;color:#4a4741;letter-spacing:.04em">' + CODE + '</b>.</p>' +
+      '<div class="wp-hint"><span>Use it at checkout</span>Paste the code in your bag. It works once for your phone number.</div>' +
       '<a class="wp-btn" href="my-plp-screen.html">Start shopping</a>';
     document.getElementById('wpTitle').focus({ preventScroll: true });
   }

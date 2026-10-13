@@ -258,3 +258,20 @@ textarea.text { height: auto; padding: 10px 12px; line-height: 20px; resize: ver
 .pop .plb { flex: 1; } .pop .pic { display: flex; color: var(--sub); } .pop .pck { color: var(--accent); }
 .pop button.danger, .pop button.danger .pic { color: var(--bad); }
 .pop .pdiv { height: 1px; background: var(--border); margin: 6px 4px; }
+
+/* ---------- global search + bell ---------- */
+.dialog.gs-dialog { width: 560px; padding: 0; gap: 0; align-self: flex-start; margin-top: 12vh; }
+.gsearch .gs-in { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--border); color: var(--sub); }
+.gsearch .gs-in input { flex: 1; border: 0; outline: 0; background: none; font: inherit; font-size: 16px; color: var(--text); }
+.gs-res { max-height: 52vh; overflow: auto; padding: 8px; }
+.gs-h { font-size: 11px; color: var(--mute); text-transform: uppercase; padding: 10px 10px 4px; }
+.gs-r { display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 8px; font-size: 13px; color: var(--text); }
+.gs-r:hover, .gs-r:focus { background: var(--canvas); }
+.gs-r b { font-weight: 500; } .gs-r span { flex: 1; color: var(--sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .gs-r em { font-style: normal; color: var(--sub); }
+.gs-hint { padding: 18px 10px; font-size: 13px; color: var(--mute); }
+.bellpanel { position: fixed; top: 52px; right: 70px; width: 320px; max-width: calc(100% - 24px); z-index: 70; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 12px 36px rgba(31,35,40,.14); padding: 8px; }
+.bp-h { font-size: 12px; color: var(--mute); padding: 8px 10px 4px; }
+.bp-r { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 8px; font-size: 13px; color: var(--text); }
+.bp-r:hover { background: var(--canvas); } .bp-r span:nth-child(2) { flex: 1; } .bp-r .ic { color: var(--mute); }
+.bp-e { padding: 14px 10px; font-size: 13px; color: var(--sub); }
+@media (max-width: 899.98px) { .bellpanel { top: 60px; right: 12px; left: 12px; width: auto; } .dialog.gs-dialog { margin-top: 0; border-radius: 0 0 16px 16px; align-self: flex-start; } }

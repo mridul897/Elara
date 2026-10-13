@@ -20,6 +20,10 @@
     return '<span style="display:inline-flex;gap:2px">' + out + '</span>';
   };
   A.initials = function (n) { var p = String(n || '').trim().split(/\s+/); return ((p.length > 1 ? p[0][0] + p[1][0] : String(n || '').slice(0, 2)) || '?').toUpperCase(); };
+  A.waLink = function (phone, text) {
+    var d = String(phone || '').replace(/\D/g, ''); if (d.indexOf('880') !== 0) d = '880' + d.replace(/^0/, '');
+    return 'https://wa.me/' + d + (text ? '?text=' + encodeURIComponent(text) : '');
+  };
   A.money = function (n) { return 'Tk. ' + Number(n || 0).toLocaleString('en-US'); };
   var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   A.when = function (iso) {
@@ -51,9 +55,9 @@
     ['Overview', [['dashboard', 'Dashboard', 'home']]],
     ['Sales', [['orders', 'Orders', 'shopping-bag1'], ['customers', 'Customers', 'user-group'], ['promotions', 'Promotions', 'percent']]],
     ['Catalog', [['products', 'Products', 'package'], ['reviews', 'Reviews', 'star']]],
-    ['Store', [['content', 'Content', 'file-text'], ['settings', 'Settings', 'settings-gear1']]]
+    ['Store', [['content', 'Content', 'file-text'], ['messages', 'Messages', 'mail'], ['settings', 'Settings', 'settings-gear1']]]
   ];
-  var BUILT = { orders: 1, products: 1, dashboard: 1, promotions: 1, customers: 1, reviews: 1, content: 1, settings: 1, more: 1 };   // pages that exist so far
+  var BUILT = { orders: 1, products: 1, dashboard: 1, promotions: 1, customers: 1, reviews: 1, content: 1, settings: 1, more: 1, messages: 1, activity: 1 };   // pages that exist so far
 
   A.brand = function (withCollapse) {
     return '<div class="brand"><img class="fav" src="favicon1.png" alt="">' +
@@ -139,8 +143,9 @@
     document.getElementById('userMore').addEventListener('click', function (e) { e.stopPropagation(); var p = document.getElementById('userPop'); p.hidden = !p.hidden; });
     document.getElementById('signOut').addEventListener('click', A.signOut);
     document.addEventListener('click', function () { var p = document.getElementById('userPop'); if (p) p.hidden = true; });
-    document.getElementById('gsearch').addEventListener('click', function () { A.toast('Global search is coming soon. Use the search box on each list.'); });
-    document.getElementById('bell').addEventListener('click', function () { A.toast('No new notifications.'); });
+    document.getElementById('gsearch').addEventListener('click', function () { A.search(role); });
+    document.addEventListener('keydown', function (e) { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); A.search(role); } });
+    document.getElementById('bell').addEventListener('click', function (e) { e.stopPropagation(); A.bellPanel(role); });
     document.getElementById('navs').addEventListener('click', function (e) {
       var a = e.target.closest('[data-nav]'); if (!a) return;
       if (!BUILT[a.getAttribute('data-nav')]) { e.preventDefault(); A.toast(a.title + ' is the next page being built.'); }
@@ -149,12 +154,13 @@
     // sidebar badges: orders waiting to be confirmed, reviews waiting for approval
     A.sb.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'placed').then(function (r) { setCount('orders', r.count); });
     if (role === 'owner') A.sb.from('reviews').select('id', { count: 'exact', head: true }).eq('status', 'pending').then(function (r) { setCount('reviews', r.count); });
+    if (role === 'owner') A.sb.from('messages').select('id', { count: 'exact', head: true }).eq('status', 'new').then(function (r) { setCount('messages', r.count); });
     function setCount(key, n) {
       counts[key] = n || 0;
       document.getElementById('navs').innerHTML = navHtml(opts.active, role, counts);
       var mt = document.querySelector('.mtabs'); if (mt) mt.innerHTML = mobileTabs(opts.active, role, counts);
     }
-    document.getElementById('mbell').addEventListener('click', function () { A.toast('No new notifications.'); });
+    document.getElementById('mbell').addEventListener('click', function (e) { e.stopPropagation(); A.bellPanel(role); });
 
     var ctx = { user: s.user, role: role, name: who, counts: counts };
     await opts.render(document.getElementById('page'), ctx);
@@ -193,6 +199,18 @@
   };
 
   /* Packing slip in a print window (used by the order page and the orders list menu) */
+  A.printSlips = function (orders) {
+    var w = window.open('', '_blank'); if (!w) { A.toast('Allow pop-ups to print the slips.', true); return; }
+    var html = '<!doctype html><title>Packing slips</title><style>body{font:14px Inter,Arial,sans-serif;color:#1f2328;margin:0}.s{padding:32px;page-break-after:always}h1{font-size:20px;margin:0 0 4px}table{width:100%;border-collapse:collapse;margin-top:12px}td,th{padding:7px 0;border-bottom:1px solid #ddd;text-align:left}td:last-child,th:last-child{text-align:right}.m{color:#656a73}</style>';
+    orders.forEach(function (o) {
+      var addr = [o.address, o.upazila, o.district, o.division].filter(Boolean).join(', ');
+      html += '<div class="s"><h1>ELARA · Packing slip</h1><p class="m">' + A.esc(o.id) + ' · ' + A.when(o.placed_at) + '</p><p><b>' + A.esc(o.customer_name) + '</b><br>' + A.esc(o.customer_phone) + '<br>' + A.esc(addr) + '</p>' +
+        '<table><tr><th>Item</th><th>Qty</th><th>Price</th></tr>' + (o.order_items || []).map(function (i) { return '<tr><td>' + A.esc(i.name) + '<br><span class="m">' + A.esc([i.colour, i.size].filter(Boolean).join(' · ')) + '</span></td><td>' + i.qty + '</td><td>' + A.money(i.unit_price * i.qty) + '</td></tr>'; }).join('') + '</table>' +
+        '<p style="text-align:right">Delivery ' + (o.delivery ? A.money(o.delivery) : 'Free') + ' · Discount ' + A.money(o.discount) + '<br><b>Total ' + A.money(o.total) + '</b></p>' +
+        '<p class="m">' + (o.payment_method === 'cod' ? 'Collect cash on delivery: ' + A.money(o.total) : 'Paid by ' + A.esc(A.payName(o.payment_method)) + ' (' + o.payment_state + ')') + '</p></div>';
+    });
+    w.document.write(html); w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 300);
+  };
   A.printSlip = function (o, items) {
     var w = window.open('', '_blank'); if (!w) { A.toast('Allow pop-ups to print the slip.', true); return; }
     var addr = [o.address, o.upazila, o.district, o.division].filter(Boolean).join(', ');
@@ -203,5 +221,61 @@
       '<p style="text-align:right">Subtotal ' + A.money(o.subtotal) + '<br>Delivery ' + (o.delivery ? A.money(o.delivery) : 'Free') + '<br>Discount ' + A.money(o.discount) + '<br><b>Total ' + A.money(o.total) + '</b></p>' +
       '<p class="m">' + (o.payment_method === 'cod' ? 'Collect cash on delivery: ' + A.money(o.total) : 'Paid by ' + A.esc(A.payName(o.payment_method)) + ' (' + o.payment_state + ')') + '</p>');
     w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 250);
+  };
+
+  /* ---------- global search (Ctrl/Cmd + K) ---------- */
+  A.search = function (role) {
+    if (document.querySelector('.gsearch')) return;
+    var data = null;
+    var close = A.modal('<div class="gsearch"><div class="gs-in">' + A.ic('magnifying-glass', 18) + '<input id="gsq" placeholder="Search orders, customers, products…" autocomplete="off"></div><div id="gsr" class="gs-res"><p class="gs-hint">Type an order number, a name, a phone number or a product.</p></div></div>', function (o) {
+      o.querySelector('.dialog').classList.add('gs-dialog');
+      var inp = o.querySelector('#gsq'); setTimeout(function () { inp.focus(); }, 30);
+      var out = o.querySelector('#gsr');
+      async function load() {
+        var r = await Promise.all([
+          A.sb.from('orders').select('id,customer_name,customer_phone,total,status').order('placed_at', { ascending: false }).limit(2000),
+          role === 'owner' ? A.sb.from('products').select('id,name,status,price').limit(1000) : Promise.resolve({ data: [] })
+        ]);
+        data = { orders: r[0].data || [], products: r[1].data || [] };
+      }
+      var tm;
+      inp.addEventListener('input', function () { clearTimeout(tm); tm = setTimeout(run, 120); });
+      async function run() {
+        var q = inp.value.trim().toLowerCase();
+        if (!q) { out.innerHTML = '<p class="gs-hint">Type an order number, a name, a phone number or a product.</p>'; return; }
+        if (!data) { out.innerHTML = '<p class="gs-hint">Searching…</p>'; await load(); }
+        var digits = q.replace(/\D/g, '');
+        var ords = data.orders.filter(function (x) { return (x.id + ' ' + x.customer_name).toLowerCase().indexOf(q) >= 0 || (digits.length >= 4 && x.customer_phone.replace(/\D/g, '').indexOf(digits) >= 0); }).slice(0, 6);
+        var seen = {}, cust = [];
+        data.orders.forEach(function (x) { if (!seen[x.customer_phone] && ((x.customer_name || '').toLowerCase().indexOf(q) >= 0 || (digits.length >= 4 && x.customer_phone.replace(/\D/g, '').indexOf(digits) >= 0))) { seen[x.customer_phone] = 1; cust.push(x); } });
+        var prods = data.products.filter(function (p) { return (p.name + ' ' + p.id).toLowerCase().indexOf(q) >= 0; }).slice(0, 6);
+        var html = '';
+        if (ords.length) html += '<p class="gs-h">Orders</p>' + ords.map(function (x) { return '<a class="gs-r" href="order.html?id=' + encodeURIComponent(x.id) + '"><b>' + A.esc(x.id) + '</b><span>' + A.esc(x.customer_name) + '</span><em>' + A.money(x.total) + '</em></a>'; }).join('');
+        if (role === 'owner' && cust.length) html += '<p class="gs-h">Customers</p>' + cust.slice(0, 5).map(function (x) { return '<a class="gs-r" href="customers.html?q=' + encodeURIComponent(x.customer_phone) + '"><b>' + A.esc(x.customer_name) + '</b><span>' + A.esc(x.customer_phone) + '</span></a>'; }).join('');
+        if (prods.length) html += '<p class="gs-h">Products</p>' + prods.map(function (p) { return '<a class="gs-r" href="product.html?id=' + encodeURIComponent(p.id) + '"><b>' + A.esc(p.name) + '</b><span>' + (p.status === 'published' ? 'Live' : p.status) + '</span><em>' + A.money(p.price) + '</em></a>'; }).join('');
+        out.innerHTML = html || '<p class="gs-hint">Nothing found for “' + A.esc(inp.value.trim()) + '”.</p>';
+      }
+      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { var a = out.querySelector('a.gs-r'); if (a) location.href = a.getAttribute('href'); } });
+    });
+    return close;
+  };
+
+  /* ---------- notifications panel (the bell) ---------- */
+  A.bellPanel = async function (role) {
+    var old = document.querySelector('.bellpanel'); if (old) { old.remove(); return; }
+    var panel = document.createElement('div'); panel.className = 'bellpanel';
+    panel.innerHTML = '<p class="bp-h">Needs your attention</p><div id="bpb"><p class="bp-e">Checking…</p></div>';
+    document.body.appendChild(panel);
+    setTimeout(function () { document.addEventListener('click', function off(ev) { if (!panel.contains(ev.target)) { panel.remove(); document.removeEventListener('click', off); } }); });
+    var q = function (t, f) { var x = A.sb.from(t).select('id', { count: 'exact', head: true }); return f(x).then(function (r) { return r.count || 0; }); };
+    var res = await Promise.all([
+      q('orders', function (x) { return x.eq('status', 'placed'); }),
+      q('orders', function (x) { return x.eq('payment_state', 'failed').in('status', ['placed', 'confirmed']); }),
+      role === 'owner' ? q('reviews', function (x) { return x.eq('status', 'pending'); }) : Promise.resolve(0),
+      role === 'owner' ? q('messages', function (x) { return x.eq('status', 'new'); }) : Promise.resolve(0),
+      role === 'owner' ? A.sb.from('product_variants').select('stock,product_id').lte('stock', 5).then(function (r) { var s = {}; (r.data || []).forEach(function (v) { s[v.product_id] = 1; }); return Object.keys(s).length; }) : Promise.resolve(0)
+    ]);
+    var items = [[res[0], 'orders waiting to be confirmed', 'orders.html', 'b-bad'], [res[1], 'orders with a failed payment', 'orders.html', 'b-bad'], [res[2], 'reviews to approve', 'reviews.html', 'b-info'], [res[3], 'new messages', 'messages.html', 'b-info'], [res[4], 'products running low', 'products.html', 'b-warn']].filter(function (i) { return i[0] > 0; });
+    panel.querySelector('#bpb').innerHTML = items.length ? items.map(function (i) { return '<a class="bp-r" href="' + i[2] + '"><span class="badge ' + i[3] + '">' + i[0] + '</span><span>' + i[1] + '</span>' + A.ic('chevron-right-small', 16) + '</a>'; }).join('') : '<p class="bp-e">You are all caught up.</p>';
   };
 })();

@@ -32,6 +32,11 @@
   @media (max-width: 1100px) { .cols { flex-direction: column; } .detail { width: 100%; position: static; } }
 
   @media (max-width: 899.98px) { .c-ph, .c-la { display: none; } .c-or { width: 40px; } .c-sp { width: auto; } .trow.crow { flex-wrap: nowrap; } }
+
+  #table { max-height: calc(100vh - 300px); min-height: 240px; overflow-y: auto; overscroll-behavior: contain; }
+  #table .trow.head { position: sticky; top: 0; z-index: 2; }
+  .pcount { font-size: 13px; color: var(--sub); margin: 0; }
+  @media (max-width: 899.98px) { #table { max-height: none; } }
 </style>
 </head>
 <body>
@@ -46,8 +51,8 @@ A.boot({
   render: async function (page, ctx) {
     var $ = function (id) { return document.getElementById(id); };
     var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    var state = { q: '', repeat: false, zone: 'all', sel: null, page: 0, rows: [] };
-    var PAGE = 10;
+    var state = { q: '', repeat: false, zone: 'all', sel: null, limit: 40, total: 0, rows: [] };
+    var CHUNK = 40;
     var ZONES = [{ v: 'all', l: 'All areas' }, { v: 'Dhaka', l: 'Dhaka' }, { v: 'Outside Dhaka', l: 'Outside Dhaka' }];
     var dShort = function (iso) { var d = new Date(iso); return d.getDate() + ' ' + MON[d.getMonth()]; };
     var phone = function (p) { var d = String(p).replace(/[^0-9]/g, ''); return d.length === 13 && d.indexOf('880') === 0 ? '+880 ' + d.slice(3, 7) + ' ' + d.slice(7, 10) + ' ' + d.slice(10) : p; };
@@ -58,7 +63,7 @@ A.boot({
       '<button class="btn" id="repeat">' + A.ic('filter1', 16) + 'Repeat customers</button>' +
       '<div class="pop-wrap" id="zoneWrap"><button class="btn" id="zoneBtn"><span id="zoneTxt">Dhaka</span>' + A.ic('chevron-down-small', 16) + '</button></div></div>' +
       '<div class="cols"><div class="table" id="table"></div><aside class="detail" id="detail"></aside></div>' +
-      '<div class="pager"><p class="info" id="info"></p><button class="btn sm" id="prev">Previous</button><button class="btn sm" id="next">Next</button></div>';
+      '<p class="pcount" id="info"></p>';
     $('table').innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
 
     var res = await A.sb.from('orders').select('id,placed_at,customer_phone,customer_name,email,division,district,upazila,address,zone,total,status,payment_state').order('placed_at', { ascending: false }).limit(5000);
@@ -86,9 +91,9 @@ A.boot({
       });
     }
     function draw() {
-      var l = list(), pages = Math.max(1, Math.ceil(l.length / PAGE));
-      if (state.page >= pages) state.page = pages - 1;
-      var slice = l.slice(state.page * PAGE, state.page * PAGE + PAGE);
+      var l = list(), keepTop = $('table').scrollTop;
+      state.total = l.length;
+      var slice = l.slice(0, state.limit);
       var repeatN = state.rows.filter(function (c) { return c.orders.length > 1; }).length;
       $('sub').textContent = state.rows.length + ' customer' + (state.rows.length === 1 ? '' : 's') + ' · ' + repeatN + ' ordered more than once';
       $('repeat').classList.toggle('on', state.repeat);
@@ -98,9 +103,8 @@ A.boot({
         return '<div class="trow crow link' + (state.sel === c.phone ? ' sel' : '') + '" data-ph="' + A.esc(c.phone) + '"><div class="cname"><span class="avatar">' + A.esc(A.initials(c.name)) + '</span><span>' + A.esc(c.name) + '</span></div>' +
           '<span class="c c-ph">' + A.esc(phone(c.phone)) + '</span><span class="c c-or strong">' + c.orders.length + '</span><span class="c c-sp">' + A.money(c.spent) + '</span><span class="c c-la">' + dShort(c.last) + '</span></div>';
       }).join('') : '<div class="empty"><b>' + (state.rows.length ? 'No customers match' : 'No customers yet') + '</b>' + (state.rows.length ? 'Try a different search or filter.' : 'Customers appear here after their first order.') + '</div>');
-      var from = l.length ? state.page * PAGE + 1 : 0;
-      $('info').textContent = 'Showing ' + from + ' to ' + Math.min(l.length, state.page * PAGE + PAGE) + ' of ' + l.length + ' customer' + (l.length === 1 ? '' : 's');
-      $('prev').disabled = state.page === 0; $('next').disabled = state.page >= pages - 1;
+      $('table').scrollTop = keepTop;
+      $('info').textContent = l.length + ' customer' + (l.length === 1 ? '' : 's') + (l.length > slice.length ? ' · scroll for more' : '');
       var c = by[state.sel];
       $('detail').hidden = !c;
       if (c) {
@@ -114,11 +118,18 @@ A.boot({
           c.orders.slice(0, 3).map(function (o) { var b = A.statusBadge(o); return '<a class="ro" href="order.html?id=' + encodeURIComponent(o.id) + '"><b>' + A.esc(o.id) + '</b><span>' + A.money(o.total) + '</span><span class="badge ' + b.cls + '">' + b.label + '</span></a>'; }).join('');
       }
     }
-    var tm; $('q').addEventListener('input', function (e) { clearTimeout(tm); tm = setTimeout(function () { state.q = e.target.value; state.page = 0; draw(); }, 120); });
-    $('repeat').addEventListener('click', function () { state.repeat = !state.repeat; state.page = 0; draw(); });
-    $('zoneBtn').addEventListener('click', function (e) { e.stopPropagation(); A.menu($('zoneWrap'), ZONES, state.zone, function (v) { state.zone = v; state.page = 0; draw(); }); });
-    $('prev').addEventListener('click', function () { state.page--; draw(); });
-    $('next').addEventListener('click', function () { state.page++; draw(); });
+    var tm; $('q').addEventListener('input', function (e) { clearTimeout(tm); tm = setTimeout(function () { state.q = e.target.value; state.limit = CHUNK; $('table').scrollTop = 0; draw(); }, 120); });
+    $('repeat').addEventListener('click', function () { state.repeat = !state.repeat; state.limit = CHUNK; $('table').scrollTop = 0; draw(); });
+    $('zoneBtn').addEventListener('click', function (e) { e.stopPropagation(); A.menu($('zoneWrap'), ZONES, state.zone, function (v) { state.zone = v; state.limit = CHUNK; $('table').scrollTop = 0; draw(); }); });
+    function moreRows() {
+      if (state.limit >= state.total) return;
+      var t = $('table'), r = t.getBoundingClientRect();
+      if (t.scrollHeight - t.scrollTop - t.clientHeight < 240 && r.bottom < window.innerHeight + 240) { state.limit += CHUNK; draw(); }
+    }
+    $('table').addEventListener('scroll', moreRows); window.addEventListener('scroll', moreRows, { passive: true }); window.addEventListener('resize', moreRows);
+    // opened from the global search: ?q=<phone or name>
+    var qp = new URLSearchParams(location.search).get('q');
+    if (qp) { state.q = qp; $('q').value = qp; }
     $('table').addEventListener('click', function (e) { var r = e.target.closest('[data-ph]'); if (!r) return; state.sel = r.getAttribute('data-ph'); draw(); });
     $('export').addEventListener('click', function () {
       var l = list(); if (!l.length) { A.toast('Nothing to export.', true); return; }

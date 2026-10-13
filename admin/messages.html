@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Messages · ELARA Admin</title>
+<link rel="icon" href="favicon1.png">
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="admin.css">
+<style>
+  .stack { display: flex; flex-direction: column; gap: 12px; }
+  .msg { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .msg.new { border-left: 3px solid var(--accent); }
+  .msg .top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .msg .who { font-size: 14px; font-weight: 600; } .msg .meta { font-size: 12px; color: var(--mute); }
+  .msg .subj { font-size: 13px; font-weight: 500; color: var(--sub); }
+  .msg .body { font-size: 14px; line-height: 1.55; white-space: pre-wrap; }
+  .msg .acts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .c-em { flex: 1; min-width: 0; } .c-src { width: 180px; } .c-dt { width: 140px; }
+  @media (max-width: 899.98px) { .c-src { display: none; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="icons.js"></script>
+<script src="admin.js"></script>
+<script>
+A.boot({
+  active: 'messages',
+  crumbs: [{ t: 'Messages' }],
+  render: async function (page, ctx) {
+    var $ = function (id) { return document.getElementById(id); };
+    var state = { tab: 'inbox', filter: 'new', msgs: [], subs: [] };
+    var owner = ctx.role === 'owner';
+    page.innerHTML = '<div class="page-head"><div class="t"><h1 class="h1">Messages</h1><p class="sub" id="sub">Loading…</p></div><button class="btn" id="exp" hidden>' + A.ic('file-download', 16) + 'Export CSV</button></div><div class="tabs" id="tabs"></div><div id="body"></div>';
+    var r = await Promise.all([
+      A.sb.from('messages').select('*').order('created_at', { ascending: false }).limit(500),
+      owner ? A.sb.from('subscribers').select('*').order('created_at', { ascending: false }).limit(5000) : Promise.resolve({ data: [] })
+    ]);
+    if (r[0].error) { $('body').innerHTML = '<div class="empty card"><b>Could not load messages</b>' + A.esc(r[0].error.message) + (/relation|does not exist/i.test(r[0].error.message) ? '<br>Run supabase/11-launch-ready.sql once, then reload.' : '') + '</div>'; $('sub').textContent = ''; return; }
+    state.msgs = r[0].data || []; state.subs = r[1].data || [];
+
+    function draw() {
+      var n = { new: 0, read: 0, done: 0 }; state.msgs.forEach(function (m) { n[m.status]++; });
+      $('sub').textContent = n.new + ' new · ' + state.msgs.length + ' message' + (state.msgs.length === 1 ? '' : 's') + (owner ? ' · ' + state.subs.length + ' subscriber' + (state.subs.length === 1 ? '' : 's') : '');
+      var T = [['inbox', 'Inbox', state.msgs.length]].concat(owner ? [['subs', 'Subscribers', state.subs.length]] : []);
+      $('tabs').innerHTML = T.map(function (t) { return '<button class="tab' + (state.tab === t[0] ? ' on' : '') + '" data-tab="' + t[0] + '"><span class="l">' + t[1] + '<span class="b">' + t[2] + '</span></span><span class="bar"></span></button>'; }).join('');
+      $('exp').hidden = state.tab !== 'subs';
+      if (state.tab === 'subs') {
+        $('body').innerHTML = '<div class="table"><div class="trow head"><span class="grow c-em">Email</span><span class="c c-src">Where from</span><span class="c c-dt">Date</span><span class="c" style="width:60px"></span></div>' +
+          (state.subs.length ? state.subs.map(function (s) { return '<div class="trow"><span class="grow c-em strong">' + A.esc(s.email) + '</span><span class="c c-src">' + A.esc(s.source || '') + '</span><span class="c c-dt">' + A.when(s.created_at) + '</span><span class="c" style="width:60px"><button class="linkbtn" data-del="' + A.esc(s.email) + '" style="background:none;border:0;color:var(--bad);font-size:13px">Remove</button></span></div>'; }).join('') : '<div class="empty"><b>No subscribers yet</b>Emails from the newsletter, the welcome popup and “notify me” land here.</div>') + '</div>';
+        return;
+      }
+      var chips = [['new', 'New'], ['read', 'Read'], ['done', 'Done'], ['all', 'All']];
+      var list = state.msgs.filter(function (m) { return state.filter === 'all' || m.status === state.filter; });
+      $('body').innerHTML = '<div class="toolbar" style="margin-bottom:12px">' + chips.map(function (c) { return '<button class="btn sm' + (state.filter === c[0] ? ' on' : '') + '" data-f="' + c[0] + '">' + c[1] + (c[0] !== 'all' ? ' ' + n[c[0]] : '') + '</button>'; }).join('') + '</div>' +
+        '<div class="stack">' + (list.length ? list.map(function (m) {
+          var wa = m.phone ? A.waLink(m.phone, 'Hello ' + m.name.split(' ')[0] + ', this is ELARA. Thank you for your message.') : '';
+          return '<div class="msg ' + m.status + '"><div class="top"><span class="who">' + A.esc(m.name) + '</span><span class="meta">' + A.when(m.created_at) + '</span>' + (m.status === 'new' ? '<span class="badge b-info">New</span>' : m.status === 'done' ? '<span class="badge b-ok">Done</span>' : '') + '</div>' +
+            (m.subject ? '<p class="subj">' + A.esc(m.subject) + '</p>' : '') + '<p class="body">' + A.esc(m.body) + '</p>' +
+            '<div class="acts">' + (wa ? '<a class="btn sm" href="' + wa + '" target="_blank" rel="noopener">' + A.ic('whatsapp', 16) + 'Reply on WhatsApp</a><a class="btn sm" href="tel:' + A.esc(m.phone) + '">' + A.ic('phone', 16) + A.esc(m.phone) + '</a>' : '') +
+            (m.email ? '<a class="btn sm" href="mailto:' + A.esc(m.email) + '">' + A.ic('mail', 16) + 'Email</a>' : '') +
+            (m.status !== 'done' ? '<button class="btn sm" data-st="done" data-id="' + m.id + '">' + A.ic('check16', 16) + 'Mark done</button>' : '<button class="btn sm" data-st="new" data-id="' + m.id + '">Reopen</button>') +
+            (m.status === 'new' ? '<button class="btn sm" data-st="read" data-id="' + m.id + '">Mark read</button>' : '') +
+            (owner ? '<button class="btn sm danger" data-rm="' + m.id + '" style="color:var(--bad)">Delete</button>' : '') + '</div></div>';
+        }).join('') : '<div class="empty card"><b>' + (state.msgs.length ? 'Nothing here' : 'No messages yet') + '</b>' + (state.msgs.length ? 'Try another filter.' : 'Messages sent from the Contact page arrive here.') + '</div>') + '</div>';
+    }
+    page.addEventListener('click', async function (e) {
+      var t = e.target.closest('[data-tab]'); if (t) { state.tab = t.getAttribute('data-tab'); draw(); return; }
+      var f = e.target.closest('[data-f]'); if (f) { state.filter = f.getAttribute('data-f'); draw(); return; }
+      var s = e.target.closest('[data-st]');
+      if (s) {
+        var id = +s.getAttribute('data-id'), st = s.getAttribute('data-st');
+        var u = await A.sb.from('messages').update({ status: st }).eq('id', id).select('id').maybeSingle();
+        if (u.error || !u.data) { A.toast('Could not save: ' + ((u.error && u.error.message) || 'no permission'), true); return; }
+        state.msgs.filter(function (m) { return m.id === id; })[0].status = st; draw(); return;
+      }
+      var rm = e.target.closest('[data-rm]');
+      if (rm) { if (!confirm('Delete this message?')) return; var id2 = +rm.getAttribute('data-rm'); var d = await A.sb.from('messages').delete().eq('id', id2); if (d.error) { A.toast('Could not delete: ' + d.error.message, true); return; } state.msgs = state.msgs.filter(function (m) { return m.id !== id2; }); draw(); return; }
+      var dl = e.target.closest('[data-del]');
+      if (dl) { var em = dl.getAttribute('data-del'); if (!confirm('Remove ' + em + ' from the list?')) return; var d2 = await A.sb.from('subscribers').delete().eq('email', em); if (d2.error) { A.toast('Could not remove: ' + d2.error.message, true); return; } state.subs = state.subs.filter(function (x) { return x.email !== em; }); draw(); }
+    });
+    $('exp').addEventListener('click', function () {
+      var q = function (v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; };
+      var csv = ['Email,Source,Date'].concat(state.subs.map(function (s) { return [s.email, s.source, s.created_at.slice(0, 10)].map(q).join(','); })).join('\r\n');
+      var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv' })); a.download = 'elara-subscribers-' + new Date().toISOString().slice(0, 10) + '.csv'; a.click(); URL.revokeObjectURL(a.href);
+    });
+    draw();
+  }
+});
+</script>
+</body>
+</html>
