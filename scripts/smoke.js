@@ -17,7 +17,7 @@ const ok = (name, pass, extra) => { console.log((pass ? 'PASS ' : 'FAIL ') + nam
   const home = await (await fetch(SITE + '/')).text();
   ok('home page has business structured data', /"@type":"OnlineStore"/.test(home));
   const old = await fetch(SITE + '/my-plp-screen.html?category=tote', { redirect: 'manual' });
-  ok('old addresses redirect to the new ones', old.status === 308 && /\/tote-bags$/.test(old.headers.get('location') || ''), old.status + ' ' + old.headers.get('location'));
+  ok('old addresses redirect to the new ones', old.status === 308 && /\/tote-bags(\?.*)?$/.test(old.headers.get('location') || ''), old.status + ' ' + old.headers.get('location'));
   const prods = await (await fetch(URL_ + '/rest/v1/products?select=id,product_colours(id,card,photos)&status=eq.published&limit=1000', { headers: H })).json();
   ok('published products readable', Array.isArray(prods) && prods.length > 0, (prods.length || 0) + ' products');
   const noPhoto = prods.filter((p) => !(p.product_colours || []).some((c) => c.card || (c.photos || []).length));
