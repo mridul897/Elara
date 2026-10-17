@@ -25,7 +25,7 @@
 <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
 <!--
-  Product Detail Page — pixel-perfect build of Figma node 180:3356
+  Product Detail Page, pixel-perfect build of Figma node 180:3356
   (Elara Women's bag E-commerce project). 1440px artboard; below 1440 the whole
   artboard scales down (same approach as index.html). Mobile layout
   comes when it is designed in Figma.
@@ -74,7 +74,7 @@
   .page { position: relative; width: 1440px; margin: 0 auto; padding-top: 109px; zoom: var(--fit, 1); }
   .abs { position: absolute; }
 
-  /* ===== Nav (22:641) — same component as the homepage ===== */
+  /* ===== Nav (22:641), same component as the homepage ===== */
   .nav { left: 0; top: 0; width: 1440px; height: 109px; padding: 10px; display: flex; align-items: center; justify-content: center; z-index: 20; }
   .nav-inner { width: 100%; display: flex; gap: 144px; align-items: center; justify-content: center; padding: 0 37px; }
   .nav-logo { position: relative; width: 222px; height: 101px; flex-shrink: 0; }
@@ -156,7 +156,7 @@
   .gallery-arrow.next { right: 16px; }
   .gallery-arrow svg { width: 18px; height: 18px; }
   @media (prefers-reduced-motion: reduce) { .gallery-main img, .gallery-arrow { transition: none; } }
-  /* the size-guide picture is a square diagram — cropping it to 4:5 would cut the measurements, so it is shown whole */
+  /* the size-guide picture is a square diagram, cropping it to 4:5 would cut the measurements, so it is shown whole */
   .gallery-main.contain img { object-fit: contain; }
   .thumbs { display: flex; gap: 8px; padding: 10px 20px; width: 660px; }
   .thumb { position: relative; flex: 0 0 56px; width: 56px; height: 70px; border: 1px solid var(--border-soft); border-radius: var(--r-small); overflow: hidden; background: #f2ecde; padding: 0; }
@@ -235,7 +235,7 @@
   .acc-title { font-family: 'Fraunces', serif; font-variation-settings: "SOFT" 0, "WONK" 1; font-weight: 400; font-size: 17px; line-height: 1.1; color: var(--text); white-space: nowrap; }
   .acc-sign { font-size: 19px; line-height: 1.5; color: var(--text-muted); }
   .acc-sign::before { content: "+"; }
-  .acc[open] .acc-sign::before { content: "–"; }
+  .acc[open] .acc-sign::before { content: "-"; }
   .acc-body { padding-bottom: 16px; font-size: 14px; line-height: 1.5; color: var(--text-muted); }
 
   /* ===== Reviews (full section, below the product details) ===== */
@@ -371,7 +371,7 @@
   .rcard-meta { display: flex; flex-direction: column; gap: 2px; font-size: 13px; line-height: 20px; color: var(--text); }
   .rcard-meta b { font-weight: 500; }
 
-  /* Add-to-bag confirmation (not in Figma yet — minimal feedback so the button is not dead) */
+  /* Add-to-bag confirmation (not in Figma yet, minimal feedback so the button is not dead) */
   .toast { position: fixed; left: 50%; bottom: 32px; z-index: 60; transform: translate(-50%, 12px); opacity: 0; pointer-events: none; display: flex; align-items: center; gap: 16px; padding: 14px 20px; background: var(--text); color: var(--bg-page); border-radius: var(--r-pill); font-size: 14px; line-height: 1.5; transition: opacity .26s var(--ease), transform .26s var(--ease); }
   .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
   .toast a { font-weight: 500; text-decoration: underline; }
@@ -489,9 +489,9 @@
           </a>
           <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
           <div class="dd-list">
-            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-1.webp" alt=""></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
-            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-2.webp" alt=""></span><span class="dd-row-title">Sienna Structured Purse</span></a>
-            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-3.webp" alt=""></span><span class="dd-row-title">Isla Bags</span></a>
+            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-1.webp" alt="Vivienne Leather Bag"></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
+            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-2.webp" alt="Sienna Structured Purse"></span><span class="dd-row-title">Sienna Structured Purse</span></a>
+            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-3.webp" alt="Isla Bags"></span><span class="dd-row-title">Isla Bags</span></a>
             <a href="my-plp-screen.html?collection=new" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All New Arrivals</span></a>
           </div>
         </div>
@@ -510,9 +510,9 @@
           </a>
           <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
           <div class="dd-list">
-            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-1.webp" alt=""></span><span class="dd-row-title">Tote</span></a>
-            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-2.webp" alt=""></span><span class="dd-row-title">Shoulder</span></a>
-            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-3.webp" alt=""></span><span class="dd-row-title">Mini</span></a>
+            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-1.webp" alt="Tote"></span><span class="dd-row-title">Tote</span></a>
+            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-2.webp" alt="Shoulder"></span><span class="dd-row-title">Shoulder</span></a>
+            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-3.webp" alt="Mini"></span><span class="dd-row-title">Mini</span></a>
             <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All Category Bags</span></a>
           </div>
         </div>
@@ -532,8 +532,8 @@
           <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="" style="left:826px;">
           <div class="dd-list dd-list-coll" style="left:850px; top:92px;">
             <div class="dd-list-group">
-              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-1.webp" alt=""></span><span class="dd-row-title">The Evening Edit</span></a>
-              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-2.webp" alt=""></span><span class="dd-row-title">Designed for Work</span></a>
+              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-1.webp" alt="The Evening Edit"></span><span class="dd-row-title">The Evening Edit</span></a>
+              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-2.webp" alt="Designed for Work"></span><span class="dd-row-title">Designed for Work</span></a>
             </div>
             <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-see-all.svg" alt=""></span><span class="dd-row-title">See All Collections</span></a>
           </div>
@@ -590,10 +590,10 @@
         </div>
 
         <div class="trust">
-          <div class="trust-row"><img class="ic18" src="assets/pdp/23227.svg" alt=""><p><strong>Dhaka Tk. 60</strong> (1–3 days) · <strong>Outside Dhaka Tk. 120</strong> (3–5 days)</p></div>
+          <div class="trust-row"><img class="ic18" src="assets/pdp/23227.svg" alt=""><p><strong>Dhaka Tk. 60</strong> (1 to 3 days) · <strong>Outside Dhaka Tk. 120</strong> (3 to 5 days)</p></div>
           <div class="trust-row"><img class="ic18" src="assets/pdp/23227.svg" alt=""><p><strong>Free over Tk. 3,000</strong></p></div>
           <div class="trust-row"><span class="ic16"><img src="assets/pdp/0b065.svg" alt=""></span><p>Cash on Delivery available · bKash · Nagad · Card</p></div>
-          <div class="trust-row"><span class="ic16"><img src="assets/pdp/f3c2e.svg" alt=""></span><p>Exchange within 7 days — see policy below</p></div>
+          <div class="trust-row"><span class="ic16"><img src="assets/pdp/f3c2e.svg" alt=""></span><p>Exchange within 7 days, see policy below</p></div>
         </div>
 
         <div class="option" role="radiogroup" aria-label="Colour">
@@ -602,7 +602,7 @@
         </div>
 
         <div class="option" role="radiogroup" aria-label="Size">
-          <div class="option-label"><span>Size</span><span class="value" id="sizeNote">31 × 24 × 12 cm — about the width of an A4 notebook</span></div>
+          <div class="option-label"><span>Size</span><span class="value" id="sizeNote">31 × 24 × 12 cm, about the width of an A4 notebook</span></div>
           <div class="chips">
             <button class="chip" role="radio" aria-checked="false" data-size="Small">Small</button>
             <button class="chip" role="radio" aria-checked="true" data-size="Medium">Medium</button>
@@ -614,7 +614,7 @@
         <div class="option">
           <div class="option-label"><span>Quantity</span></div>
           <div class="stepper">
-            <button id="qtyMinus" aria-label="Decrease quantity" disabled>–</button>
+            <button id="qtyMinus" aria-label="Decrease quantity" disabled>-</button>
             <output id="qtyValue" aria-live="polite">1</output>
             <button id="qtyPlus" aria-label="Increase quantity">+</button>
           </div>
@@ -623,7 +623,7 @@
         <div class="actions">
           <button class="btn btn-outline" id="addBtn">Add to Bag</button>
           <button type="button" class="btn btn-accent" id="buyBtn">Buy Now</button>
-          <p class="hint">Add to Bag keeps shopping. Buy Now takes just this item straight to checkout — your bag stays as it is.</p>
+          <p class="hint">Add to Bag keeps shopping. Buy Now takes just this item straight to checkout, your bag stays as it is.</p>
         </div>
       </div>
     </div>
@@ -645,7 +645,7 @@
         </details>
         <details class="acc">
           <summary><span class="acc-title">Shipping &amp; returns</span><span class="acc-sign" aria-hidden="true"></span></summary>
-          <p class="acc-body">Dhaka: 1–3 working days, Tk. 60. Outside Dhaka: 3–5 working days, Tk. 120. Free delivery on orders over Tk. 3,000. Exchange accepted within 7 days of delivery for an unused item in original packaging — message us to start an exchange, our team will guide you through the next step.</p>
+          <p class="acc-body">Dhaka: 1 to 3 working days, Tk. 60. Outside Dhaka: 3 to 5 working days, Tk. 120. Free delivery on orders over Tk. 3,000. Exchange accepted within 7 days of delivery for an unused item in original packaging, message us to start an exchange, our team will guide you through the next step.</p>
         </details>
       </div>
     </div>
@@ -738,7 +738,7 @@
         <span class="wa-icon"><img src="assets/pdp/11704.svg" alt=""></span>
         <div class="contact-text">
           <strong>Have a question about this bag?</strong>
-          <span>Message us on WhatsApp — we reply within 1 business day.</span>
+          <span>Message us on WhatsApp, we reply within 1 business day.</span>
         </div>
         <a href="my-contact-screen.html" class="contact-link">Chat on WhatsApp <i aria-hidden="true">→</i></a>
       </div>
@@ -771,7 +771,12 @@
   };
   const ALL = window.ELARA_PRODUCTS || [];
   const query = new URLSearchParams(location.search);
-  const product = ALL.find((x) => x.id === query.get('p')) || ALL[0];
+  // The bag comes from the page's own address (/bags/<id>, set by the build as window.__PID or read from the path),
+  // or from ?p=<id> on the old address. An id that matches no bag sends the visitor to the 404 page.
+  const wanted = (() => { const m = /^\/bags\/([^/?#]+)/.exec(location.pathname); return window.__PID || (m ? decodeURIComponent(m[1]) : '') || query.get('p') || ''; })();
+  const found = ALL.find((x) => x.id === wanted);
+  if (!found && wanted) { try { location.replace('/404.html'); } catch (e) {} }
+  const product = found || ALL[0];
   let colour = product.colours.find((c) => c.id === query.get('colour')) || product.colours[0];
   const money = (n) => 'Tk. ' + n.toLocaleString('en-US') + '/-';
   const $ = (id) => document.getElementById(id);
@@ -779,16 +784,24 @@
   const crumb = { tote: 'Tote', shoulder: 'Shoulder', crossbody: 'Crossbody', mini: 'Mini', 'travel-work': 'Travel & Work' };
 
   // ----- static facts for this bag ---------------------------------------------------------------------------
-  document.title = product.name + ' | ELARA';
+  const CATNAME = { tote: 'Tote Bag', shoulder: 'Shoulder Bag', crossbody: 'Crossbody Bag', mini: 'Mini Bag', 'travel-work': 'Travel and Work Bag' };
+  const pageTitle = product.name + ' | Leather ' + (CATNAME[product.cat] || 'Bag') + ' | ELARA';
+  const shortDesc = (() => { const t = product.name + ': ' + product.desc; if (t.length <= 155) return t; const cut = t.slice(0, 152); return cut.slice(0, cut.lastIndexOf(' ')) + '...'; })();
+  document.title = pageTitle;
   (function () {
-    var url = 'https://elarabags.vercel.app/my-product-detail-screen.html?p=' + encodeURIComponent(product.id);
-    var link = document.createElement('link'); link.rel = 'canonical'; link.href = url; document.head.appendChild(link);
+    var url = 'https://elarabags.vercel.app/bags/' + encodeURIComponent(product.id);
+    var link = document.querySelector('link[rel="canonical"]');
+    if (!link) { link = document.createElement('link'); link.rel = 'canonical'; document.head.appendChild(link); }
+    link.href = url;
+    var rb = document.querySelector('meta[name="robots"]'); if (rb) rb.remove();
     function meta(prop, val) { var m = document.querySelector('meta[property="' + prop + '"]'); if (!m) { m = document.createElement('meta'); m.setAttribute('property', prop); document.head.appendChild(m); } m.setAttribute('content', val); }
-    meta('og:url', url); meta('og:title', product.name + ' | ELARA'); meta('og:description', product.name + ': ' + product.desc);
-    meta('og:image', 'https://elarabags.vercel.app/' + product.colours[0].card);
-    var ti = document.querySelector('meta[name="twitter:image"]'); if (ti) ti.setAttribute('content', 'https://elarabags.vercel.app/' + product.colours[0].card);
+    meta('og:url', url); meta('og:title', pageTitle); meta('og:description', shortDesc);
+    meta('og:image', /^https?:/.test(product.colours[0].card) ? product.colours[0].card : 'https://elarabags.vercel.app/' + product.colours[0].card);
+    var tt = document.querySelector('meta[name="twitter:title"]'); if (tt) tt.setAttribute('content', pageTitle);
+    var td = document.querySelector('meta[name="twitter:description"]'); if (td) td.setAttribute('content', shortDesc);
+    var ti = document.querySelector('meta[name="twitter:image"]'); if (ti) ti.setAttribute('content', /^https?:/.test(product.colours[0].card) ? product.colours[0].card : 'https://elarabags.vercel.app/' + product.colours[0].card);
   })();
-  (function () { var d = document.querySelector('meta[name="description"]'); if (d) d.setAttribute('content', product.name + ': ' + product.desc); })();
+  (function () { var d = document.querySelector('meta[name="description"]'); if (d) d.setAttribute('content', shortDesc); })();
   try {
   $('crumbCat').textContent = crumb[product.cat] || product.crumb;
   $('crumbCat').href = 'my-plp-screen.html?category=' + product.cat;
@@ -798,7 +811,7 @@
   $('ratingLink').textContent = product.reviews + ' reviews';
   $('price').innerHTML = (product.was ? '<span class="was">' + money(product.was) + '</span>' : '') + money(product.price);
   const [dw, dh, dd] = product.dims;
-  $('sizeNote').textContent = dw + ' × ' + dh + ' × ' + dd + ' cm — ' + (product.nafisa ? product.fits : product.fits);
+  $('sizeNote').textContent = dw + ' × ' + dh + ' × ' + dd + ' cm, ' + (product.nafisa ? product.fits : product.fits);
   $('descBody').textContent = product.desc;
   $('dimBody').textContent = 'Width ' + dw + ' cm · Height ' + dh + ' cm · Depth ' + dd + ' cm';
   $('careBody').textContent = product.care;
@@ -1060,7 +1073,7 @@
       index = Math.max(0, Math.min(list.length - 1, i));  // no wrap-around: the first photo has no "previous", the last has no "next"
       main.dataset.at = index === 0 ? 'start' : index === list.length - 1 ? 'end' : '';
       const ph = list[index];
-      const label = product.name + ', ' + colour.label + ' — ' + ph.alt;
+      const label = product.name + ', ' + colour.label + ', ' + ph.alt;
       thumbs.forEach((t, k) => t.setAttribute('aria-selected', String(k === index)));
       main.classList.toggle('contain', !!ph.contain);
       main.style.background = ph.contain ? (colour.guideBg || '') : '';
@@ -1124,7 +1137,7 @@
     const colourValue = $('colourValue');
     const name = document.querySelector('.product-name');
     const heading = () => {
-      name.textContent = product.name + ' — ' + colour.label;
+      name.textContent = product.name + ', ' + colour.label;
       name.classList.toggle('long', name.textContent.length > 26);
       colourValue.textContent = colour.label;
     };
@@ -1254,7 +1267,7 @@
     });
   })();
 
-  // Nav dropdowns — identical behaviour to the homepage.
+  // Nav dropdowns, identical behaviour to the homepage.
   document.querySelectorAll('.nav-menu-wrap img').forEach((img) => { if (img.decode) img.decode().catch(() => {}); });
   (function () {
     const wrap = document.getElementById('navMenuWrap');

@@ -1,4 +1,8 @@
 {
+  "framework": null,
+  "installCommand": "npm ci --no-audit --no-fund",
+  "buildCommand": "node scripts/build.js",
+  "outputDirectory": "dist",
   "cleanUrls": false,
   "trailingSlash": false,
   "redirects": [
@@ -8,9 +12,280 @@
       "permanent": false
     },
     {
+      "source": "/index.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/index-mobile.html",
+      "destination": "/home-mobile",
+      "permanent": true
+    },
+    {
+      "source": "/my-product-detail-screen.html",
+      "destination": "/bags/:id",
+      "permanent": true,
+      "has": [
+        {
+          "type": "query",
+          "key": "p",
+          "value": "(?<id>[a-z0-9-]+)"
+        }
+      ]
+    },
+    {
+      "source": "/my-product-detail-screen.html",
+      "destination": "/shop",
+      "permanent": true
+    },
+    {
+      "source": "/my-plp-screen.html",
+      "destination": "/:c-bags",
+      "permanent": true,
+      "has": [
+        {
+          "type": "query",
+          "key": "category",
+          "value": "(?<c>tote|shoulder|crossbody|mini|travel-work)"
+        }
+      ]
+    },
+    {
+      "source": "/my-plp-screen.html",
+      "destination": "/new-arrivals",
+      "permanent": true,
+      "has": [
+        {
+          "type": "query",
+          "key": "collection",
+          "value": "new"
+        }
+      ]
+    },
+    {
+      "source": "/my-plp-screen.html",
+      "destination": "/best-sellers",
+      "permanent": true,
+      "has": [
+        {
+          "type": "query",
+          "key": "collection",
+          "value": "best"
+        }
+      ]
+    },
+    {
+      "source": "/my-plp-screen.html",
+      "destination": "/shop",
+      "permanent": true
+    },
+    {
+      "source": "/my-contact-screen.html",
+      "destination": "/contact",
+      "permanent": true
+    },
+    {
+      "source": "/my-cart-screen.html",
+      "destination": "/cart",
+      "permanent": true
+    },
+    {
+      "source": "/my-checkout-review.html",
+      "destination": "/checkout",
+      "permanent": true
+    },
+    {
+      "source": "/my-payment.html",
+      "destination": "/payment",
+      "permanent": true
+    },
+    {
+      "source": "/my-card-payment.html",
+      "destination": "/card-payment",
+      "permanent": true
+    },
+    {
+      "source": "/my-order-success.html",
+      "destination": "/order-confirmed",
+      "permanent": true
+    },
+    {
+      "source": "/my-order-tracking.html",
+      "destination": "/track-order",
+      "permanent": true
+    },
+    {
+      "source": "/my-account.html",
+      "destination": "/account",
+      "permanent": true
+    },
+    {
+      "source": "/page.html",
+      "destination": "/shipping-and-delivery",
+      "permanent": true,
+      "has": [
+        {
+          "type": "query",
+          "key": "p",
+          "value": "shipping"
+        }
+      ]
+    },
+    {
+      "source": "/page.html",
+      "destination": "/returns-and-exchange",
+      "permanent": true,
+      "has": [
+        {
+          "type": "query",
+          "key": "p",
+          "value": "returns"
+        }
+      ]
+    },
+    {
+      "source": "/page.html",
+      "destination": "/our-story",
+      "permanent": true,
+      "has": [
+        {
+          "type": "query",
+          "key": "p",
+          "value": "story"
+        }
+      ]
+    },
+    {
+      "source": "/page.html",
+      "destination": "/privacy-policy",
+      "permanent": true,
+      "has": [
+        {
+          "type": "query",
+          "key": "p",
+          "value": "privacy"
+        }
+      ]
+    },
+    {
+      "source": "/page.html",
+      "destination": "/terms-of-service",
+      "permanent": true,
+      "has": [
+        {
+          "type": "query",
+          "key": "p",
+          "value": "terms"
+        }
+      ]
+    },
+    {
+      "source": "/page.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
       "source": "/build-homepage.html",
       "destination": "/",
       "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/shop",
+      "destination": "/shop/index.html"
+    },
+    {
+      "source": "/tote-bags",
+      "destination": "/tote-bags/index.html"
+    },
+    {
+      "source": "/shoulder-bags",
+      "destination": "/shoulder-bags/index.html"
+    },
+    {
+      "source": "/crossbody-bags",
+      "destination": "/crossbody-bags/index.html"
+    },
+    {
+      "source": "/mini-bags",
+      "destination": "/mini-bags/index.html"
+    },
+    {
+      "source": "/travel-work-bags",
+      "destination": "/travel-work-bags/index.html"
+    },
+    {
+      "source": "/new-arrivals",
+      "destination": "/new-arrivals/index.html"
+    },
+    {
+      "source": "/best-sellers",
+      "destination": "/best-sellers/index.html"
+    },
+    {
+      "source": "/contact",
+      "destination": "/contact/index.html"
+    },
+    {
+      "source": "/cart",
+      "destination": "/cart/index.html"
+    },
+    {
+      "source": "/checkout",
+      "destination": "/checkout/index.html"
+    },
+    {
+      "source": "/payment",
+      "destination": "/payment/index.html"
+    },
+    {
+      "source": "/card-payment",
+      "destination": "/card-payment/index.html"
+    },
+    {
+      "source": "/order-confirmed",
+      "destination": "/order-confirmed/index.html"
+    },
+    {
+      "source": "/track-order",
+      "destination": "/track-order/index.html"
+    },
+    {
+      "source": "/account",
+      "destination": "/account/index.html"
+    },
+    {
+      "source": "/home-mobile",
+      "destination": "/home-mobile/index.html"
+    },
+    {
+      "source": "/information",
+      "destination": "/information/index.html"
+    },
+    {
+      "source": "/shipping-and-delivery",
+      "destination": "/shipping-and-delivery/index.html"
+    },
+    {
+      "source": "/returns-and-exchange",
+      "destination": "/returns-and-exchange/index.html"
+    },
+    {
+      "source": "/our-story",
+      "destination": "/our-story/index.html"
+    },
+    {
+      "source": "/privacy-policy",
+      "destination": "/privacy-policy/index.html"
+    },
+    {
+      "source": "/terms-of-service",
+      "destination": "/terms-of-service/index.html"
+    },
+    {
+      "source": "/bags/:id",
+      "destination": "/pdp-shell.html"
     }
   ],
   "headers": [

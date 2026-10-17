@@ -26,7 +26,7 @@
 <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
 <!--
-  Order Success page — pixel-perfect build of Figma node 240:748 (Elara Women's bag E-commerce project).
+  Order Success page, pixel-perfect build of Figma node 240:748 (Elara Women's bag E-commerce project).
   1440px artboard; below 1440 the whole artboard scales down (same approach as the other pages).
   Reads the placed order from localStorage ("elara.order.v1"), written by my-checkout-review.html.
 -->
@@ -63,7 +63,7 @@
   .page { position: relative; width: 1440px; margin: 0 auto; padding-top: 109px; zoom: var(--fit, 1); }
   .abs { position: absolute; }
 
-  /* ===== Nav (22:641) — same component as the homepage ===== */
+  /* ===== Nav (22:641), same component as the homepage ===== */
   .nav { left: 0; top: 0; width: 1440px; height: 109px; padding: 10px; display: flex; align-items: center; justify-content: center; z-index: 20; }
   .nav-inner { width: 100%; display: flex; gap: 144px; align-items: center; justify-content: center; padding: 0 37px; }
   .nav-logo { position: relative; width: 222px; height: 101px; flex-shrink: 0; }
@@ -190,7 +190,7 @@
 
   /* No order to show (opened directly) */
   .empty { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; padding: 48px 128px 120px; }
-  .empty h1 { font-size: 36px; font-weight: 300; line-height: 1.1; letter-spacing: -1.8px; }
+  .empty h2 { font-size: 36px; font-weight: 300; line-height: 1.1; letter-spacing: -1.8px; }
   .empty p { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
   .empty .btn { flex: none; width: 260px; }
 
@@ -211,7 +211,7 @@
     .wa { flex-direction: column; align-items: flex-start; padding: 16px; }
     .wa-link { white-space: normal; }
     .empty { padding: 32px 20px 64px; }
-    .empty h1 { font-size: 30px; }
+    .empty h2 { font-size: 30px; }
     .empty .btn { width: 100%; }
 
   }
@@ -261,9 +261,9 @@
           </a>
           <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
           <div class="dd-list">
-            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-1.webp" alt=""></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
-            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-2.webp" alt=""></span><span class="dd-row-title">Sienna Structured Purse</span></a>
-            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-3.webp" alt=""></span><span class="dd-row-title">Isla Bags</span></a>
+            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-1.webp" alt="Vivienne Leather Bag"></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
+            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-2.webp" alt="Sienna Structured Purse"></span><span class="dd-row-title">Sienna Structured Purse</span></a>
+            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-3.webp" alt="Isla Bags"></span><span class="dd-row-title">Isla Bags</span></a>
             <a href="my-plp-screen.html?collection=new" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All New Arrivals</span></a>
           </div>
         </div>
@@ -282,9 +282,9 @@
           </a>
           <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
           <div class="dd-list">
-            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-1.webp" alt=""></span><span class="dd-row-title">Tote</span></a>
-            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-2.webp" alt=""></span><span class="dd-row-title">Shoulder</span></a>
-            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-3.webp" alt=""></span><span class="dd-row-title">Mini</span></a>
+            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-1.webp" alt="Tote"></span><span class="dd-row-title">Tote</span></a>
+            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-2.webp" alt="Shoulder"></span><span class="dd-row-title">Shoulder</span></a>
+            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-3.webp" alt="Mini"></span><span class="dd-row-title">Mini</span></a>
             <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All Category Bags</span></a>
           </div>
         </div>
@@ -304,8 +304,8 @@
           <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="" style="left:826px;">
           <div class="dd-list dd-list-coll" style="left:850px; top:92px;">
             <div class="dd-list-group">
-              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-1.webp" alt=""></span><span class="dd-row-title">The Evening Edit</span></a>
-              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-2.webp" alt=""></span><span class="dd-row-title">Designed for Work</span></a>
+              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-1.webp" alt="The Evening Edit"></span><span class="dd-row-title">The Evening Edit</span></a>
+              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-2.webp" alt="Designed for Work"></span><span class="dd-row-title">Designed for Work</span></a>
             </div>
             <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-see-all.svg" alt=""></span><span class="dd-row-title">See All Collections</span></a>
           </div>
@@ -377,7 +377,7 @@
   </div>
 
   <div class="empty" id="emptyView" hidden>
-    <h1 class="serif">No recent order</h1>
+    <h2 class="serif">No recent order</h2>
     <p>We could not find an order on this device. Your bag is waiting if you want to keep shopping.</p>
     <a href="my-plp-screen.html" class="btn btn-accent">Continue shopping</a>
   </div>
@@ -425,14 +425,14 @@
 
     $('sumItems').innerHTML = o.items.map((l) => `
       <div class="sum-item">
-        <div class="sum-photo"><img class="cover" src="${esc(l.img)}" alt=""></div>
+        <div class="sum-photo"><img class="cover" src="${esc(l.img)}" alt="${esc(l.name)}"></div>
         <div class="sum-details"><b>${esc(l.name)}</b><span>${[l.colour, l.size].filter(Boolean).map(esc).concat('Qty ' + l.qty).join(' · ')}</span></div>
         <span class="sum-price">${money(l.price * l.qty)}</span>
       </div>`).join('');
     $('subLabel').textContent = 'Subtotal (' + count + (count === 1 ? ' item' : ' items') + ')';
     $('subValue').textContent = money(o.subtotal);
     $('discLine').hidden = !o.discount;
-    if (o.discount) { $('discLabel').textContent = 'Discount (' + o.promo + ')'; $('discValue').textContent = '– ' + money(o.discount); }
+    if (o.discount) { $('discLabel').textContent = 'Discount (' + o.promo + ')'; $('discValue').textContent = '- ' + money(o.discount); }
     $('delLabel').textContent = 'Delivery · ' + o.zone;
     $('delValue').textContent = o.delivery ? money(o.delivery) : 'Free';
     $('totalValue').textContent = money(o.total);
@@ -445,7 +445,7 @@
     $('thanks').focus({ preventScroll: true });
   }
 
-  // Nav dropdowns — identical behaviour to the homepage.
+  // Nav dropdowns, identical behaviour to the homepage.
   document.querySelectorAll('.nav-menu-wrap img').forEach((img) => { if (img.decode) img.decode().catch(() => {}); });
   (function () {
     const wrap = document.getElementById('navMenuWrap');

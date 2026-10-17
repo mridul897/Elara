@@ -26,7 +26,7 @@
 <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
 <!--
-  Order Tracking page — pixel-perfect build of Figma nodes 245:796 (lookup) and 246:1020 (result).
+  Order Tracking page, pixel-perfect build of Figma nodes 245:796 (lookup) and 246:1020 (result).
   1440px artboard; below 1440 the whole artboard scales down (same approach as the other pages).
   There is no backend yet, so it can only find the order placed on this device ("elara.order.v1").
   The status is simulated from the order's placement time (see stageFor); add ?stage=1..5 to preview any state.
@@ -70,7 +70,7 @@
   .page { position: relative; width: 1440px; margin: 0 auto; padding-top: 109px; zoom: var(--fit, 1); }
   .abs { position: absolute; }
 
-  /* ===== Nav (22:641) — same component as the homepage ===== */
+  /* ===== Nav (22:641), same component as the homepage ===== */
   .nav { left: 0; top: 0; width: 1440px; height: 109px; padding: 10px; display: flex; align-items: center; justify-content: center; z-index: 20; }
   .nav-inner { width: 100%; display: flex; gap: 144px; align-items: center; justify-content: center; padding: 0 37px; }
   .nav-logo { position: relative; width: 222px; height: 101px; flex-shrink: 0; }
@@ -140,8 +140,8 @@
   .title-row { display: flex; align-items: flex-end; justify-content: space-between; padding: 24px 128px 0; }
   .title-block { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
   .title-text { display: flex; flex-direction: column; gap: 4px; }
-  .title-text h1 { font-size: 36px; font-weight: 300; line-height: 1.1; letter-spacing: -1.8px; }
-  .title-text h1:focus { outline: none; }
+  .title-text h1, .title-text h2 { font-size: 36px; font-weight: 300; line-height: 1.1; letter-spacing: -1.8px; }
+  .title-text h1:focus, .title-text h2:focus { outline: none; }
   .title-text p { font-size: 14px; line-height: 1.5; color: var(--text-muted); }
   .chip-wrap { padding-top: 12px; }
   .order-chip { display: flex; align-items: center; gap: 8px; padding: 6px 14px; border: 1px solid var(--border-soft); border-radius: var(--r-pill); line-height: 1.5; }
@@ -240,7 +240,7 @@
 
     .breadcrumb { display: none; }
     .title-row { flex-direction: column; align-items: flex-start; gap: 14px; padding: 24px 20px 0; }
-    .title-text h1 { font-size: 32px; letter-spacing: -1.4px; }
+    .title-text h1, .title-text h2 { font-size: 32px; letter-spacing: -1.4px; }
     .title-link { font-size: 15px; }
     .main { flex-direction: column; align-items: stretch; gap: 28px; padding: 24px 20px 40px; }
     .details { width: 100%; gap: 24px; }
@@ -301,9 +301,9 @@
           </a>
           <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
           <div class="dd-list">
-            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-1.webp" alt=""></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
-            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-2.webp" alt=""></span><span class="dd-row-title">Sienna Structured Purse</span></a>
-            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-3.webp" alt=""></span><span class="dd-row-title">Isla Bags</span></a>
+            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-1.webp" alt="Vivienne Leather Bag"></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
+            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-2.webp" alt="Sienna Structured Purse"></span><span class="dd-row-title">Sienna Structured Purse</span></a>
+            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-3.webp" alt="Isla Bags"></span><span class="dd-row-title">Isla Bags</span></a>
             <a href="my-plp-screen.html?collection=new" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All New Arrivals</span></a>
           </div>
         </div>
@@ -322,9 +322,9 @@
           </a>
           <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
           <div class="dd-list">
-            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-1.webp" alt=""></span><span class="dd-row-title">Tote</span></a>
-            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-2.webp" alt=""></span><span class="dd-row-title">Shoulder</span></a>
-            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-3.webp" alt=""></span><span class="dd-row-title">Mini</span></a>
+            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-1.webp" alt="Tote"></span><span class="dd-row-title">Tote</span></a>
+            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-2.webp" alt="Shoulder"></span><span class="dd-row-title">Shoulder</span></a>
+            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-3.webp" alt="Mini"></span><span class="dd-row-title">Mini</span></a>
             <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All Category Bags</span></a>
           </div>
         </div>
@@ -344,8 +344,8 @@
           <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="" style="left:826px;">
           <div class="dd-list dd-list-coll" style="left:850px; top:92px;">
             <div class="dd-list-group">
-              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-1.webp" alt=""></span><span class="dd-row-title">The Evening Edit</span></a>
-              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-2.webp" alt=""></span><span class="dd-row-title">Designed for Work</span></a>
+              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-1.webp" alt="The Evening Edit"></span><span class="dd-row-title">The Evening Edit</span></a>
+              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-2.webp" alt="Designed for Work"></span><span class="dd-row-title">Designed for Work</span></a>
             </div>
             <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-see-all.svg" alt=""></span><span class="dd-row-title">See All Collections</span></a>
           </div>
@@ -405,7 +405,7 @@
         <h2 class="serif">Good to know</h2>
         <div class="tip"><b>Where is my order number?</b><span>It is on your confirmation page and in your order message. It looks like ELR-129260.</span></div>
         <div class="divider"></div>
-        <div class="tip"><b>How long will delivery take?</b><span>Dhaka: 1–3 working days. Outside Dhaka: 3–5 working days.</span></div>
+        <div class="tip"><b>How long will delivery take?</b><span>Dhaka: 1 to 3 working days. Outside Dhaka: 3 to 5 working days.</span></div>
         <div class="divider"></div>
         <div class="tip"><b>Need help with an order?</b><span>Message us on WhatsApp and we reply within 1 business day.</span></div>
       </aside>
@@ -417,7 +417,7 @@
     <div class="title-row">
       <div class="title-block">
         <div class="title-text">
-          <h1 class="serif" id="rTitle" tabindex="-1"></h1>
+          <h2 class="serif" id="rTitle" tabindex="-1"></h2>
           <p id="rSub"></p>
         </div>
         <div class="chip-wrap"><div class="order-chip"><span>Order number</span><b id="rId"></b></div></div>
@@ -557,14 +557,14 @@
     const count = o.items.reduce((n, l) => n + l.qty, 0);
     $('sumItems').innerHTML = o.items.map((l) => `
       <div class="sum-item">
-        <div class="sum-photo"><img class="cover" src="${esc(l.img)}" alt=""></div>
+        <div class="sum-photo"><img class="cover" src="${esc(l.img)}" alt="${esc(l.name)}"></div>
         <div class="sum-details"><b>${esc(l.name)}</b><span>${[l.colour, l.size].filter(Boolean).map(esc).concat('Qty ' + l.qty).join(' · ')}</span></div>
         <span class="sum-price">${money(l.price * l.qty)}</span>
       </div>`).join('');
     $('subLabel').textContent = 'Subtotal (' + count + (count === 1 ? ' item' : ' items') + ')';
     $('subValue').textContent = money(o.subtotal);
     $('discLine').hidden = !o.discount;
-    if (o.discount) { $('discLabel').textContent = 'Discount (' + o.promo + ')'; $('discValue').textContent = '– ' + money(o.discount); }
+    if (o.discount) { $('discLabel').textContent = 'Discount (' + o.promo + ')'; $('discValue').textContent = '- ' + money(o.discount); }
     $('delLabel').textContent = 'Delivery · ' + o.zone;
     $('delValue').textContent = o.delivery ? money(o.delivery) : 'Free';
     $('totalValue').textContent = money(o.total);
@@ -635,7 +635,7 @@
     findOrder(known.id, normalisePhone(known.customer.phone)).then((o) => showResult(o || known));
   }
 
-  // Nav dropdowns — identical behaviour to the homepage.
+  // Nav dropdowns, identical behaviour to the homepage.
   document.querySelectorAll('.nav-menu-wrap img').forEach((img) => { if (img.decode) img.decode().catch(() => {}); });
   (function () {
     const wrap = document.getElementById('navMenuWrap');

@@ -40,7 +40,7 @@
     '<div><h5>About</h5><a href="#" data-soon="Our Story" data-soon-page>Our Story</a><a href="my-contact-screen.html">Contact</a></div>' +
     '<div><h5>Legal</h5><a href="#" data-soon="Privacy Policy" data-soon-page>Privacy Policy</a><a href="#" data-soon="Terms of Service" data-soon-page>Terms of Service</a></div>' +
     '</div>' +
-    '<div class="mf-legal"><span>© 2026 ELARA. All rights reserved.</span><span>Dhaka Tk. 60/- (1–3 days) · Outside Dhaka Tk. 120/- (3–5 days) · Free over Tk. 3,000/-</span></div>' +
+    '<div class="mf-legal"><span>© 2026 ELARA. All rights reserved.</span><span>Dhaka Tk. 60/- (1 to 3 days) · Outside Dhaka Tk. 120/- (3 to 5 days) · Free over Tk. 3,000/-</span></div>' +
     '</footer>';
 
   b.insertAdjacentHTML('afterbegin', header);

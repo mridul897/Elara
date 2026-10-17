@@ -1,12 +1,28 @@
 # ELARA: put the website live (Vercel + GitHub)
 
-This folder is the whole website. There is no build step: it is plain HTML, CSS and JavaScript.
+This folder is the whole website. On every deploy Vercel runs `node scripts/build.js`, which turns these source files into the finished site in `dist/`:
 
-- Entry page: `index.html` (the homepage)
-- Other pages: `my-plp-screen.html` (shop), `my-product-detail-screen.html` (product), `my-cart-screen.html`, `my-checkout-review.html`, `my-payment.html`, `my-order-success.html`, `my-order-tracking.html`, `my-account.html`, `my-contact-screen.html`
-- Not-found page: `404.html`
+- clean addresses (`/shop`, `/tote-bags`, `/bags/<id>`, `/contact`, `/cart` ...) and every link rewritten to match;
+- a ready-made HTML page for every bag, listing and policy page (what search engines read without running scripts), each with its own title, description, canonical address, share image, breadcrumbs and structured data;
+- minified JavaScript and CSS, no source maps;
+- `sitemap.xml` and `robots.txt`, written from the live product list;
+- a self-check that stops the deploy if a link is broken, a title repeats, an image has no alt text, or a long dash or old address is left. A failed build never replaces the live site.
+
+Where things are:
+
+- Source pages (edit these): `index.html`, `my-plp-screen.html` (shop and listings), `my-product-detail-screen.html` (bag page), `my-cart-screen.html`, `my-checkout-review.html`, `my-payment.html`, `my-card-payment.html`, `my-order-success.html`, `my-order-tracking.html`, `my-account.html`, `my-contact-screen.html`, `page.html` (policy pages), `404.html`
 - Images, videos, data: `assets/`
-- Vercel settings: `vercel.json`; files kept out of the live site: `.vercelignore`
+- Admin panel: `admin/`
+- Build, checks, local server: `scripts/build.js`, `scripts/check.js`, `scripts/serve.js`
+- Vercel settings (build command, redirects from the old addresses, headers): `vercel.json`
+
+Try a build on your own computer:
+
+```bash
+npm install
+node scripts/build.js      # writes dist/ and runs the checks
+node scripts/serve.js      # opens dist/ at http://localhost:5830 the way Vercel serves it
+```
 
 ## 1. Push to GitHub
 
@@ -27,7 +43,7 @@ Create the empty repository on github.com first (no README, no .gitignore), then
 
 1. Go to vercel.com, sign in with GitHub, press **Add New → Project**.
 2. Pick the repository you just pushed.
-3. **Framework Preset:** Other. **Build command:** leave empty. **Output directory:** leave empty (or `.`).
+3. **Framework Preset:** Other. Leave Build command and Output directory as they are: `vercel.json` sets them (`node scripts/build.js` and `dist`).
 4. Press **Deploy**. In about a minute you get a `*.vercel.app` address.
 
 Every later `git push` to `main` updates the live site by itself.
@@ -36,7 +52,7 @@ If you push the whole `claude-for-designers` course folder instead of only this 
 
 ## 3. Live address
 
-The site is live at https://elarabags.vercel.app (canonical address, sitemap and share-preview image all use it). If the address ever changes, update `SITE` in the meta tags of each page, `sitemap.xml` and `robots.txt`.
+The site is live at https://elarabags.vercel.app (canonical address, sitemap and share-preview image all use it). If the address ever changes, update `SITE` at the top of `scripts/build.js` and the address in the meta tags of the source pages.
 
 ## 4. Things to know
 

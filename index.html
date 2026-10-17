@@ -50,11 +50,11 @@
   node; every image and icon is the designer's own asset, downloaded to assets/home/.
   Positions follow the Figma structure: auto-layout in Figma = flex here, absolute in
   Figma = absolute here.
-  Motion: baseline Oura profile from tokens.md — one-time fade + rise on scroll,
+  Motion: baseline Oura profile from tokens.md, one-time fade + rise on scroll,
   cubic-bezier(.4,0,.2,1), no spring. Uses the `translate` property so it never fights
   the layout transforms. Section-specific interactions (incl. the testimonial marquee)
   are added later, one section at a time.
-  Mobile/tablet: not built yet — desktop first, per the designer.
+  Mobile/tablet: not built yet, desktop first, per the designer.
 -->
 <link rel="preload" href="assets/fonts/fraunces-normal-latin-fe3a28.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/inter-normal-latin-567244.woff2" as="font" type="font/woff2" crossorigin>
@@ -140,7 +140,7 @@
   .page { zoom: var(--fit, 1); }
   .abs { position: absolute; }
 
-  /* ===== Motion — baseline Oura profile ===== */
+  /* ===== Motion, baseline Oura profile ===== */
   .reveal { opacity: 0; translate: 0 28px; transition: opacity 550ms var(--ease), translate 550ms var(--ease); }
   .reveal.in-view { opacity: 1; translate: 0 0; }
   .stagger > * { opacity: 0; translate: 0 28px; transition: opacity 550ms var(--ease), translate 550ms var(--ease); }
@@ -180,15 +180,14 @@
      Oura-style: one full-width panel drops from the header, its content
      swapping per tab. New Arrivals gets the mega layout (two big product
      cards + a quick-link list with thumbnails); Bags, Collections and Best
-     Sellers get the lighter list-only layout — per the IA decision that Bags
+     Sellers get the lighter list-only layout, per the IA decision that Bags
      opens "a light dropdown of categories, no mega-menu". */
   .nav-item { position: relative; }
   .nav-chev { transition: transform 220ms var(--ease); }
   .nav-item.open .nav-chev { transform: rotate(180deg); }
   /* Two shapes: New Arrivals is the full-width mega panel (spans the header,
      like Oura's); Bags, Collections and Best Sellers are compact dropdowns
-     that shrink to their own content and sit under their own nav item —
-     the IA's "light dropdown, no mega-menu" call, and it avoids a wide empty
+     that shrink to their own content and sit under their own nav item, the IA's "light dropdown, no mega-menu" call, and it avoids a wide empty
      panel with a short list stranded on the left of it. */
   .nav-menu-wrap { position: absolute; top: 99px; z-index: 10; background: var(--bg-page); box-shadow: 0 28px 56px rgba(28,27,26,0.12); opacity: 0; visibility: hidden; transform: translateY(-10px); transition: opacity 260ms var(--ease), transform 260ms var(--ease), visibility 0s linear 260ms, left 260ms var(--ease); pointer-events: none; overflow: hidden; }
   .nav-menu-wrap.mega { left: 0; width: 1440px; border-radius: 0 0 var(--r-large) var(--r-large); }
@@ -200,7 +199,7 @@
   @keyframes navPanelIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
   /* New Arrivals / Bags / Collections dropdowns: pixel-perfect from Figma
-     node 100:111 / 105:171 / 105:253 — a 1440x360 frame, two big cards with a
+     node 100:111 / 105:171 / 105:253, a 1440x360 frame, two big cards with a
      bottom photo-fade + label, a divider rule, and a thumbnail list. Best
      Sellers alone stays the compact "light" list (designer's own call). */
   .nav-menu-wrap.mega .nav-panel { padding: 0; }
@@ -348,7 +347,7 @@
   .spot-arrows button { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; }
   .spot-arrows img { width: 48px; height: 48px; display: block; }
   .spot-arrows img.flip { transform: scaleX(-1); }   /* the Next arrow is the Previous one mirrored (Figma 288:3101) */
-  /* Figma applies rotate first, then the flip — order matters for the direction */
+  /* Figma applies rotate first, then the flip, order matters for the direction */
   .rot-prev { transform: rotate(90deg) scaleY(-1); }
   .rot-90 { transform: rotate(90deg); }
   .spot-right { display: flex; gap: 24px; align-items: flex-end; }
@@ -573,13 +572,13 @@
   <span class="sr-only">Loading ELARA…</span>
   <div class="pl-panel pl-panel-l">
     <div class="pl-inner" aria-hidden="true">
-      <img class="pl-logo" src="assets/home/logo.webp" alt="">
+      <img class="pl-logo" src="assets/home/logo.webp" alt="ELARA">
       <div class="pl-rule"></div>
     </div>
   </div>
   <div class="pl-panel pl-panel-r">
     <div class="pl-inner" aria-hidden="true">
-      <img class="pl-logo" src="assets/home/logo.webp" alt="">
+      <img class="pl-logo" src="assets/home/logo.webp" alt="ELARA">
       <div class="pl-rule"></div>
     </div>
   </div>
@@ -641,7 +640,7 @@
   <div class="bleed bleed-footer" aria-hidden="true"></div>
 
   <!-- ===== HERO ===== -->
-  <div class="abs hero-bg"><img class="cover" src="assets/home/hero-bg.webp" alt="" fetchpriority="high" decoding="async"></div>
+  <div class="abs hero-bg"><img class="cover" src="assets/home/hero-bg.webp" alt="A woman carrying a taupe ELARA leather tote bag" fetchpriority="high" decoding="async"></div>
 
   <header class="abs nav">
     <div class="nav-inner">
@@ -681,9 +680,9 @@
           </a>
           <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
           <div class="dd-list">
-            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-na-thumb-1.webp" alt=""></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
-            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-na-thumb-2.webp" alt=""></span><span class="dd-row-title">Sienna Structured Purse</span></a>
-            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-na-thumb-3.webp" alt=""></span><span class="dd-row-title">Isla Bags</span></a>
+            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-na-thumb-1.webp" alt="Vivienne Leather Bag"></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
+            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-na-thumb-2.webp" alt="Sienna Structured Purse"></span><span class="dd-row-title">Sienna Structured Purse</span></a>
+            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-na-thumb-3.webp" alt="Isla Bags"></span><span class="dd-row-title">Isla Bags</span></a>
             <a href="my-plp-screen.html?collection=new" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All New Arrivals</span></a>
           </div>
         </div>
@@ -702,9 +701,9 @@
           </a>
           <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
           <div class="dd-list">
-            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-bags-thumb-1.webp" alt=""></span><span class="dd-row-title">Tote</span></a>
-            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-bags-thumb-2.webp" alt=""></span><span class="dd-row-title">Shoulder</span></a>
-            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-bags-thumb-3.webp" alt=""></span><span class="dd-row-title">Mini</span></a>
+            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-bags-thumb-1.webp" alt="Tote"></span><span class="dd-row-title">Tote</span></a>
+            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-bags-thumb-2.webp" alt="Shoulder"></span><span class="dd-row-title">Shoulder</span></a>
+            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-bags-thumb-3.webp" alt="Mini"></span><span class="dd-row-title">Mini</span></a>
             <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All Category Bags</span></a>
           </div>
         </div>
@@ -724,8 +723,8 @@
           <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="" style="left:826px;">
           <div class="dd-list dd-list-coll" style="left:850px; top:92px;">
             <div class="dd-list-group">
-              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-coll-thumb-1.webp" alt=""></span><span class="dd-row-title">The Evening Edit</span></a>
-              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-coll-thumb-2.webp" alt=""></span><span class="dd-row-title">Designed for Work</span></a>
+              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-coll-thumb-1.webp" alt="The Evening Edit"></span><span class="dd-row-title">The Evening Edit</span></a>
+              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" data-src="assets/home/dd-coll-thumb-2.webp" alt="Designed for Work"></span><span class="dd-row-title">Designed for Work</span></a>
             </div>
             <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-see-all.svg" alt=""></span><span class="dd-row-title">See All Collections</span></a>
           </div>
@@ -751,9 +750,9 @@
     <a href="my-plp-screen.html" class="btn-pill btn-dark">Shop New Collection <img src="assets/home/icon-arrow-btn.svg" alt=""></a>
   </div>
 
-  <div class="abs hero-thumb reveal" style="top:439px;"><img class="cover" src="assets/home/hero-thumb-1.webp" alt=""></div>
-  <div class="abs hero-thumb reveal" style="top:588px;"><img class="cover" src="assets/home/hero-thumb-2.webp" alt=""></div>
-  <div class="abs hero-thumb reveal" style="top:737px;"><img class="cover" src="assets/home/hero-thumb-3.webp" alt=""></div>
+  <div class="abs hero-thumb reveal" style="top:439px;"><img class="cover" src="assets/home/hero-thumb-1.webp" alt="ELARA leather tote, close-up 1"></div>
+  <div class="abs hero-thumb reveal" style="top:588px;"><img class="cover" src="assets/home/hero-thumb-2.webp" alt="ELARA leather tote, close-up 2"></div>
+  <div class="abs hero-thumb reveal" style="top:737px;"><img class="cover" src="assets/home/hero-thumb-3.webp" alt="ELARA leather tote, close-up 3"></div>
 
   <!-- ===== NEW ARRIVALS + SHOP BY CATEGORY ===== -->
   <div class="abs block-1">
@@ -776,19 +775,19 @@
       </div>
       <div class="cat-grid stagger">
         <a href="my-plp-screen.html?category=tote" class="cat-item" style="left:0;top:116px;" aria-label="Shop Tote bags">
-          <div class="cat-img"><img loading="lazy" decoding="async" class="crop" src="assets/home/cat-tote.webp" alt="" style="left:-45px;top:-216px;width:423px;height:566px;"><span class="cat-shade"></span><span class="cat-go" aria-hidden="true"><svg viewBox="0 0 22 22" fill="none"><path d="M4 11h13M12 5.5 17.5 11 12 16.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="cat-img"><img loading="lazy" decoding="async" class="crop" src="assets/home/cat-tote.webp" alt="Tote bags by ELARA" style="left:-45px;top:-216px;width:423px;height:566px;"><span class="cat-shade"></span><span class="cat-go" aria-hidden="true"><svg viewBox="0 0 22 22" fill="none"><path d="M4 11h13M12 5.5 17.5 11 12 16.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
           <p class="cat-label serif">Tote</p>
         </a>
         <a href="my-plp-screen.html?category=shoulder" class="cat-item" style="left:344px;top:0;" aria-label="Shop Shoulder bags">
-          <div class="cat-img"><img loading="lazy" decoding="async" class="crop" src="assets/home/cat-shoulder.webp" alt="" style="left:-5px;top:-83px;width:324px;height:433px;"><span class="cat-shade"></span><span class="cat-go" aria-hidden="true"><svg viewBox="0 0 22 22" fill="none"><path d="M4 11h13M12 5.5 17.5 11 12 16.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="cat-img"><img loading="lazy" decoding="async" class="crop" src="assets/home/cat-shoulder.webp" alt="Shoulder bags by ELARA" style="left:-5px;top:-83px;width:324px;height:433px;"><span class="cat-shade"></span><span class="cat-go" aria-hidden="true"><svg viewBox="0 0 22 22" fill="none"><path d="M4 11h13M12 5.5 17.5 11 12 16.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
           <p class="cat-label serif">Shoulder</p>
         </a>
         <a href="my-plp-screen.html?category=crossbody" class="cat-item" style="left:688px;top:123px;" aria-label="Shop Crossbody bags">
-          <div class="cat-img"><img loading="lazy" decoding="async" class="crop" src="assets/home/cat-crossbody.webp" alt="" style="left:-16px;top:-75px;width:402px;height:538px;"><span class="cat-shade"></span><span class="cat-go" aria-hidden="true"><svg viewBox="0 0 22 22" fill="none"><path d="M4 11h13M12 5.5 17.5 11 12 16.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="cat-img"><img loading="lazy" decoding="async" class="crop" src="assets/home/cat-crossbody.webp" alt="Crossbody bags by ELARA" style="left:-16px;top:-75px;width:402px;height:538px;"><span class="cat-shade"></span><span class="cat-go" aria-hidden="true"><svg viewBox="0 0 22 22" fill="none"><path d="M4 11h13M12 5.5 17.5 11 12 16.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
           <p class="cat-label serif">Cross body</p>
         </a>
         <a href="my-plp-screen.html?category=mini" class="cat-item" style="left:1032px;top:0;" aria-label="Shop Mini bags">
-          <div class="cat-img"><img loading="lazy" decoding="async" class="crop" src="assets/home/cat-mini.webp" alt="" style="left:-44px;top:-124px;width:363px;height:486px;"><span class="cat-shade"></span><span class="cat-go" aria-hidden="true"><svg viewBox="0 0 22 22" fill="none"><path d="M4 11h13M12 5.5 17.5 11 12 16.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+          <div class="cat-img"><img loading="lazy" decoding="async" class="crop" src="assets/home/cat-mini.webp" alt="Mini bags by ELARA" style="left:-44px;top:-124px;width:363px;height:486px;"><span class="cat-shade"></span><span class="cat-go" aria-hidden="true"><svg viewBox="0 0 22 22" fill="none"><path d="M4 11h13M12 5.5 17.5 11 12 16.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
           <p class="cat-label serif">Mini</p>
         </a>
       </div>
@@ -822,7 +821,7 @@
       <div class="story-text" id="stText" aria-live="polite">
         <p class="story-step" id="stStep">01 · Hand-cut leather</p>
         <p class="story-quote serif" id="stQuote">"Every panel is cut from a single hide, so grain and colour match."</p>
-        <p class="story-cite">— ELARA design studio</p>
+        <p class="story-cite">, ELARA design studio</p>
       </div>
       <div class="story-legend" id="stLegend">
         <button type="button" class="on">01 Cut</button><button type="button">02 Stitch</button><button type="button">03 Hardware</button><button type="button">04 Finish</button>
@@ -836,46 +835,46 @@
   <div class="abs rev-clip">
   <div class="abs rev-row rev-row-1 stagger">
     <article class="rev-card"><div class="abs rev-inner">
-      <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">Came exactly as pictured — the tan is even richer in person. Fits my 13-inch laptop with room to spare.</p></div>
-      <div class="rev-person"><div class="avatar"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-israt.webp" alt="" style="left:-31.56%;top:0.23%;width:227.74%;height:128.11%;"></div>
+      <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">Came exactly as pictured, the tan is even richer in person. Fits my 13-inch laptop with room to spare.</p></div>
+      <div class="rev-person"><div class="avatar"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-israt.webp" alt="Israt, an ELARA customer" style="left:-31.56%;top:0.23%;width:227.74%;height:128.11%;"></div>
         <div><p class="rev-name">Israt Jahan Eva</p><p class="rev-rate"><span class="rev-star"><img src="assets/home/icon-star-18.svg" alt=""></span>4.5</p></div></div>
     </div></article>
     <article class="rev-card"><div class="abs rev-inner">
-      <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">Came exactly as pictured — the tan is even richer in person. Fits my 13-inch laptop with room to spare.</p></div>
-      <div class="rev-person"><div class="avatar"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-israt.webp" alt="" style="left:-31.56%;top:0.23%;width:227.74%;height:128.11%;"></div>
+      <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">Came exactly as pictured, the tan is even richer in person. Fits my 13-inch laptop with room to spare.</p></div>
+      <div class="rev-person"><div class="avatar"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-israt.webp" alt="Israt, an ELARA customer" style="left:-31.56%;top:0.23%;width:227.74%;height:128.11%;"></div>
         <div><p class="rev-name">Israt Jahan Eva</p><p class="rev-rate"><span class="rev-star"><img src="assets/home/icon-star-18.svg" alt=""></span>4.5</p></div></div>
     </div></article>
     <article class="rev-card"><div class="abs rev-inner">
       <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">Was nervous ordering a bag online without touching it first. The size guide matched exactly What I need.</p></div>
-      <div class="rev-person"><div class="avatar"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-farzana.webp" alt="" style="left:-64.33%;top:0.23%;width:227.74%;height:128.11%;"></div>
+      <div class="rev-person"><div class="avatar"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-farzana.webp" alt="Farzana, an ELARA customer" style="left:-64.33%;top:0.23%;width:227.74%;height:128.11%;"></div>
         <div><p class="rev-name">Farzana Akter Mim</p><p class="rev-rate"><span class="rev-star"><img src="assets/home/icon-star-18.svg" alt=""></span>4.7</p></div></div>
     </div></article>
     <article class="rev-card"><div class="abs rev-inner">
       <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">Delivery to Chattogram took 4 days as promised. Packaging was careful, bag arrived in perfect shape.</p></div>
-      <div class="rev-person"><div class="avatar"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-tahiya.webp" alt="" style="left:-15px;top:-2px;width:76px;height:76px;"></div>
+      <div class="rev-person"><div class="avatar"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-tahiya.webp" alt="Tahiya, an ELARA customer" style="left:-15px;top:-2px;width:76px;height:76px;"></div>
         <div><p class="rev-name">Tahiya Islam</p><p class="rev-rate"><span class="rev-star"><img src="assets/home/icon-star-18.svg" alt=""></span>4.7</p></div></div>
     </div></article>
   </div>
 
   <div class="abs rev-row rev-row-2 stagger">
     <article class="rev-card"><div class="abs rev-inner">
-      <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">Messaged them on WhatsApp before ordering with a few questions — they replied the same day.</p></div>
-      <div class="rev-person"><div class="avatar"><div class="abs" style="left:-15px;top:-2px;width:76px;height:76px;overflow:hidden;"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-adiba.webp" alt="" style="left:6.31%;top:3.21%;width:129.98%;height:86.65%;"></div></div>
+      <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">Messaged them on WhatsApp before ordering with a few questions, they replied the same day.</p></div>
+      <div class="rev-person"><div class="avatar"><div class="abs" style="left:-15px;top:-2px;width:76px;height:76px;overflow:hidden;"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-adiba.webp" alt="Adiba, an ELARA customer" style="left:6.31%;top:3.21%;width:129.98%;height:86.65%;"></div></div>
         <div><p class="rev-name">Adiba Rahman</p><p class="rev-rate"><span class="rev-star"><img src="assets/home/icon-star-18.svg" alt=""></span>4.5</p></div></div>
     </div></article>
     <article class="rev-card"><div class="abs rev-inner">
       <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">The leather feels much better in person than in the photos. Stitching is neat, no loose threads.</p></div>
-      <div class="rev-person"><div class="avatar"><div class="abs" style="left:-15px;top:-2px;width:76px;height:76px;overflow:hidden;"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-tasnia.webp" alt="" style="left:5.08%;top:0.43%;width:129.98%;height:86.65%;"></div></div>
+      <div class="rev-person"><div class="avatar"><div class="abs" style="left:-15px;top:-2px;width:76px;height:76px;overflow:hidden;"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-tasnia.webp" alt="Tasnia, an ELARA customer" style="left:5.08%;top:0.43%;width:129.98%;height:86.65%;"></div></div>
         <div><p class="rev-name">Tasnia Farin</p><p class="rev-rate"><span class="rev-star"><img src="assets/home/icon-star-18.svg" alt=""></span>4.5</p></div></div>
     </div></article>
     <article class="rev-card"><div class="abs rev-inner">
-      <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">Paid Cash on Delivery since it was my first order here. The bag matched the photos exactly — ordering again.</p></div>
-      <div class="rev-person"><div class="avatar"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-zayma.webp" alt="" style="left:-33px;top:0;width:139px;height:73px;"></div>
+      <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">Paid Cash on Delivery since it was my first order here. The bag matched the photos exactly, ordering again.</p></div>
+      <div class="rev-person"><div class="avatar"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-zayma.webp" alt="Zayma, an ELARA customer" style="left:-33px;top:0;width:139px;height:73px;"></div>
         <div><p class="rev-name">Zayma Chowdhury</p><p class="rev-rate"><span class="rev-star"><img src="assets/home/icon-star-18.svg" alt=""></span>4.5</p></div></div>
     </div></article>
     <article class="rev-card"><div class="abs rev-inner">
       <div class="col"><p class="rev-mark serif">“</p><p class="rev-text">Delivery to Chattogram took 4 days as promised. Packaging was careful, bag arrived in perfect shape.</p></div>
-      <div class="rev-person"><div class="avatar"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-tahiya.webp" alt="" style="left:-15px;top:-2px;width:76px;height:76px;"></div>
+      <div class="rev-person"><div class="avatar"><img loading="lazy" decoding="async" class="crop" src="assets/home/avatar-tahiya.webp" alt="Tahiya, an ELARA customer" style="left:-15px;top:-2px;width:76px;height:76px;"></div>
         <div><p class="rev-name">Tahiya Islam</p><p class="rev-rate"><span class="rev-star"><img src="assets/home/icon-star-18.svg" alt=""></span>4.7</p></div></div>
     </div></article>
   </div>
@@ -887,14 +886,14 @@
   <!-- ===== NEWSLETTER ===== -->
   <section class="abs nl reveal">
     <div class="nl-stack l">
-    <div class="tilt-wrap" style="left:-20px;top:36.24px;"><div class="tilt l"><img loading="lazy" decoding="async" class="cover" src="assets/home/nl-left-1.webp" alt=""></div></div>
-    <div class="tilt-wrap" style="left:43.72px;top:6px;"><div class="tilt l edge shadow-l"><img loading="lazy" decoding="async" class="cover" src="assets/home/nl-left-2.webp" alt=""></div></div>
-    <div class="tilt-wrap" style="left:96.72px;top:-43px;"><div class="tilt l edge shadow-l"><img loading="lazy" decoding="async" class="cover" src="assets/home/nl-left-3.webp" alt=""></div></div>
+    <div class="tilt-wrap" style="left:-20px;top:36.24px;"><div class="tilt l"><img loading="lazy" decoding="async" class="cover" src="assets/home/nl-left-1.webp" alt="ELARA leather bag, styled photo 1"></div></div>
+    <div class="tilt-wrap" style="left:43.72px;top:6px;"><div class="tilt l edge shadow-l"><img loading="lazy" decoding="async" class="cover" src="assets/home/nl-left-2.webp" alt="ELARA leather bag, styled photo 2"></div></div>
+    <div class="tilt-wrap" style="left:96.72px;top:-43px;"><div class="tilt l edge shadow-l"><img loading="lazy" decoding="async" class="cover" src="assets/home/nl-left-3.webp" alt="ELARA leather bag, styled photo 3"></div></div>
     </div>
     <div class="nl-stack r">
-    <div class="tilt-wrap" style="left:180.72px;top:28.24px;"><div class="tilt r"><img loading="lazy" decoding="async" class="cover" src="assets/home/nl-right-1.webp" alt=""></div></div>
-    <div class="tilt-wrap" style="left:117px;top:-2px;"><div class="tilt r edge shadow-r"><img loading="lazy" decoding="async" class="cover" src="assets/home/nl-right-2.webp" alt=""></div></div>
-    <div class="tilt-wrap" style="left:64px;top:-51px;"><div class="tilt r edge shadow-r"><img loading="lazy" decoding="async" class="cover" src="assets/home/nl-right-3.webp" alt=""></div></div>
+    <div class="tilt-wrap" style="left:180.72px;top:28.24px;"><div class="tilt r"><img loading="lazy" decoding="async" class="cover" src="assets/home/nl-right-1.webp" alt="ELARA leather bag, styled photo 1"></div></div>
+    <div class="tilt-wrap" style="left:117px;top:-2px;"><div class="tilt r edge shadow-r"><img loading="lazy" decoding="async" class="cover" src="assets/home/nl-right-2.webp" alt="ELARA leather bag, styled photo 2"></div></div>
+    <div class="tilt-wrap" style="left:64px;top:-51px;"><div class="tilt r edge shadow-r"><img loading="lazy" decoding="async" class="cover" src="assets/home/nl-right-3.webp" alt="ELARA leather bag, styled photo 3"></div></div>
     </div>
     <div class="abs nl-copy">
       <div class="nl-text">
@@ -935,7 +934,7 @@
     </div>
     <div class="ft-bottom">
       <span>© 2026 ELARA</span><a href="#" data-soon="Privacy Policy" data-soon-page>Privacy Policy</a><a href="#" data-soon="Terms & Conditions" data-soon-page>Terms &amp; Conditions</a><a href="#" data-soon="Accessibility" data-soon-page>Accessibility</a>
-      <span>Dhaka Tk. 60/- (1–3 days) · Outside Dhaka Tk. 120/- (3–5 days) · Free over Tk. 3,000/-</span>
+      <span>Dhaka Tk. 60/- (1 to 3 days) · Outside Dhaka Tk. 120/- (3 to 5 days) · Free over Tk. 3,000/-</span>
     </div>
   </footer>
 
@@ -948,7 +947,7 @@
 
   // Warm up the dropdown panels' images ahead of the first hover. The panels
   // start at display:none, so the browser defers decoding the large product
-  // photos inside them until the panel is shown — on a slow device that first
+  // photos inside them until the panel is shown, on a slow device that first
   // decode can be slow enough that the panel briefly paints blank/white where
   // an image hasn't finished decoding yet. Forcing decode() right away, while
   // the page is still idle, means every dropdown is already decoded and
@@ -972,7 +971,7 @@
     return 'my-product-detail-screen.html' + (hit ? '?p=' + hit.id : '');
   };
   const NA = {
-    best:    { title: 'Best Sellers', feature: { img: 'assets/home/na/best-feature.webp', alt: 'assets/home/na/best-feature-hover.webp', name: 'Nafisa Tote —  Camel', ls: '-2.4px', price: 4200 },
+    best:    { title: 'Best Sellers', feature: { img: 'assets/home/na/best-feature.webp', alt: 'assets/home/na/best-feature-hover.webp', name: 'Nafisa Tote, Camel', ls: '-2.4px', price: 4200 },
                cards: [['Kors Gilly Shoulder', 7000, null, ['assets/home/na/best-1-b.webp', 'assets/home/na/best-1-c.webp']], ['Coach Crossbody', 7000, null, ['assets/home/na/best-2-b.webp', 'assets/home/na/best-2-c.webp']], ['St Gtau Mint', 4200, null, ['assets/home/na/best-3-b.webp', 'assets/home/na/best-3-c.webp']], ['Travello Cream', 7000, null, ['assets/home/na/best-4-b.webp', 'assets/home/na/best-4-c.webp']]] },
     'new':   { title: 'New Arrivals', feature: { img: 'assets/home/na/new-feature.webp', alt: 'assets/home/na/new-feature-hover.webp', name: 'Playful Greenish', ls: '0', price: 4200 },
                cards: [['Elara Verona Tote', 4200, null, ['assets/home/na/new-1-b.webp', 'assets/home/na/new-1-c.webp']], ['Isla Bags', 3900, null, ['assets/home/na/new-2-b.webp', 'assets/home/na/new-2-c.webp']], ['Michael Kors Shoulder', 6500, null, ['assets/home/na/new-3-b.webp', 'assets/home/na/new-3-c.webp']], ['Astro Travel bag', 4200, null, ['assets/home/na/new-4-b.webp', 'assets/home/na/new-4-c.webp']]] },
@@ -1066,28 +1065,28 @@
     const SIZES = [['Small', ''], ['Medium', 'active'], ['Large', 'off']];
     // Aurelia + Rosalind come from Figma 332:3151. The other three use their thumbnails as the big image until their frames are designed.
     const P = [
-      { name: 'Selene Bow Tote', cat: 'TOTE BAGS', sub: 'Premium leather', rating: '4.6', reviews: '58 reviews', price: 'Tk. 3,900/-', badge: '', note: '30 x 22 x 11 cm — a slim everyday tote',
+      { name: 'Selene Bow Tote', cat: 'TOTE BAGS', sub: 'Premium leather', rating: '4.6', reviews: '58 reviews', price: 'Tk. 3,900/-', badge: '', note: '30 x 22 x 11 cm, a slim everyday tote',
         thumb: { src: 'assets/home/spot-thumb-1.webp', css: 'left:-9.27%;top:-0.37%;width:117.6%;height:100%;' },
         colours: [
           { id: 'cream', label: 'Cream', sw: SW('swatch-beige'), img: A + 'main-selene-cream.webp', href: OPEN + '?p=selene-bow-tote&colour=cream' },
           { id: 'espresso', label: 'Espresso', sw: SW('selene-espresso'), img: A + 'main-selene-espresso.webp', href: OPEN + '?p=selene-bow-tote&colour=espresso' }] },
-      { name: 'Marlowe Satchel', cat: 'SHOULDER BAGS', sub: 'Premium leather', rating: '4.7', reviews: '41 reviews', price: 'Tk. 4,800/-', badge: '', note: '28 x 21 x 12 cm — fits a phone, wallet and keys',
+      { name: 'Marlowe Satchel', cat: 'SHOULDER BAGS', sub: 'Premium leather', rating: '4.7', reviews: '41 reviews', price: 'Tk. 4,800/-', badge: '', note: '28 x 21 x 12 cm, fits a phone, wallet and keys',
         thumb: { src: 'assets/home/spot-thumb-2.webp', css: 'left:-69.27%;top:-72.59%;width:237.07%;height:180%;' },
         colours: [
           { id: 'taupe', label: 'Taupe', sw: SW('marlowe-taupe'), img: A + 'main-marlowe-taupe.webp', href: OPEN + '?p=marlowe-satchel&colour=taupe' },
           { id: 'rust', label: 'Rust', sw: SW('swatch-brown'), img: A + 'main-marlowe-rust.webp', href: OPEN + '?p=marlowe-satchel&colour=rust' }] },
-      { name: 'Aurelia Structured', cat: 'TOTE BAGS', sub: 'Premium leather', rating: '4.8', reviews: '126 reviews', price: 'Tk. 4,500/-', badge: '20% OFF', note: '31 x 24 x 12 cm — about the width of an A4 notebook',
+      { name: 'Aurelia Structured', cat: 'TOTE BAGS', sub: 'Premium leather', rating: '4.8', reviews: '126 reviews', price: 'Tk. 4,500/-', badge: '20% OFF', note: '31 x 24 x 12 cm, about the width of an A4 notebook',
         colours: [
           { id: 'brown', label: 'Brown', sw: SW('swatch-brown'), img: A + 'main-brown.webp', href: OPEN + '?p=aurelia-structured&colour=brown' },
           { id: 'black', label: 'Black', sw: SW('swatch-black'), img: A + 'main-black.webp', href: OPEN + '?p=aurelia-structured&colour=black' },
           { id: 'beige', label: 'Beige', sw: SW('swatch-beige'), img: A + 'main-beige.webp', href: OPEN + '?p=aurelia-structured&colour=beige' }] },
-      { name: 'Rosalind Pocket Tote', cat: 'TOTE BAGS', sub: 'Premium leather', rating: '4.7', reviews: '84 reviews', price: 'Tk. 5,200/-', badge: '', note: '36 × 25 × 13 cm — fits a 13" laptop comfortably',
+      { name: 'Rosalind Pocket Tote', cat: 'TOTE BAGS', sub: 'Premium leather', rating: '4.7', reviews: '84 reviews', price: 'Tk. 5,200/-', badge: '', note: '36 × 25 × 13 cm, fits a 13" laptop comfortably',
         thumb: { src: 'assets/home/spot-thumb-3.webp', css: 'left:-28.29%;top:-19.63%;width:129%;height:131.11%;' },
         colours: [
           { id: 'pink', label: 'Blush', sw: SW('rosalind-pink'), img: A + 'main-rosalind-pink.webp', href: OPEN + '?p=rosalind-pocket-tote&colour=blush' },
           { id: 'brown', label: 'Brown', sw: SW('rosalind-brown'), img: A + 'main-rosalind-brown.webp', href: OPEN + '?p=rosalind-pocket-tote&colour=brown' },
           { id: 'beige', label: 'Beige', sw: SW('rosalind-beige'), img: A + 'main-rosalind-beige.webp', href: OPEN + '?p=rosalind-pocket-tote&colour=beige' }] },
-      { name: 'Cognac Everyday Tote', cat: 'TOTE BAGS', sub: 'Premium leather', rating: '4.5', reviews: '73 reviews', price: 'Tk. 4,200/-', badge: '', note: '32 x 26 x 13 cm — room for a small laptop',
+      { name: 'Cognac Everyday Tote', cat: 'TOTE BAGS', sub: 'Premium leather', rating: '4.5', reviews: '73 reviews', price: 'Tk. 4,200/-', badge: '', note: '32 x 26 x 13 cm, room for a small laptop',
         thumb: { src: 'assets/home/spot-thumb-4.webp', css: 'left:-19.02%;top:-20%;width:137.07%;height:139.26%;' },
         colours: [{ id: 'cognac', label: 'Cognac', sw: SW('swatch-brown'), img: 'assets/home/spot-thumb-4.webp', href: OPEN + '?p=cognac-everyday-tote&colour=cognac' }] },
     ];
@@ -1365,7 +1364,7 @@
       showPanel(key, item);
       if (!wasOpen) {
         // First open: jump straight to the target height/position so only
-        // opacity and translateY animate — height/left transitions are
+        // opacity and translateY animate, height/left transitions are
         // reserved for switching tabs while already open.
         wrap.style.transition = 'none';
         void wrap.offsetHeight;

@@ -26,13 +26,22 @@
 
   function headers() { return { apikey: KEY, Authorization: 'Bearer ' + (TOKEN || KEY) }; }
 
+  // Text typed into the shop database may contain long dashes; the store shows commas and "to" instead.
+  function clean(t) { return t.replace(/\s*\u2014\s*/g, ', ').replace(/(\d)\s*\u2013\s*(\d)/g, '$1 to $2').replace(/\s\u2013\s/g, ' to ').replace(/\u2013/g, '-'); }
+  function deepClean(v) {
+    if (typeof v === 'string') return clean(v);
+    if (Array.isArray(v)) return v.map(deepClean);
+    if (v && typeof v === 'object') { var o = {}; for (var k in v) o[k] = deepClean(v[k]); return o; }
+    return v;
+  }
+
   function fetchSync(path) {
     try {
       var x = new XMLHttpRequest();
       x.open('GET', URL_ + '/rest/v1/' + path, false);
       var h = headers(); for (var k in h) x.setRequestHeader(k, h[k]);
       x.send();
-      if (x.status === 200) return JSON.parse(x.responseText);
+      if (x.status === 200) return deepClean(JSON.parse(x.responseText));
     } catch (e) {}
     return null;
   }
@@ -78,7 +87,7 @@
   window.ELARA_LIVE = !!(list && list.length);
   // Delivery rules the owner sets in Settings (falls back to today's numbers).
   var dv = (settings && settings.delivery) || {};
-  window.ELARA_DELIVERY = { dhaka: +dv.dhaka || 60, outside: +dv.outside || 120, freeOver: +dv.free_over || 3000, dhakaDays: dv.dhaka_days || '1–3', outsideDays: dv.outside_days || '3–5' };
+  window.ELARA_DELIVERY = { dhaka: +dv.dhaka || 60, outside: +dv.outside || 120, freeOver: +dv.free_over || 3000, dhakaDays: dv.dhaka_days || '1 to 3', outsideDays: dv.outside_days || '3 to 5' };
 
   window.ELARA_SETTINGS = settings || {};
   window.ELARA_PREVIEW = PREVIEW;

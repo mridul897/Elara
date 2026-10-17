@@ -1,4 +1,4 @@
-/* "Coming soon" card — opens when someone clicks a navigation item that has data-soon="<name>".
+/* "Coming soon" card, opens when someone clicks a navigation item that has data-soon="<name>".
    Collects an e-mail so the visitor can be told when the collection lands (kept on this device only). */
 (function () {
   'use strict';

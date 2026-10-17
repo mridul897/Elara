@@ -35,15 +35,21 @@ Accounts to keep safe: GitHub, Vercel, Supabase, the owner login (email + passwo
 
 ## The SQL files (supabase/), run in this order, once each
 
-`01-schema` → `02-seed-1..4` → `03-storage` → `04-first-owner` (put your email in) → `05-orders-admin` → `06-track-address` → `07-promo-start` → `08-team-reviews` → `11-launch-ready`.
+`01-schema` → `02-seed-1..4` → `03-storage` → `04-first-owner` (put your email in) → `05-orders-admin` → `06-track-address` → `07-promo-start` → `08-team-reviews` → `11-launch-ready` → `12-clean-dashes`.
 Optional: `09-demo-data-1..3` (sample orders), `10-demo-clear` (removes them).
 Run them in Supabase → SQL Editor. They are safe to run again.
 
 ## Publishing changes safely
 
-Every push to `main` goes live. To try something first, push to another branch: Vercel gives that branch its own preview address. Merge into `main` when it looks right.
-After adding products, refresh the search-engine list: `node scripts/gen-sitemap.js`, then commit and push.
-Check the site's health any time: `node scripts/smoke.js`.
+Every push to `main` goes live: Vercel runs the build (`node scripts/build.js`), which rebuilds every page, the sitemap and robots.txt from the live product list and checks the result. If a check fails the deploy stops and the live site stays as it was; the build log says what is wrong.
+To try something first, push to another branch: Vercel gives that branch its own preview address. Merge into `main` when it looks right.
+A bag you add in the admin is on the store at once (`/bags/<id>`), but its ready-made page for search engines, and its sitemap line, appear on the next deploy. Push any small change, or press **Redeploy** in Vercel, after adding products.
+A policy page you publish in Admin > Content shows at once for visitors; it joins the sitemap on the next deploy.
+Check the live site's health any time: `node scripts/smoke.js`.
+
+## Addresses
+
+Shop `/shop`, categories `/tote-bags` `/shoulder-bags` `/crossbody-bags` `/mini-bags` `/travel-work-bags`, `/new-arrivals`, `/best-sellers`, one page per bag `/bags/<id>`, `/contact`, `/cart`, `/checkout`, `/track-order`, `/account`, policy pages `/shipping-and-delivery` `/returns-and-exchange` `/our-story` `/privacy-policy` `/terms-of-service`. The old `.html` addresses redirect to these.
 
 ## Costs and limits to know
 

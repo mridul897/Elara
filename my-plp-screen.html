@@ -27,26 +27,26 @@
 <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
 <!--
-  Product Listing Page — now wired to the designer's real Figma content
+  Product Listing Page, now wired to the designer's real Figma content
   (node 1:16, the five category screens: Tote 137:164, Shoulder 153:351,
   Crossbody 161:777, Mini 164:1101, Travel/Work 167:1370). Real product
   photos, names and prices per get_design_context on each category's
   "Product Grid" node; images downloaded to assets/plp/<category>/ and
   re-encoded to JPEG for file size. Some images repeat across cards within a
-  category — that's the client's own placeholder choice while more product
+  category, that's the client's own placeholder choice while more product
   photography arrives, not a build error; kept as-is on request.
 
   This one page now serves all five categories for real: the Category filter
   actually switches which product set renders (title, breadcrumb, count, and
   grid all update), and the Price filter actually filters by each product's
   real price. Colour, Material, Size and Availability stay visible but are
-  NOT wired yet — the client hasn't sent per-product colour/material/size/
+  NOT wired yet, the client hasn't sent per-product colour/material/size/
   stock data, so there is nothing real to filter by; wiring them now would
   mean faking that data, which the designer's build should never do silently.
 
   Card layout (244x340 media, 24px gap, Fraunces Light 24px name, Inter
   Medium 16px price) is pixel-matched to the Figma product card. Colours
-  themselves (swatch dots) are not shown per-product — the designer said
+  themselves (swatch dots) are not shown per-product, the designer said
   colour isn't decided yet and to place things sensibly myself; the badge/
   price/discount treatment IS real, taken straight from each Figma card.
 -->
@@ -120,7 +120,7 @@
     .nav-page { display: block; position: sticky; top: 0; background: var(--bg-page); box-shadow: 0 1px 0 var(--border-soft); }
     html { overflow-x: clip; }
   }
-  /* ===== Nav (22:641) — same component as the homepage ===== */
+  /* ===== Nav (22:641), same component as the homepage ===== */
   .nav { left: 0; top: 0; width: 1440px; height: 109px; padding: 10px; display: flex; align-items: center; justify-content: center; z-index: 20; }
   .nav-inner { width: 100%; display: flex; gap: 144px; align-items: center; justify-content: center; padding: 0 37px; }
   .nav-logo { position: relative; width: 222px; height: 101px; flex-shrink: 0; }
@@ -232,7 +232,7 @@
   .filter-group summary { display: flex; align-items: center; justify-content: space-between; padding: var(--space-group) 0; font-weight: 500; font-size: 0.92rem; cursor: pointer; list-style: none; }
   .filter-group summary::-webkit-details-marker { display: none; }
   .filter-group summary::after { content: "+"; color: var(--color-text-muted); font-size: 1.1rem; }
-  .filter-group[open] summary::after { content: "–"; }
+  .filter-group[open] summary::after { content: "-"; }
   .filter-group .body { padding: 0 0 var(--space-group); display: flex; flex-direction: column; gap: 10px; }
   .filter-check { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--color-text-primary); cursor: pointer; }
   /* Custom checkbox matching the designer's Figma checkbox component exactly
@@ -262,7 +262,7 @@
 
   /* Dual-handle price slider (see earlier build note: rebuilt at a legible
      scale rather than the Figma component's literal 8px/12px sizing). Now
-     wired for real — it filters the visible grid by each product's price. */
+     wired for real, it filters the visible grid by each product's price. */
   .price-slider { display: flex; flex-direction: column; gap: 18px; padding: 4px 2px 8px; }
   .price-slider-track-wrap { position: relative; height: 20px; margin-top: 4px; }
   .price-slider-track { position: absolute; top: 9px; left: 9px; right: 9px; height: 2px; border-radius: 999px; background: var(--color-border); }
@@ -308,7 +308,7 @@
   .size-chip[aria-pressed="true"] { border-color: var(--color-accent); background: rgba(42,114,222,0.12); color: var(--color-accent-hover); }
   .availability-toggle { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; }
 
-  /* ---------- Product grid — primary. Pixel-matched to Figma's card. ---------- */
+  /* ---------- Product grid, primary. Pixel-matched to Figma's card. ---------- */
   .grid-wrap { flex: 1; min-width: 0; }
   .product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 12px; }
   .p-card { display: block; }
@@ -432,7 +432,7 @@
   .p-dot[aria-checked="true"]::after, .p-dot.is-on::after { content: ""; position: absolute; inset: 0; border: 1px solid var(--color-text-primary); border-radius: 50%; }
   button.p-dot { cursor: pointer; }
 
-  /* ---------- Empty state — shown for real when a filter matches nothing ---------- */
+  /* ---------- Empty state, shown for real when a filter matches nothing ---------- */
   .empty-state { display: none; text-align: center; padding: var(--space-section) 20px; grid-column: 1 / -1; }
   .empty-state.show { display: block; }
   .empty-state .mark { font-size: 2rem; margin-bottom: var(--space-group); }
@@ -599,9 +599,9 @@
           </a>
           <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
           <div class="dd-list">
-            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-1.webp" alt=""></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
-            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-2.webp" alt=""></span><span class="dd-row-title">Sienna Structured Purse</span></a>
-            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-3.webp" alt=""></span><span class="dd-row-title">Isla Bags</span></a>
+            <a href="my-product-detail-screen.html?p=vivienne-leather-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-1.webp" alt="Vivienne Leather Bag"></span><span class="dd-row-title">Vivienne Leather Bag</span></a>
+            <a href="my-product-detail-screen.html?p=sienna-structured-purse" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-2.webp" alt="Sienna Structured Purse"></span><span class="dd-row-title">Sienna Structured Purse</span></a>
+            <a href="my-product-detail-screen.html?p=isla-suede-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-na-thumb-3.webp" alt="Isla Bags"></span><span class="dd-row-title">Isla Bags</span></a>
             <a href="my-plp-screen.html?collection=new" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All New Arrivals</span></a>
           </div>
         </div>
@@ -620,9 +620,9 @@
           </a>
           <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="">
           <div class="dd-list">
-            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-1.webp" alt=""></span><span class="dd-row-title">Tote</span></a>
-            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-2.webp" alt=""></span><span class="dd-row-title">Shoulder</span></a>
-            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-3.webp" alt=""></span><span class="dd-row-title">Mini</span></a>
+            <a href="my-product-detail-screen.html?p=classic-leather-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-1.webp" alt="Tote"></span><span class="dd-row-title">Tote</span></a>
+            <a href="my-product-detail-screen.html?p=rose-shoulder-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-2.webp" alt="Shoulder"></span><span class="dd-row-title">Shoulder</span></a>
+            <a href="my-product-detail-screen.html?p=bordeaux-hobo" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-bags-thumb-3.webp" alt="Mini"></span><span class="dd-row-title">Mini</span></a>
             <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-shop-all.svg" alt=""></span><span class="dd-row-title">Shop All Category Bags</span></a>
           </div>
         </div>
@@ -642,8 +642,8 @@
           <img class="dd-divider" src="assets/home/icon-dd-divider.svg" alt="" style="left:826px;">
           <div class="dd-list dd-list-coll" style="left:850px; top:92px;">
             <div class="dd-list-group">
-              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-1.webp" alt=""></span><span class="dd-row-title">The Evening Edit</span></a>
-              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-2.webp" alt=""></span><span class="dd-row-title">Designed for Work</span></a>
+              <a href="my-product-detail-screen.html?p=evening-edit-flap-bag" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-1.webp" alt="The Evening Edit"></span><span class="dd-row-title">The Evening Edit</span></a>
+              <a href="my-product-detail-screen.html?p=plum-work-tote" class="dd-row"><span class="dd-row-thumb"><img class="cover" src="assets/home/dd-coll-thumb-2.webp" alt="Designed for Work"></span><span class="dd-row-title">Designed for Work</span></a>
             </div>
             <a href="my-plp-screen.html" class="dd-row"><span class="dd-row-thumb icon"><img src="assets/home/icon-dd-see-all.svg" alt=""></span><span class="dd-row-title">See All Collections</span></a>
           </div>
@@ -756,7 +756,7 @@
       <div><h5>About</h5><a href="#" data-soon="Our Story" data-soon-page>Our Story</a><a href="my-contact-screen.html">Contact</a></div>
       <div><h5>Legal</h5><a href="#" data-soon="Privacy Policy" data-soon-page>Privacy Policy</a><a href="#" data-soon="Terms of Service" data-soon-page>Terms of Service</a></div>
     </div>
-    <div class="mf-legal"><span>© 2026 ELARA. All rights reserved.</span><span>Dhaka Tk. 60/- (1–3 days) · Outside Dhaka Tk. 120/- (3–5 days) · Free over Tk. 3,000/-</span></div>
+    <div class="mf-legal"><span>© 2026 ELARA. All rights reserved.</span><span>Dhaka Tk. 60/- (1 to 3 days) · Outside Dhaka Tk. 120/- (3 to 5 days) · Free over Tk. 3,000/-</span></div>
   </footer>
 
   <div class="sticky-fs-bar">
@@ -795,11 +795,11 @@
 <script src="assets/store-data.js"></script>
 <script>
   // ===================================================================
-  // Real product data — five categories, from Figma node 1:16's category
+  // Real product data, five categories, from Figma node 1:16's category
   // screens (see get_design_context on each category's "Product Grid").
   // Repeats within a category mirror the client's own placeholder choice
   // (same photo used more than once while more product photography is
-  // still coming) — not a bug, kept on the designer's explicit instruction.
+  // still coming), not a bug, kept on the designer's explicit instruction.
   // ===================================================================
   const CATEGORIES = [
     { id: 'tote', label: 'Tote' },
@@ -1005,9 +1005,11 @@
   };
   // Deep link from the homepage "Shop by Category" cards: my-plp-screen.html?category=tote (comma-separate for several).
   // "Shop All New Arrivals" in the navigation: my-plp-screen.html?collection=new shows only the bags marked New.
-  if (new URLSearchParams(location.search).get('collection') === 'new') state.avail.add('new-in');
-  if (new URLSearchParams(location.search).get('collection') === 'best') state.avail.add('best');
-  (new URLSearchParams(location.search).get('category') || '').split(',').forEach((id) => {
+  // The build gives each listing page its own address (/tote-bags, /new-arrivals ...) and sets window.__LISTING for it.
+  const listingParam = (k) => (window.__LISTING && window.__LISTING[k]) || new URLSearchParams(location.search).get(k);
+  if (listingParam('collection') === 'new') state.avail.add('new-in');
+  if (listingParam('collection') === 'best') state.avail.add('best');
+  (listingParam('category') || '').split(',').forEach((id) => {
     if (CATEGORIES.some((c) => c.id === id.trim())) state.categories.add(id.trim());
   });
 
@@ -1040,7 +1042,7 @@
   const NYLON = ['astro-travel-bag', '2-pocket-work', 'travello-cream', 'taimoc-mini'];
   const materialOf = (id) => SUEDE.includes(id) ? 'suede' : WOVEN.includes(id) ? 'woven' : QUILTED.includes(id) ? 'quilted' : NYLON.includes(id) ? 'nylon' : 'leather';
   const MATERIALS = [['leather', 'Smooth leather'], ['suede', 'Suede'], ['woven', 'Woven'], ['quilted', 'Quilted & puffed'], ['nylon', 'Nylon & canvas']];
-  const SIZES = [['mini', 'Mini', 'under 22 cm wide'], ['small', 'Small', '22–29 cm wide'], ['medium', 'Medium', '30–35 cm wide'], ['large', 'Large', '36 cm and wider']];
+  const SIZES = [['mini', 'Mini', 'under 22 cm wide'], ['small', 'Small', '22 to 29 cm wide'], ['medium', 'Medium', '30 to 35 cm wide'], ['large', 'Large', '36 cm and wider']];
   const sizeOf = (w) => w < 22 ? 'mini' : w <= 29 ? 'small' : w <= 35 ? 'medium' : 'large';
   const AVAIL = [['in-stock', 'In stock'], ['on-sale', 'On sale'], ['new-in', 'New in'], ['best', 'Best sellers']];
   const FACETS = {};   // product key -> { colours:Set, material, size, avail:Set }
@@ -1169,7 +1171,7 @@
     document.getElementById('qvPrice').innerHTML = p.was ? `<s>${fmtPrice(p.was)}</s><span>${fmtPrice(p.price)}</span>` : `<span>${fmtPrice(p.price)}</span>`;
     const urls = colour ? nafisaUrls(colour) : [p.img];
     qvStrip.dataset.count = urls.length;
-    qvStrip.innerHTML = urls.map((u, k) => `<img src="${u}" alt="${p.name}${colour ? ', ' + colour.label + ' — ' + photoLabel(k) : ''}" draggable="false">`).join('');
+    qvStrip.innerHTML = urls.map((u, k) => `<img src="${u}" alt="${p.name}${colour ? ', ' + colour.label + ', ' + photoLabel(k) : ''}" draggable="false">`).join('');
     qvStrip.scrollLeft = 0;
     requestAnimationFrame(qvStripArrows);
     document.getElementById('qvColour').innerHTML = colour
@@ -1310,7 +1312,7 @@
 
   function carouselHTML(p, colour) {
     const urls = nafisaUrls(colour);
-    const slides = urls.map((u, k) => `<img class="p-slide" ${k === 0 ? `src="${u}" loading="lazy"` : ''} data-src="${u}" alt="${p.name}, ${colour.label} — ${photoLabel(k)}" draggable="false">`).join('');
+    const slides = urls.map((u, k) => `<img class="p-slide" ${k === 0 ? `src="${u}" loading="lazy"` : ''} data-src="${u}" alt="${p.name}, ${colour.label}, ${photoLabel(k)}" draggable="false">`).join('');
     if (urls.length < 2) return `<div class="p-track" data-i="0">${slides}</div>`;
     return `<div class="p-track" data-i="0">${slides}</div>
           <button type="button" class="p-arrow prev" aria-label="Previous photo" onclick="slideCard(event,-1)">${ARROW_L}</button>
@@ -1388,7 +1390,7 @@
         goTo(track, 0);
         [...track.children].forEach((im, k) => {
           im.dataset.src = urls[k];
-          im.alt = product.name + ', ' + colour.label + ' — ' + photoLabel(k);
+          im.alt = product.name + ', ' + colour.label + ', ' + photoLabel(k);
           if (im.getAttribute('src')) im.src = urls[k];
         });
         void track.offsetWidth;
@@ -1496,7 +1498,7 @@
     const chips = CATEGORIES.filter((c) => !MOBILE.matches && state.categories.has(c.id)).map((c) =>
       `<span class="chip">${c.label} <button aria-label="Remove ${c.label} filter" onclick="toggleCategory('${c.id}')">×</button></span>`);
     if (state.priceMin > PRICE_BOUND.min || state.priceMax < PRICE_BOUND.max) {
-      chips.push(`<span class="chip">${fmtPrice(state.priceMin)} – ${fmtPrice(state.priceMax)} <button aria-label="Reset price filter" onclick="resetPriceFilter()">×</button></span>`);
+      chips.push(`<span class="chip">${fmtPrice(state.priceMin)} to ${fmtPrice(state.priceMax)} <button aria-label="Reset price filter" onclick="resetPriceFilter()">×</button></span>`);
     }
     const facetChip = (kind, id, label) => `<span class="chip">${label} <button aria-label="Remove ${label} filter" onclick="toggleFacet('${kind}','${id}')">×</button></span>`;
     state.colours.forEach((id) => chips.push(facetChip('colour', id, COLOUR_FAMILIES.find((x) => x[0] === id)[1])));
@@ -1508,7 +1510,7 @@
   }
 
   function toggleCategory(id) {
-    // Freely togglable, including down to zero checked — zero means "All Products".
+    // Freely togglable, including down to zero checked, zero means "All Products".
     if (state.categories.has(id)) {
       state.categories.delete(id);
     } else {
@@ -1532,7 +1534,7 @@
     render();
   }
 
-  // ---- Filter panel markup (shared builder — one copy for the desktop
+  // ---- Filter panel markup (shared builder, one copy for the desktop
   // sidebar, one for the mobile drawer, kept in sync via the same state) ----
   function filterPanelHTML(idPrefix) {
     const catRows = CATEGORIES.map((c) => `
@@ -1552,7 +1554,7 @@
           <div class="price-slider" data-prefix="${idPrefix}">
             <div class="price-inputs">
               <label class="price-box" for="${idPrefix}PriceMin"><span class="micro">Min price</span><span class="price-field"><span class="u">Tk.</span><input id="${idPrefix}PriceMin" class="price-min-field" type="text" inputmode="numeric" autocomplete="off" value="${Number(state.priceMin).toLocaleString('en-US')}" aria-label="Minimum price in taka"></span></label>
-              <span class="price-dash" aria-hidden="true">–</span>
+              <span class="price-dash" aria-hidden="true">-</span>
               <label class="price-box" for="${idPrefix}PriceMax"><span class="micro">Max price</span><span class="price-field"><span class="u">Tk.</span><input id="${idPrefix}PriceMax" class="price-max-field" type="text" inputmode="numeric" autocomplete="off" value="${Number(state.priceMax).toLocaleString('en-US')}" aria-label="Maximum price in taka"></span></label>
             </div>
             <div class="price-slider-track-wrap">
@@ -1719,7 +1721,7 @@
   fitNav();
   new ResizeObserver(fitNav).observe(document.documentElement);
 
-  // Nav dropdowns — identical behaviour to the homepage.
+  // Nav dropdowns, identical behaviour to the homepage.
   document.querySelectorAll('.nav-menu-wrap img').forEach((img) => { if (img.decode) img.decode().catch(() => {}); });
   (function () {
     const wrap = document.getElementById('navMenuWrap');

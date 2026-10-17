@@ -59,7 +59,7 @@ A.boot({
   render: async function (page, ctx) {
     var $ = function (id) { return document.getElementById(id); };
     var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    var state = { tab: 'codes', codes: [], sales: [], delivery: { dhaka: 60, outside: 120, free_over: 3000, dhaka_days: '1–3', outside_days: '3–5' }, edit: null, kind: 'percent' };
+    var state = { tab: 'codes', codes: [], sales: [], delivery: { dhaka: 60, outside: 120, free_over: 3000, dhaka_days: '1 to 3', outside_days: '3 to 5' }, edit: null, kind: 'percent' };
     var shortDate = function (iso) { var d = new Date(iso), y = d.getFullYear() === new Date().getFullYear() ? '' : ' ' + d.getFullYear(); return d.getDate() + ' ' + MON[d.getMonth()] + y; };
     var d10 = function (iso) { return iso ? String(iso).slice(0, 10) : ''; };
     var num = function (v) { var n = parseInt(String(v).replace(/[^0-9]/g, ''), 10); return isNaN(n) ? null : n; };
@@ -94,7 +94,7 @@ A.boot({
 
     function rulesHtml() {
       var d = state.delivery;
-      var cards = [['dhaka', 'Dhaka', A.money(d.dhaka), d.dhaka_days.replace('–', ' to ') + ' working days'], ['outside', 'Outside Dhaka', A.money(d.outside), d.outside_days.replace('–', ' to ') + ' working days'], ['free', 'Free delivery over', A.money(d.free_over), 'Applies to the whole bag']];
+      var cards = [['dhaka', 'Dhaka', A.money(d.dhaka), d.dhaka_days.replace('-', ' to ') + ' working days'], ['outside', 'Outside Dhaka', A.money(d.outside), d.outside_days.replace('-', ' to ') + ' working days'], ['free', 'Free delivery over', A.money(d.free_over), 'Applies to the whole bag']];
       return '<div class="rules">' + cards.map(function (c) {
         return '<div class="rule"><span class="k">' + c[1] + '</span><span class="v">' + c[2] + '</span><span class="s">' + c[3] + '</span><button class="btn sm" data-rule="' + c[0] + '"' + (ctx.role !== 'owner' ? ' disabled' : '') + '>Edit</button></div>';
       }).join('') + '</div>';
@@ -194,7 +194,7 @@ A.boot({
     });
 
     function editRule(key) {
-      var d = state.delivery, fields = key === 'free' ? [['free_over', 'Free delivery over (Tk.)', d.free_over]] : key === 'dhaka' ? [['dhaka', 'Delivery charge (Tk.)', d.dhaka], ['dhaka_days', 'Working days, e.g. 1–3', d.dhaka_days]] : [['outside', 'Delivery charge (Tk.)', d.outside], ['outside_days', 'Working days, e.g. 3–5', d.outside_days]];
+      var d = state.delivery, fields = key === 'free' ? [['free_over', 'Free delivery over (Tk.)', d.free_over]] : key === 'dhaka' ? [['dhaka', 'Delivery charge (Tk.)', d.dhaka], ['dhaka_days', 'Working days, e.g. 1 to 3', d.dhaka_days]] : [['outside', 'Delivery charge (Tk.)', d.outside], ['outside_days', 'Working days, e.g. 3 to 5', d.outside_days]];
       A.modal('<h3>' + { dhaka: 'Dhaka delivery', outside: 'Outside Dhaka delivery', free: 'Free delivery' }[key] + '</h3>' +
         fields.map(function (f, i) { return '<div class="f"><label for="rf' + i + '">' + f[1] + '</label><input class="text" id="rf' + i + '" value="' + A.esc(f[2]) + '"></div>'; }).join('') +
         '<p class="err-text" id="rerr" hidden></p><div class="actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="rOk">Save</button></div>',
@@ -203,7 +203,7 @@ A.boot({
             var next = Object.assign({}, state.delivery), bad = '';
             fields.forEach(function (f, i) {
               var v = o.querySelector('#rf' + i).value.trim();
-              if (/days$/.test(f[0])) { if (!v) bad = 'Enter the working days.'; next[f[0]] = v.replace('-', '–'); }
+              if (/days$/.test(f[0])) { if (!v) bad = 'Enter the working days.'; next[f[0]] = v.replace('-', '-'); }
               else { var n = num(v); if (n == null) bad = 'Enter a number.'; next[f[0]] = n; }
             });
             if (bad) { var er = o.querySelector('#rerr'); er.textContent = bad; er.hidden = false; return; }

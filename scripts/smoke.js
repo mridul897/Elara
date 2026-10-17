@@ -5,9 +5,19 @@ const H = { apikey: KEY };
 let fail = 0;
 const ok = (name, pass, extra) => { console.log((pass ? 'PASS ' : 'FAIL ') + name + (extra ? '  ' + extra : '')); if (!pass) fail++; };
 (async () => {
-  for (const p of ['', 'my-plp-screen.html', 'my-product-detail-screen.html?p=nafisa-tote', 'my-cart-screen.html', 'my-checkout-review.html', 'my-order-tracking.html', 'my-contact-screen.html', 'page.html?p=shipping', 'admin/index.html', 'admin/dashboard.html', 'assets/store-data.js', 'sitemap.xml']) {
+  for (const p of ['', 'shop', 'tote-bags', 'new-arrivals', 'bags/nafisa-tote', 'cart', 'checkout', 'track-order', 'contact', 'sitemap.xml', 'robots.txt', 'admin/index.html', 'admin/dashboard.html']) {
     const r = await fetch(SITE + '/' + p); ok('page ' + (p || '/'), r.status === 200, String(r.status));
   }
+  // a missing page must answer 404 and show the ELARA 404 page
+  const nf = await fetch(SITE + '/this-page-does-not-exist'); const nfHtml = await nf.text();
+  ok('unknown address gives a real 404 page', nf.status === 404 && /We could not find that page/.test(nfHtml), String(nf.status));
+  // the bag page must carry its content in the HTML itself (what a search engine reads without running scripts)
+  const pdp = await (await fetch(SITE + '/bags/nafisa-tote')).text();
+  ok('bag page is server-rendered (title, h1, price, structured data)', /<title>Nafisa Tote/.test(pdp) && /<h1 class="product-name">Nafisa Tote/.test(pdp) && /"@type":"Product"/.test(pdp) && /rel="canonical" href="https:\/\/elarabags\.vercel\.app\/bags\/nafisa-tote"/.test(pdp));
+  const home = await (await fetch(SITE + '/')).text();
+  ok('home page has business structured data', /"@type":"OnlineStore"/.test(home));
+  const old = await fetch(SITE + '/my-plp-screen.html?category=tote', { redirect: 'manual' });
+  ok('old addresses redirect to the new ones', old.status === 308 && /\/tote-bags$/.test(old.headers.get('location') || ''), old.status + ' ' + old.headers.get('location'));
   const prods = await (await fetch(URL_ + '/rest/v1/products?select=id,product_colours(id,card,photos)&status=eq.published&limit=1000', { headers: H })).json();
   ok('published products readable', Array.isArray(prods) && prods.length > 0, (prods.length || 0) + ' products');
   const noPhoto = prods.filter((p) => !(p.product_colours || []).some((c) => c.card || (c.photos || []).length));

@@ -1,4 +1,4 @@
-/* Search overlay — build of the Figma frames "Search Overlay / Discover" (256:1224) and "/ Results" (256:1375).
+/* Search overlay, build of the Figma frames "Search Overlay / Discover" (256:1224) and "/ Results" (256:1375).
    Any element with aria-label="Search" (nav icon, mobile header icon) opens it. Needs assets/catalog.js.
    Matches on product name, category, badge (new / best seller / sale) and Nafisa Tote colours. */
 (function () {

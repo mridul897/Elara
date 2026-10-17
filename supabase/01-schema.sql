@@ -393,7 +393,7 @@ grant execute on function public.validate_promo(text, int) to anon, authenticate
 
 -- ============================================================ starting settings & promo codes (the ones the storefront has today)
 insert into public.settings (key, value) values
-  ('delivery', '{"dhaka":60,"outside":120,"free_over":3000,"dhaka_days":"1–3","outside_days":"3–5"}'),
+  ('delivery', '{"dhaka":60,"outside":120,"free_over":3000,"dhaka_days":"1 to 3","outside_days":"3 to 5"}'),
   ('announcement', '{"text":"Free delivery on orders over Tk. 3,000","active":true}'),
   ('contact', '{"whatsapp":"+880 1320575476","email":"hello@elara.com.bd"}')
 on conflict (key) do nothing;

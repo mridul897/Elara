@@ -146,7 +146,7 @@ A.boot({
     function drawSum() {
       var sub = subtotal(), d = discount(), dl = delivery();
       $('sum').innerHTML = '<div class="r"><span>Subtotal</span><span>' + A.money(sub) + '</span></div><div class="r"><span>Delivery · ' + ($('cDis').value === 'Dhaka' ? 'Dhaka' : 'Outside Dhaka') + '</span><span>' + (dl ? A.money(dl) : 'Free') + '</span></div>' +
-        '<div class="r"><span>Discount' + (S.promo ? ' · ' + A.esc(S.promo.code) : '') + '</span><span>' + (d ? '– ' + A.money(d) : 'Tk. 0') + '</span></div><div class="r tot"><span>Total</span><span>' + A.money(sub - d + dl) + '</span></div>';
+        '<div class="r"><span>Discount' + (S.promo ? ' · ' + A.esc(S.promo.code) : '') + '</span><span>' + (d ? '- ' + A.money(d) : 'Tk. 0') + '</span></div><div class="r tot"><span>Total</span><span>' + A.money(sub - d + dl) + '</span></div>';
     }
     $('lines').addEventListener('click', function (e) { var b = e.target.closest('[data-rm]'); if (!b) return; S.items.splice(+b.getAttribute('data-rm'), 1); S.promo = null; $('promoMsg').textContent = ''; drawLines(); drawSum(); hint(); });
     $('pPay').addEventListener('change', function () { $('paidBox').hidden = $('pPay').value === 'cod'; });
