@@ -9,14 +9,17 @@
 <link rel="stylesheet" href="../assets/fonts/fonts.css">
 <link rel="stylesheet" href="admin.css">
 <style>
-  .pwrap { max-width: 920px; display: flex; flex-direction: column; gap: 20px; }
-  .hero { display: flex; align-items: center; gap: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); padding: 24px; }
-  .bigav { width: 76px; height: 76px; border-radius: 999px; background: var(--avatar); display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 500; flex: none; }
-  .hero .who { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-  .hero .nm { font-family: 'Fraunces', Georgia, serif; font-weight: 300; font-size: 32px; letter-spacing: -1.2px; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; }
-  .hero .em { font-size: 14px; color: var(--sub); overflow: hidden; text-overflow: ellipsis; }
-  .hero .actions { display: flex; gap: 8px; flex: none; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+  .pwrap { display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: 20px; align-items: start; }
+  .side { position: sticky; top: 0; display: flex; flex-direction: column; gap: 16px; }
+  .idcard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); padding: 28px 24px 22px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
+  .bigav { width: 96px; height: 96px; border-radius: 999px; background: var(--avatar); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 500; flex: none; margin-bottom: 8px; }
+  .idcard .nm { font-family: 'Fraunces', Georgia, serif; font-weight: 300; font-size: 30px; letter-spacing: -1.1px; line-height: 1.12; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .idcard .em { font-size: 13px; color: var(--sub); max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .idcard .badge { margin-top: 6px; }
+  .idcard .kv { width: 100%; margin-top: 18px; text-align: left; }
+  .idcard .so { width: 100%; margin-top: 18px; }
+  .main2 { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
   .pc { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); padding: 20px; display: flex; flex-direction: column; gap: 14px; }
   .pc h3 { font-size: 15px; font-weight: 600; }
   .pc .sub2 { font-size: 13px; color: var(--sub); margin-top: -8px; line-height: 1.4; }
@@ -40,7 +43,10 @@
   .err-text { font-size: 12px; color: var(--bad); }
   .pri { height: 36px; border: 0; border-radius: var(--r); background: var(--accent); color: #fff; font-size: 13px; font-weight: 500; padding: 0 16px; align-self: flex-start; }
   .pri:hover { background: #2d4ec9; } .pri[disabled] { opacity: .6; }
-  @media (max-width: 899.98px) { .grid { grid-template-columns: 1fr; } .hero { flex-wrap: wrap; padding: 18px; } .hero .nm { font-size: 26px; } .hero .actions { width: 100%; } .hero .actions .btn { flex: 1; } .bigav { width: 60px; height: 60px; font-size: 21px; } }
+  .kv .v { max-width: 62%; }
+  @media (max-width: 1300px) { .two { grid-template-columns: 1fr; } }
+  @media (max-width: 1100px) { .pwrap { grid-template-columns: 1fr; } .side { position: static; } }
+  @media (max-width: 899.98px) { .idcard { padding: 22px 18px; } .bigav { width: 76px; height: 76px; font-size: 26px; } .idcard .nm { font-size: 26px; } }
 </style>
 </head>
 <body>
@@ -76,23 +82,25 @@ A.boot({
     page.innerHTML =
       '<div class="page-head keep"><div class="t"><h1 class="h1">Profile</h1><p class="sub">Your account, security and recent work</p></div></div>' +
       '<div class="pwrap">' +
-      '<section class="hero"><div class="bigav">' + A.esc(A.initials(name || me.email)) + '</div><div class="who"><span class="nm" id="heroName">' + A.esc(name || me.email) + '</span>' +
-      '<span class="em">' + A.esc(me.email) + '</span><span><span class="badge ' + (owner ? 'b-ok' : 'b-mute') + '">' + (owner ? 'Owner' : 'Staff') + '</span></span></div>' +
-      '<div class="actions"><button class="btn" id="soBtn">' + A.ic('arrow-out-of-box', 16) + 'Sign out</button></div></section>' +
-      '<div class="grid">' +
-        '<section class="pc"><h3>Your details</h3><div class="f"><label for="pname">Display name</label><input class="text" id="pname" maxlength="60" autocomplete="name" value="' + A.esc(name) + '" placeholder="Your name"><p class="help">Shown in the sidebar, on order notes and in the activity list.</p></div>' +
-        '<div class="f"><label>Email</label><input class="text" value="' + A.esc(me.email) + '" disabled><p class="help">This is your sign-in email. The shop owner changes it in Supabase.</p></div>' +
-        '<p class="err-text" id="perr" hidden></p><button class="pri" id="saveName">Save name</button></section>' +
-        '<section class="pc"><h3>Account</h3><div class="kv">' +
-          '<div class="r"><span class="k">Role</span><span class="v">' + (owner ? 'Owner: sees prices, revenue, settings and the team' : 'Staff: handles orders') + '</span></div>' +
-          '<div class="r"><span class="k">Member since</span><span class="v">' + longDate(since) + '</span></div>' +
-          '<div class="r"><span class="k">Last sign-in</span><span class="v">' + (me.last_sign_in_at ? A.when ? A.when(me.last_sign_in_at) : longDate(me.last_sign_in_at) : 'This session') + '</span></div>' +
-          '<div class="r"><span class="k">Permissions</span><span class="v">' + (owner ? 'Full access' : 'Orders only') + '</span></div></div></section>' +
-        '<section class="pc"><h3>Security</h3><p class="sub2">Keep your account safe.</p>' +
-          '<div class="row-sw"><div><div class="t">Stay signed in on this device</div><div class="d">Turn off on a shared computer. You will be signed out when the browser closes.</div></div><button class="tog" id="keepTog" role="switch" aria-checked="' + keep + '" aria-label="Stay signed in on this device"></button></div>' +
-          '<button class="btn block" id="chpw">Change password</button><button class="btn block" id="soAll">Sign out everywhere</button></section>' +
-        '<section class="pc" id="actCard"><h3>Your recent activity</h3><div class="act" id="act"><p class="help">Loading…</p></div>' + (owner ? '<a href="activity.html" style="font-size:13px;color:var(--accent);font-weight:500">View all activity and problems</a>' : '') + '</section>' +
-      '</div></div>';
+      '<aside class="side"><section class="idcard"><div class="bigav">' + A.esc(A.initials(name || me.email)) + '</div><span class="nm" id="heroName">' + A.esc(name || me.email) + '</span>' +
+      '<span class="em">' + A.esc(me.email) + '</span><span class="badge ' + (owner ? 'b-ok' : 'b-mute') + '">' + (owner ? 'Owner' : 'Staff') + '</span>' +
+      '<div class="kv">' +
+        '<div class="r"><span class="k">Role</span><span class="v">' + (owner ? 'Owner' : 'Staff') + '</span></div>' +
+        '<div class="r"><span class="k">Access</span><span class="v">' + (owner ? 'Everything' : 'Orders only') + '</span></div>' +
+        '<div class="r"><span class="k">Member since</span><span class="v">' + longDate(since) + '</span></div>' +
+        '<div class="r"><span class="k">Last sign-in</span><span class="v">' + (me.last_sign_in_at ? A.when(me.last_sign_in_at) : 'This session') + '</span></div></div>' +
+      '<button class="btn so" id="soBtn">' + A.ic('arrow-out-of-box', 16) + 'Sign out</button></section></aside>' +
+      '<div class="main2">' +
+        '<section class="pc"><h3>Your details</h3><p class="sub2">How you appear to the rest of the team.</p>' +
+          '<div class="two" style="gap:16px"><div class="f"><label for="pname">Display name</label><input class="text" id="pname" maxlength="60" autocomplete="name" value="' + A.esc(name) + '" placeholder="Your name"><p class="help">Shown in the sidebar, on order notes and in the activity list.</p></div>' +
+          '<div class="f"><label>Email</label><input class="text" value="' + A.esc(me.email) + '" disabled><p class="help">Your sign-in email. The shop owner changes it in Supabase.</p></div></div>' +
+          '<p class="err-text" id="perr" hidden></p><button class="pri" id="saveName">Save name</button></section>' +
+        '<div class="two">' +
+          '<section class="pc"><h3>Security</h3><p class="sub2">Keep your account safe.</p>' +
+            '<div class="row-sw"><div><div class="t">Stay signed in on this device</div><div class="d">Turn off on a shared computer. You will be signed out when the browser closes.</div></div><button class="tog" id="keepTog" role="switch" aria-checked="' + keep + '" aria-label="Stay signed in on this device"></button></div>' +
+            '<button class="btn block" id="chpw">Change password</button><button class="btn block" id="soAll">Sign out everywhere</button></section>' +
+          '<section class="pc" id="actCard"><h3>Your recent activity</h3><p class="sub2">The last changes you made.</p><div class="act" id="act"><p class="help">Loading…</p></div>' + (owner ? '<a href="activity.html" style="font-size:13px;color:var(--accent);font-weight:500">View all activity and problems</a>' : '') + '</section>' +
+        '</div></div></div>';
 
     // name
     $('saveName').addEventListener('click', async function () {
