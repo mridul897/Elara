@@ -54,7 +54,7 @@ const CATS_DEFAULT = {     // category id -> listing page (the five the store st
 const CATS = Object.assign({}, CATS_DEFAULT);
 const CAT_SINGULAR_DEFAULT = { tote: 'Tote Bag', shoulder: 'Shoulder Bag', crossbody: 'Crossbody Bag', mini: 'Mini Bag', 'travel-work': 'Travel and Work Bag' };
 const catSingular = (id) => CAT_SINGULAR_DEFAULT[id] || (CATS[id] ? (/bag/i.test(CATS[id].label) ? CATS[id].label : CATS[id].label + ' Bag') : 'Bag');
-const catHeading = (id) => (CATS_DEFAULT[id] ? CATS_DEFAULT[id].h : (/bag|&|work/i.test(CATS[id].label) ? CATS[id].label : CATS[id].label + ' Bags'));
+const catHeading = (id) => (/bag|&|work/i.test(CATS[id].label) ? CATS[id].label : CATS[id].label + ' Bags');   // same rule as the shop page script
 // categories from the shop database replace the built-in list (names, order, which ones are shown)
 function applyCategories(rows) {
   if (!rows || !rows.length) return;
