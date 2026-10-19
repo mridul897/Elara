@@ -77,7 +77,7 @@ p, h1, h2, h3 { margin: 0; }
 .crumbs a { color: var(--sub); font-weight: 400; }
 .crumbs .sep { color: var(--mute); display: flex; }
 /* search lives in the top bar, centred in the gap between the page name and the date / bell */
-.topsearch { flex: 0 1 420px; min-width: 150px; width: 100%; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.topsearch { flex: 0 1 680px; min-width: 150px; padding: 0 14px; width: 100%; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 .topsearch:hover { border-color: #c9ccd3; }
 .topsearch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .topsearch .ph { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
