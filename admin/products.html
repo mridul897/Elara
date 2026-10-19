@@ -60,7 +60,8 @@ A.boot({
     var CHUNK = 30, LOW = 5;
     var state = { tab: 'all', q: '', cat: 'all', sale: false, sort: 'best', limit: 30, total: 0, sel: {}, rows: [] };
     var TABS = [['all', 'All'], ['published', 'Published'], ['draft', 'Draft'], ['archived', 'Archived'], ['low', 'Low stock']];
-    var CATS = [{ v: 'all', l: 'All categories' }, { v: 'tote', l: 'Tote' }, { v: 'shoulder', l: 'Shoulder' }, { v: 'crossbody', l: 'Crossbody' }, { v: 'mini', l: 'Mini' }, { v: 'travel-work', l: 'Travel & Work' }];
+    var catData = await A.categories();
+    var CATS = [{ v: 'all', l: 'All categories' }].concat(catData.list.map(function (c) { return { v: c.id, l: c.name }; }));
     var SORTS = [{ v: 'best', l: 'Best selling' }, { v: 'new', l: 'Newest first' }, { v: 'low', l: 'Price: low to high' }, { v: 'high', l: 'Price: high to low' }, { v: 'az', l: 'Name A to Z' }];
     var catName = function (v) { return (CATS.filter(function (c) { return c.v === v; })[0] || {}).l || v; };
     var sortName = function (v) { return SORTS.filter(function (c) { return c.v === v; })[0].l; };
@@ -212,9 +213,8 @@ A.boot({
     window.addEventListener('scroll', more, { passive: true });
     window.addEventListener('resize', more);
     // ----- CSV import: one row per colour + size; rows with the same name become one product (saved as a draft)
-    var CATMAP = { tote: 'tote', shoulder: 'shoulder', crossbody: 'crossbody', mini: 'mini', 'travel-work': 'travel-work', 'travel & work': 'travel-work', 'travel and work': 'travel-work', travel: 'travel-work' };
-    var EYE = { tote: 'Tote Bags · Premium Leather', shoulder: 'Shoulder Bags · Premium Leather', crossbody: 'Crossbody Bags · Premium Leather', mini: 'Mini Bags · Premium Leather', 'travel-work': 'Travel & Work Bags · Premium Leather' };
-    var CRUMB = { tote: 'Tote', shoulder: 'Shoulder', crossbody: 'Crossbody', mini: 'Mini', 'travel-work': 'Travel & Work' };
+    var CATMAP = { travel: 'travel-work' }, EYE = {}, CRUMB = {};
+    catData.list.forEach(function (c) { CATMAP[c.id] = c.id; CATMAP[c.name.toLowerCase()] = c.id; CATMAP[c.name.toLowerCase().replace(/&/g, 'and')] = c.id; EYE[c.id] = c.eyebrow || (c.name + ' Bags · Premium Leather'); CRUMB[c.id] = c.name; });
     function parseCSV(text) {
       var rows = [], row = [], cur = '', q = false;
       text = text.replace(/^\ufeff/, '');
@@ -240,7 +240,7 @@ A.boot({
       rows.slice(1).forEach(function (r, n) {
         var line = n + 2, name = (r[ix.name] || '').trim(); if (!name) return;
         var cat = CATMAP[(r[ix.cat] || '').trim().toLowerCase()], price = parseInt(String(r[ix.price] || '').replace(/[^0-9]/g, ''), 10);
-        if (!cat) { out.errors.push('Row ' + line + ': category "' + (r[ix.cat] || '') + '" is not one of tote, shoulder, crossbody, mini, travel-work.'); return; }
+        if (!cat) { out.errors.push('Row ' + line + ': category "' + (r[ix.cat] || '') + '" is not one of ' + catData.list.map(function (c) { return c.id; }).join(', ') + '. Add it under Categories first.'); return; }
         if (!(price > 0)) { out.errors.push('Row ' + line + ': price must be a number above zero.'); return; }
         var id = A.slug(name); if (!id) { out.errors.push('Row ' + line + ': the name needs letters or numbers.'); return; }
         var p = by[id];

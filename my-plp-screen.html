@@ -801,13 +801,17 @@
   // (same photo used more than once while more product photography is
   // still coming), not a bug, kept on the designer's explicit instruction.
   // ===================================================================
-  const CATEGORIES = [
+  const CATEGORIES = (window.ELARA_CATEGORIES && window.ELARA_CATEGORIES.length)
+    ? window.ELARA_CATEGORIES.map((c) => ({ id: c.id, label: c.name }))
+    : [
     { id: 'tote', label: 'Tote' },
     { id: 'shoulder', label: 'Shoulder' },
     { id: 'crossbody', label: 'Crossbody' },
     { id: 'mini', label: 'Mini' },
     { id: 'travel-work', label: 'Travel & Work' },
   ];
+  // "Tote" becomes "Tote Bags"; names that already say what they are ("Travel & Work", "Clutch Bags") stay as written
+  const catTitle = (c) => (/bag|&|work/i.test(c.label) ? c.label : c.label + ' Bags');
 
   // Same three colours as the PDP (Camel, Black, Ivory). Picking one on the card swaps its photo.
   const NAFISA_COLOURS = [
@@ -1157,7 +1161,7 @@
   const qvColour = () => qvProduct.colours ? qvProduct.colours.find((c) => c.id === (state.pick[qvProduct.key] || qvProduct.colours[0].id)) : null;
   function categoryLabel(p) {
     const c = CATEGORIES.find((x) => x.id === p.cat);
-    return c ? c.label + (c.id === 'travel-work' ? '' : ' Bags') : '';
+    return c ? catTitle(c) : '';
   }
   function qvStripArrows() {
     const max = qvStrip.scrollWidth - qvStrip.clientWidth;
@@ -1450,7 +1454,7 @@
       titleText = 'All Products';
       crumbText = 'All Products';
     } else if (selected.length === 1) {
-      titleText = selected[0].label + (selected[0].id === 'travel-work' ? '' : ' Bags');
+      titleText = catTitle(selected[0]);
       crumbText = selected[0].label;
     } else {
       titleText = selected.map((c) => c.label).join(' + ');

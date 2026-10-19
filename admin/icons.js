@@ -145,3 +145,6 @@ window.ADMIN_ICONS = {
   "p": "<path d=\"M12 8.5V13M12 16.25V16.3M10.3 4.9L3.7 16.6C3 17.9 3.9 19.5 5.4 19.5H18.6C20.1 19.5 21 17.9 20.3 16.6L13.7 4.9C13 3.7 11 3.7 10.3 4.9Z\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"
  }
 };
+
+/* tag: added for Categories (same style as the Central Icons set) */
+window.ADMIN_ICONS.tag = { "vb": "0 0 18 18", "p": "<path d=\"M9.1 2.7H14.3V7.9L8.3 13.9C7.9 14.3 7.3 14.3 6.9 13.9L3.1 10.1C2.7 9.7 2.7 9.1 3.1 8.7L9.1 2.7Z\" stroke=\"currentColor\" stroke-width=\"1.125\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <circle cx=\"11.7\" cy=\"5.3\" r=\".8\" fill=\"currentColor\"/>" };

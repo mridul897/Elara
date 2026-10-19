@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Categories · ELARA Admin</title>
+<link rel="icon" href="favicon1.png">
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="admin.css">
+<style>
+  .cols { display: flex; gap: 20px; align-items: flex-start; }
+  .cols > .table { flex: 2 1 0; min-width: 0; }
+  .formcard { width: 340px; flex: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .formcard h3 { font-size: 15px; font-weight: 600; }
+  .f { display: flex; flex-direction: column; gap: 6px; }
+  .f > label { font-size: 13px; font-weight: 500; }
+  .help { font-size: 12px; color: var(--mute); line-height: 1.4; }
+  .save { height: 38px; border: 0; border-radius: var(--r); background: var(--accent); color: #fff; font-size: 13px; font-weight: 500; }
+  .save:hover { background: #2d4ec9; } .save[disabled] { opacity: .6; }
+  .linkbtn { background: none; border: 0; padding: 0; font-size: 13px; font-weight: 500; color: var(--accent); text-align: left; }
+  .linkbtn.bad { color: var(--bad); } .linkbtn[disabled] { opacity: .45; cursor: default; }
+  .c-name { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .c-name .nm { font-weight: 500; }
+  .c-name .ad { font-size: 12px; color: var(--mute); }
+  .c-cnt { width: 90px; } .c-live { width: 120px; display: flex; align-items: center; gap: 10px; } .c-ord { width: 64px; display: flex; gap: 2px; }
+  .ord { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--sub); padding: 0; display: flex; align-items: center; justify-content: center; }
+  .ord:hover { background: var(--canvas); } .ord[disabled] { opacity: .35; cursor: default; }
+  .ord svg { width: 14px; height: 14px; }
+  .tog { width: 36px; height: 20px; border-radius: 10px; border: 0; padding: 0; background: #d5d8de; position: relative; transition: background .15s; flex: none; }
+  .tog::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s; }
+  .tog[aria-checked="true"] { background: var(--accent); } .tog[aria-checked="true"]::after { left: 18px; }
+  .trow.sel { background: var(--accent-soft); }
+  .err-text { font-size: 12px; color: var(--bad); }
+  .setup { max-width: 640px; }
+  .setup p { margin-top: 6px; color: var(--sub); line-height: 1.5; }
+  @media (max-width: 1100px) { .cols { flex-direction: column; } .formcard { width: 100%; } }
+  @media (max-width: 899.98px) { .c-ord { display: none; } .c-cnt { width: 60px; } .c-live { width: 52px; } .c-live .lbl2 { display: none; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="icons.js"></script>
+<script src="admin.js"></script>
+<script>
+A.boot({
+  active: 'categories',
+  crumbs: [{ t: 'Categories' }],
+  render: async function (page, ctx) {
+    var $ = function (id) { return document.getElementById(id); };
+    var state = { list: [], counts: {}, edit: null };
+
+    page.innerHTML =
+      '<div class="page-head"><div class="t"><h1 class="h1">Categories</h1><p class="sub" id="sub">How your bags are grouped in the store menu and filters</p></div>' +
+      '<button class="btn primary" id="newBtn">' + A.ic('plus-small', 16) + 'Add category</button></div><div id="body"></div>';
+
+    var cats = await A.categories(true);
+    if (!cats.live) {
+      $('body').innerHTML = '<div class="card empty setup"><b>One setup step first</b><p>Categories need their own table in the database. Open <b>Supabase &rarr; SQL Editor</b>, paste the file <b>supabase/13-categories.sql</b> from the project and press Run. Then refresh this page.</p></div>';
+      $('newBtn').disabled = true; return;
+    }
+    state.list = cats.list.slice();
+    var pr = await A.sb.from('products').select('id,cat').limit(5000);
+    (pr.data || []).forEach(function (p) { state.counts[p.cat] = (state.counts[p.cat] || 0) + 1; });
+    var owner = ctx.role === 'owner';
+
+    function sort() { state.list.sort(function (a, b) { return (a.position - b.position) || a.name.localeCompare(b.name); }); }
+    function draw() {
+      sort();
+      var head = '<div class="trow head"><span class="grow">Category</span><span class="c c-cnt">Bags</span><span class="c c-live">On the store</span><span class="c c-ord">Order</span></div>';
+      var rows = state.list.length ? state.list.map(function (c, i) {
+        return '<div class="trow link' + (state.edit === c.id ? ' sel' : '') + '" data-id="' + A.esc(c.id) + '">' +
+          '<span class="c-name"><span class="nm">' + A.esc(c.name) + '</span><span class="ad">/' + A.esc(c.id) + '-bags</span></span>' +
+          '<span class="c c-cnt">' + (state.counts[c.id] || 0) + '</span>' +
+          '<span class="c c-live"><button class="tog" role="switch" aria-checked="' + c.visible + '" aria-label="Show on the store" data-live="' + A.esc(c.id) + '"' + (owner ? '' : ' disabled') + '></button><span class="lbl2 help">' + (c.visible ? 'Shown' : 'Hidden') + '</span></span>' +
+          '<span class="c c-ord"><button class="ord" data-up="' + A.esc(c.id) + '" aria-label="Move up"' + (i === 0 || !owner ? ' disabled' : '') + '>' + A.ic('chevron-down-small', 14).replace('<svg', '<svg style="transform:rotate(180deg)"') + '</button>' +
+          '<button class="ord" data-down="' + A.esc(c.id) + '" aria-label="Move down"' + (i === state.list.length - 1 || !owner ? ' disabled' : '') + '>' + A.ic('chevron-down-small', 14) + '</button></span></div>';
+      }).join('') : '<div class="empty"><b>No categories yet</b>Add one with the form on the right.</div>';
+      var e = state.list.filter(function (c) { return c.id === state.edit; })[0] || {};
+      var n = state.counts[e.id] || 0;
+      $('body').innerHTML = '<div class="cols"><div class="table">' + head + rows + '</div>' +
+        '<form class="formcard" id="form" novalidate><h3>' + (state.edit ? 'Edit category' : 'New category') + '</h3>' +
+        '<div class="f"><label for="name">Name</label><input class="text" id="name" placeholder="e.g. Clutch" autocomplete="off" maxlength="40" value="' + A.esc(e.name || '') + '"' + (owner ? '' : ' disabled') + '><p class="help">Customers see this on the store menu and in filters.</p></div>' +
+        '<div class="f"><label for="id">Address word</label><input class="text" id="id" placeholder="clutch" autocomplete="off" maxlength="40" value="' + A.esc(e.id || '') + '"' + (state.edit || !owner ? ' readonly' : '') + '><p class="help">' + (state.edit ? 'Fixed once created, so links never break.' : 'Used in the web address: /<b id="adHint">clutch</b>-bags. Letters, numbers and dashes only.') + '</p></div>' +
+        '<div class="f"><label for="eyebrow">Line above a bag\'s name</label><input class="text" id="eyebrow" placeholder="Clutch Bags · Premium Leather" maxlength="70" value="' + A.esc(e.eyebrow || '') + '"' + (owner ? '' : ' disabled') + '></div>' +
+        '<p class="err-text" id="ferr" hidden></p>' +
+        '<button class="save" id="saveBtn" type="submit"' + (owner ? '' : ' disabled') + '>' + (state.edit ? 'Save changes' : 'Add category') + '</button>' +
+        (state.edit ? '<div style="display:flex;justify-content:space-between"><button type="button" class="linkbtn" id="resetBtn">New category instead</button><button type="button" class="linkbtn bad" id="delBtn"' + (owner ? '' : ' disabled') + '>Delete</button></div>' +
+          (n ? '<p class="help">' + n + ' bag' + (n === 1 ? '' : 's') + ' use this category. Move them to another category before you can delete it.</p>' : '') : '') +
+        '</form></div>';
+      wire();
+    }
+    function showErr(m) { var e = $('ferr'); e.hidden = !m; e.textContent = m || ''; }
+    async function persistOrder() {
+      sort(); var ups = state.list.map(function (c, i) { return A.sb.from('categories').update({ position: i }).eq('id', c.id); });
+      var rs = await Promise.all(ups); var bad = rs.filter(function (r) { return r.error; })[0];
+      if (bad) { A.toast('Could not save the order: ' + bad.error.message, true); return false; }
+      state.list.forEach(function (c, i) { c.position = i; }); return true;
+    }
+    function wire() {
+      var nm = $('name'), id = $('id');
+      if (!state.edit && nm) nm.addEventListener('input', function () { if (!id.dataset.touched) { id.value = A.slug(nm.value); $('adHint') && ($('adHint').textContent = id.value || 'clutch'); } });
+      if (!state.edit && id) id.addEventListener('input', function () { id.dataset.touched = '1'; id.value = A.slug(id.value); $('adHint') && ($('adHint').textContent = id.value || 'clutch'); });
+      $('body').querySelectorAll('.trow[data-id]').forEach(function (r) {
+        r.addEventListener('click', function (e) {
+          if (e.target.closest('[data-live],[data-up],[data-down]')) return;
+          state.edit = r.getAttribute('data-id'); draw();
+        });
+      });
+      $('body').querySelectorAll('[data-live]').forEach(function (b) {
+        b.addEventListener('click', async function (e) {
+          e.stopPropagation(); var c = state.list.filter(function (x) { return x.id === b.getAttribute('data-live'); })[0];
+          var u = await A.sb.from('categories').update({ visible: !c.visible }).eq('id', c.id).select('id').maybeSingle();
+          if (u.error || !u.data) { A.toast('Could not change it: ' + ((u.error && u.error.message) || 'not allowed'), true); return; }
+          c.visible = !c.visible; A.bust && A.bust(); draw(); A.toast(c.name + (c.visible ? ' is shown on the store' : ' is hidden from the store menu'));
+        });
+      });
+      function move(id, d) {
+        sort(); var i = state.list.findIndex(function (c) { return c.id === id; }), j = i + d; if (j < 0 || j >= state.list.length) return;
+        var t = state.list[i]; state.list[i] = state.list[j]; state.list[j] = t; state.list.forEach(function (c, k) { c.position = k; });
+        draw(); persistOrder().then(function (ok) { if (ok) { A.bust && A.bust(); A.toast('Order saved'); } });
+      }
+      $('body').querySelectorAll('[data-up]').forEach(function (b) { b.addEventListener('click', function (e) { e.stopPropagation(); move(b.getAttribute('data-up'), -1); }); });
+      $('body').querySelectorAll('[data-down]').forEach(function (b) { b.addEventListener('click', function (e) { e.stopPropagation(); move(b.getAttribute('data-down'), 1); }); });
+      if ($('resetBtn')) $('resetBtn').addEventListener('click', function () { state.edit = null; draw(); });
+      if ($('delBtn')) $('delBtn').addEventListener('click', async function () {
+        var c = state.list.filter(function (x) { return x.id === state.edit; })[0];
+        if ((state.counts[c.id] || 0) > 0) { A.toast('Move its bags to another category first.', true); return; }
+        if (!confirm('Delete the category "' + c.name + '"?')) return;
+        var d = await A.sb.from('categories').delete().eq('id', c.id);
+        if (d.error) { A.toast('Could not delete: ' + d.error.message, true); return; }
+        state.list = state.list.filter(function (x) { return x.id !== c.id; }); state.edit = null; A.categories(true); A.bust && A.bust(); draw(); A.toast('Category deleted');
+      });
+      $('form').addEventListener('submit', async function (e) {
+        e.preventDefault(); showErr('');
+        var name = $('name').value.trim(), id = A.slug($('id').value), eyebrow = $('eyebrow').value.trim();
+        if (name.length < 2) { showErr('Give the category a name.'); return; }
+        if (!state.edit && !id) { showErr('Give it an address word, like clutch.'); return; }
+        if (!state.edit && state.list.some(function (c) { return c.id === id; })) { showErr('A category with that address word already exists.'); return; }
+        if (state.list.some(function (c) { return c.id !== (state.edit || id) && c.name.toLowerCase() === name.toLowerCase(); })) { showErr('Another category already has that name.'); return; }
+        if (!eyebrow) eyebrow = name + ' Bags · Premium Leather';
+        var btn = $('saveBtn'); btn.disabled = true; btn.textContent = 'Saving…';
+        var r = state.edit
+          ? await A.sb.from('categories').update({ name: name, eyebrow: eyebrow }).eq('id', state.edit).select('id,name,eyebrow,position,visible').maybeSingle()
+          : await A.sb.from('categories').insert({ id: id, name: name, eyebrow: eyebrow, position: state.list.length, visible: true }).select('id,name,eyebrow,position,visible').maybeSingle();
+        if (r.error || !r.data) { btn.disabled = false; btn.textContent = state.edit ? 'Save changes' : 'Add category'; showErr('Could not save: ' + ((r.error && r.error.message) || 'not allowed')); return; }
+        if (state.edit) state.list = state.list.map(function (c) { return c.id === state.edit ? r.data : c; }); else state.list.push(r.data);
+        state.edit = null; A.categories(true); A.bust && A.bust(); draw(); A.toast(name + ' saved');
+      });
+    }
+    $('newBtn').addEventListener('click', function () { state.edit = null; draw(); var n = $('name'); if (n) n.focus(); });
+    $('sub').textContent = state.list.length + ' categories · how your bags are grouped in the store menu and filters';
+    draw();
+  }
+});
+</script>
+</body>
+</html>

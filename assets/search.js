@@ -5,6 +5,7 @@
   'use strict';
   var POPULAR = ['tote', 'shoulder', 'crossbody', 'mini', 'travel', 'work bag', 'leather', 'black', 'camel', 'new arrivals'];
   var CAT_LABEL = { tote: 'Tote', shoulder: 'Shoulder', crossbody: 'Crossbody', mini: 'Mini', 'travel-work': 'Travel & Work' };
+  (window.ELARA_CATEGORIES || []).forEach(function (c) { CAT_LABEL[c.id] = c.name; });
   var BADGE = { best: 'Best Seller', 'new': 'New', off: '20% OFF' };
   var PAGE_SIZE = 8;
   var PDP = 'my-product-detail-screen.html';

@@ -19,6 +19,7 @@ Accounts to keep safe: GitHub, Vercel, Supabase, the owner login (email + passwo
 - **Create order**: for phone or WhatsApp orders.
 - **Products**: add or edit a bag, upload photos per colour, set stock per colour and size, set a sale price (with dates), publish or hide. Tick several to publish, hide, archive or put on sale together. Import many products from a CSV (they arrive as drafts without photos).
 - **Promotions**: promo codes, sale prices overview, delivery charges.
+- **Categories**: add, rename, reorder, show or hide the groups your bags belong to (Tote, Shoulder ...). A category that still has bags cannot be deleted. Needs `supabase/13-categories.sql` run once.
 - **Reviews**: approve or hide customer reviews. Only approved ones show on the store.
 - **Messages**: contact-form messages and the list of emails collected by the newsletter, welcome popup and "notify me".
 - **Content**: announcement bar, home hero, new arrivals, policy pages, contact details. Press **Publish changes**.
@@ -35,7 +36,7 @@ Accounts to keep safe: GitHub, Vercel, Supabase, the owner login (email + passwo
 
 ## The SQL files (supabase/), run in this order, once each
 
-`01-schema` → `02-seed-1..4` → `03-storage` → `04-first-owner` (put your email in) → `05-orders-admin` → `06-track-address` → `07-promo-start` → `08-team-reviews` → `11-launch-ready` → `12-clean-dashes`.
+`01-schema` → `02-seed-1..4` → `03-storage` → `04-first-owner` (put your email in) → `05-orders-admin` → `06-track-address` → `07-promo-start` → `08-team-reviews` → `11-launch-ready` → `12-clean-dashes` → `13-categories`.
 Optional: `09-demo-data-1..3` (sample orders), `10-demo-clear` (removes them).
 Run them in Supabase → SQL Editor. They are safe to run again.
 

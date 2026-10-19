@@ -54,10 +54,10 @@
   var NAV = [
     ['Overview', [['dashboard', 'Dashboard', 'home']]],
     ['Sales', [['orders', 'Orders', 'shopping-bag1'], ['customers', 'Customers', 'user-group'], ['promotions', 'Promotions', 'percent']]],
-    ['Catalog', [['products', 'Products', 'package'], ['reviews', 'Reviews', 'star']]],
+    ['Catalog', [['products', 'Products', 'package'], ['categories', 'Categories', 'tag'], ['reviews', 'Reviews', 'star']]],
     ['Store', [['content', 'Content', 'file-text'], ['messages', 'Messages', 'mail'], ['settings', 'Settings', 'settings-gear1']]]
   ];
-  var BUILT = { orders: 1, products: 1, dashboard: 1, promotions: 1, customers: 1, reviews: 1, content: 1, settings: 1, more: 1, messages: 1, activity: 1 };   // pages that exist so far
+  var BUILT = { orders: 1, products: 1, dashboard: 1, promotions: 1, customers: 1, reviews: 1, content: 1, settings: 1, more: 1, messages: 1, activity: 1, categories: 1 };   // pages that exist so far
 
   A.brand = function (withCollapse) {
     return '<div class="brand"><img class="fav" src="favicon1.png" alt="">' +
@@ -176,6 +176,15 @@
     o.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', close); });
     if (onMount) onMount(o, close);
     return close;
+  };
+  // Categories come from the categories table. Before supabase/13-categories.sql has been run the five original ones are used.
+  var FALLBACK_CATS = [['tote', 'Tote'], ['shoulder', 'Shoulder'], ['crossbody', 'Crossbody'], ['mini', 'Mini'], ['travel-work', 'Travel & Work']].map(function (c, i) { return { id: c[0], name: c[1], eyebrow: c[1] + ' Bags · Premium Leather', position: i, visible: true }; });
+  var catCache = null;
+  A.categories = async function (force) {
+    if (catCache && !force) return catCache;
+    var r = await A.sb.from('categories').select('id,name,eyebrow,position,visible').order('position').order('name');
+    catCache = (r.error || !r.data) ? { list: FALLBACK_CATS, live: false } : { list: r.data, live: true };
+    return catCache;
   };
   A.slug = function (s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60); };
   A.ago = function (iso) {

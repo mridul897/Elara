@@ -96,12 +96,13 @@ A.boot({
   render: async function (page, ctx) {
     var $ = function (id) { return document.getElementById(id); };
     var SIZES = ['Small', 'Medium', 'Large'];
-    var CATS = [['tote', 'Tote', 'Tote Bags · Premium Leather'], ['shoulder', 'Shoulder', 'Shoulder Bags · Premium Leather'], ['crossbody', 'Crossbody', 'Crossbody Bags · Premium Leather'], ['mini', 'Mini', 'Mini Bags · Premium Leather'], ['travel-work', 'Travel & Work', 'Travel & Work Bags · Premium Leather']];
+    var catData = await A.categories();
+    var CATS = catData.list.map(function (c) { return [c.id, c.name, c.eyebrow || (c.name + ' Bags · Premium Leather'), c.visible]; });
     var BADGES = [['', 'None'], ['new', 'New'], ['best', 'Best seller']];
     var P, cols = [], vars = [], delCols = [], delVars = [], curCol = null, dirty = false;
 
     if (IS_NEW) {
-      P = { id: '', name: 'New product', cat: 'tote', price: 0, sale_price: null, sale_starts: null, sale_ends: null, badge: null, description: '', care: '', fits: '', dims: [null, null, null], status: 'draft', position: 0, _new: true };
+      P = { id: '', name: 'New product', cat: (CATS[0] && CATS[0][0]) || 'tote', price: 0, sale_price: null, sale_starts: null, sale_ends: null, badge: null, description: '', care: '', fits: '', dims: [null, null, null], status: 'draft', position: 0, _new: true };
     } else {
       var r = await A.sb.from('products').select('*').eq('id', PID).maybeSingle();
       if (r.error || !r.data) { page.innerHTML = '<div class="empty card"><b>Product not found</b>We could not find ' + A.esc(PID) + '. <a href="products.html" style="color:var(--accent)">Back to products</a></div>'; return; }
@@ -134,7 +135,7 @@ A.boot({
         '<div class="cols"><div class="left">' +
         '<section class="card pad stack14"><h3>Basic information</h3>' +
         '<div class="f"><label for="name">Product name</label><input class="text" id="name" value="' + A.esc(P.name) + '"' + (readonly ? ' disabled' : '') + '></div>' +
-        '<div class="two"><div class="f"><label for="cat">Category</label><select class="select" id="cat">' + opt(CATS.map(function (c) { return [c[0], c[1]]; }), P.cat) + '</select></div>' +
+        '<div class="two"><div class="f"><label for="cat">Category</label><select class="select" id="cat">' + opt(CATS.map(function (c) { return [c[0], c[1] + (c[3] === false ? ' (hidden on the store)' : '')]; }), P.cat) + '</select></div>' +
         '<div class="f"><label for="badge">Badge</label><select class="select" id="badge">' + opt(BADGES, P.badge === 'off' ? '' : P.badge) + '</select></div></div>' +
         '<div class="f"><div class="lbl"><label for="desc">Description</label><span class="cnt" id="cnt">' + (P.description || '').length + ' / 1000</span></div><textarea class="text" id="desc" rows="3" maxlength="1000">' + A.esc(P.description || '') + '</textarea></div>' +
         '<div class="f"><label for="care">Materials and care</label><textarea class="text" id="care" rows="2">' + A.esc(P.care || '') + '</textarea></div>' +

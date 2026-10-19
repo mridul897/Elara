@@ -782,10 +782,11 @@
   const $ = (id) => document.getElementById(id);
   const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const crumb = { tote: 'Tote', shoulder: 'Shoulder', crossbody: 'Crossbody', mini: 'Mini', 'travel-work': 'Travel & Work' };
+  (window.ELARA_CATEGORIES || []).forEach((c) => { crumb[c.id] = c.name; });   // names managed in Admin > Categories
 
   // ----- static facts for this bag ---------------------------------------------------------------------------
   const CATNAME = { tote: 'Tote Bag', shoulder: 'Shoulder Bag', crossbody: 'Crossbody Bag', mini: 'Mini Bag', 'travel-work': 'Travel and Work Bag' };
-  const pageTitle = product.name + ' | Leather ' + (CATNAME[product.cat] || 'Bag') + ' | ELARA';
+  const pageTitle = product.name + ' | Leather ' + (CATNAME[product.cat] || (crumb[product.cat] ? crumb[product.cat] + ' Bag' : 'Bag')) + ' | ELARA';
   const shortDesc = (() => { const t = product.name + ': ' + product.desc; if (t.length <= 155) return t; const cut = t.slice(0, 152); return cut.slice(0, cut.lastIndexOf(' ')) + '...'; })();
   document.title = pageTitle;
   (function () {

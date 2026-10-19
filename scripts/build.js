@@ -44,14 +44,26 @@ const PAGES = {            // source file -> clean address
   'my-account.html': '/account',
   'page.html': '/information',
 };
-const CATS = {             // category id -> listing page
+const CATS_DEFAULT = {     // category id -> listing page (the five the store started with; more come from Admin > Categories)
   tote: { path: '/tote-bags', label: 'Tote', title: 'Leather tote bags for women', h: 'Tote bags', blurb: 'Roomy leather totes for work, study and every day' },
   shoulder: { path: '/shoulder-bags', label: 'Shoulder', title: 'Leather shoulder bags for women', h: 'Shoulder bags', blurb: 'Leather shoulder bags that sit comfortably all day' },
   crossbody: { path: '/crossbody-bags', label: 'Crossbody', title: 'Leather crossbody bags for women', h: 'Crossbody bags', blurb: 'Hands-free leather crossbody bags for the day ahead' },
   mini: { path: '/mini-bags', label: 'Mini', title: 'Mini leather bags for women', h: 'Mini bags', blurb: 'Small leather bags for the essentials' },
   'travel-work': { path: '/travel-work-bags', label: 'Travel & Work', title: 'Leather travel and work bags for women', h: 'Travel & Work', blurb: 'Leather bags that carry a laptop, a lunch and a long day' },
 };
-const CAT_SINGULAR = { tote: 'Tote Bag', shoulder: 'Shoulder Bag', crossbody: 'Crossbody Bag', mini: 'Mini Bag', 'travel-work': 'Travel and Work Bag' };
+const CATS = Object.assign({}, CATS_DEFAULT);
+const CAT_SINGULAR_DEFAULT = { tote: 'Tote Bag', shoulder: 'Shoulder Bag', crossbody: 'Crossbody Bag', mini: 'Mini Bag', 'travel-work': 'Travel and Work Bag' };
+const catSingular = (id) => CAT_SINGULAR_DEFAULT[id] || (CATS[id] ? (/bag/i.test(CATS[id].label) ? CATS[id].label : CATS[id].label + ' Bag') : 'Bag');
+const catHeading = (id) => (CATS_DEFAULT[id] ? CATS_DEFAULT[id].h : (/bag|&|work/i.test(CATS[id].label) ? CATS[id].label : CATS[id].label + ' Bags'));
+// categories from the shop database replace the built-in list (names, order, which ones are shown)
+function applyCategories(rows) {
+  if (!rows || !rows.length) return;
+  Object.keys(CATS).forEach((k) => delete CATS[k]);
+  rows.forEach((c) => {
+    const base = CATS_DEFAULT[c.id], nm = noDash(c.name);
+    CATS[c.id] = base ? Object.assign({}, base, { label: nm }) : { path: '/' + c.id + '-bags', label: nm, title: 'Leather ' + nm.toLowerCase() + ' bags for women', h: nm, blurb: nm + ' leather bags for women, made in Bangladesh' };
+  });
+}
 const POLICIES = {
   shipping: { path: '/shipping-and-delivery', name: 'Shipping and delivery' },
   returns: { path: '/returns-and-exchange', name: 'Returns and exchange' },
@@ -109,18 +121,19 @@ function fromStatic() {
   }));
 }
 async function loadData() {
-  let products, settings = {}, source = 'live shop database';
+  let products, settings = {}, categories = null, source = 'live shop database';
   try {
     const rows = await sb('products?select=id,name,cat,eyebrow,badge,price,sale_price,sale_starts,sale_ends,description,dims,fits,care,updated_at,position,' +
       'product_colours(id,label,card,photos,position,product_variants(stock))&status=eq.published&order=position.asc&limit=1000');
     products = normalise(rows);
     if (!products.length) throw new Error('no products returned');
     (await sb('settings?select=key,value')).forEach((r) => { settings[r.key] = r.value; });
+    try { categories = await sb('categories?select=id,name,position&order=position.asc'); } catch (e) { categories = null; }   // table missing: the built-in five stay
   } catch (e) {
     warn('could not read the live shop database (' + e.message + '); using assets/products.js');
     products = fromStatic(); source = 'assets/products.js';
   }
-  return { products, settings, source };
+  return { products, settings, categories, source };
 }
 
 // ------------------------------------------------------------------------------------------------ link rewriting
@@ -246,14 +259,14 @@ function deliveryOf(settings) {
 function productPage(tpl, p, ctx) {
   const cat = CATS[p.cat] || { path: '/shop', label: 'Bags' };
   const col = p.colours[0], photo0 = col.photos[0] ? col.photos[0].src : col.card;
-  const title = p.name + ' | Leather ' + (CAT_SINGULAR[p.cat] || 'Bag') + ' | ELARA';
+  const title = p.name + ' | Leather ' + catSingular(p.cat) + ' | ELARA';
   const desc = clip(p.name + ': ' + p.desc, 155);
   const url = SITE + '/bags/' + p.id;
   const dl = deliveryOf(ctx.settings);
   const instock = p.stock > 0;
   const product = {
     '@context': 'https://schema.org', '@type': 'Product', '@id': url + '#product', name: p.name, sku: p.id, description: noDash(p.desc), image: col.photos.map((x) => abs(x.src)).slice(0, 6),
-    brand: { '@type': 'Brand', name: 'ELARA' }, category: (CAT_SINGULAR[p.cat] || 'Bag'), color: p.colours.map((c) => c.label).join(', '), material: 'Leather',
+    brand: { '@type': 'Brand', name: 'ELARA' }, category: catSingular(p.cat), color: p.colours.map((c) => c.label).join(', '), material: 'Leather',
     offers: {
       '@type': 'Offer', url, priceCurrency: 'BDT', price: String(p.price), availability: 'https://schema.org/' + (instock ? 'InStock' : 'OutOfStock'), itemCondition: 'https://schema.org/NewCondition',
       seller: { '@type': 'Organization', name: 'ELARA' },
@@ -358,6 +371,7 @@ function minifyHtml(html, where) {
 
   const data = await loadData();
   console.log('  catalogue: ' + data.products.length + ' bags from ' + data.source);
+  applyCategories(data.categories);
   const ctx = { products: data.products, settings: data.settings };
 
   // 1. copy the public site
@@ -403,7 +417,7 @@ function minifyHtml(html, where) {
   const listings = [
     { path: '/shop', h1: 'All Products', crumb: null, listing: {}, filter: () => true, title: 'Shop all leather bags for women | ELARA',
       desc: clip('Shop all ' + ctx.products.length + ' ELARA leather bags: totes, shoulder, crossbody, mini and travel bags. Cash on delivery across Bangladesh, free delivery over Tk. 3,000.', 158) },
-    ...Object.entries(CATS).map(([id, c]) => ({ path: c.path, h1: id === 'travel-work' ? c.h : c.label + ' Bags', crumb: c.label, listing: { category: id }, filter: (p) => p.cat === id, title: c.title + ' | ELARA',
+    ...Object.entries(CATS).map(([id, c]) => ({ path: c.path, h1: catHeading(id), crumb: c.label, listing: { category: id }, filter: (p) => p.cat === id, title: c.title + ' | ELARA',
       desc: clip(c.blurb + '. Full-grain leather, cash on delivery across Bangladesh and free delivery over Tk. 3,000.', 158) })),
     { path: '/new-arrivals', h1: 'New Arrivals', crumb: 'New Arrivals', listing: { collection: 'new' }, filter: (p) => p.badge === 'new', title: 'New arrivals: the latest leather bags | ELARA',
       desc: 'See the newest leather bags from ELARA: fresh totes, shoulder and crossbody styles designed in Bangladesh, with cash on delivery.' },

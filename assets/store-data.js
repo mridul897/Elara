@@ -70,9 +70,9 @@
     }).filter(function (p) { return p.colours.length; });
   }
 
-  var list = null, cached = null, settings = null;
+  var list = null, cached = null, settings = null, cats = null;
   try { if (!PREVIEW) cached = JSON.parse(localStorage.getItem(CACHE)); } catch (e) {}
-  if (cached && Date.now() - cached.t < TTL && cached.v && cached.v.length) { list = cached.v; settings = cached.s || null; }
+  if (cached && Date.now() - cached.t < TTL && cached.v && cached.v.length) { list = cached.v; settings = cached.s || null; cats = cached.c || null; }
   if (!list) {
     var statusFilter = TOKEN ? 'status=in.(published,draft)' : 'status=eq.published';
     var rows = fetchSync('products?select=*,product_colours(*,product_variants(size,stock))&' + statusFilter + '&order=position.asc&limit=1000');
@@ -80,8 +80,10 @@
       list = build(rows);
       var st = fetchSync('settings?select=key,value');
       if (st) { settings = {}; st.forEach(function (r) { settings[r.key] = r.value; }); }
-      try { if (!PREVIEW) localStorage.setItem(CACHE, JSON.stringify({ t: Date.now(), v: list, s: settings })); } catch (e) {}
-    } else if (cached && cached.v && cached.v.length) { list = cached.v; settings = cached.s || null; }
+      var cr = fetchSync('categories?select=id,name,eyebrow,position&order=position.asc');
+      if (cr && cr.length) cats = cr;
+      try { if (!PREVIEW) localStorage.setItem(CACHE, JSON.stringify({ t: Date.now(), v: list, s: settings, c: cats })); } catch (e) {}
+    } else if (cached && cached.v && cached.v.length) { list = cached.v; settings = cached.s || null; cats = cached.c || null; }
   }
   if (list && list.length) window.ELARA_PRODUCTS = list;
   window.ELARA_LIVE = !!(list && list.length);
@@ -89,6 +91,8 @@
   var dv = (settings && settings.delivery) || {};
   window.ELARA_DELIVERY = { dhaka: +dv.dhaka || 60, outside: +dv.outside || 120, freeOver: +dv.free_over || 3000, dhakaDays: dv.dhaka_days || '1 to 3', outsideDays: dv.outside_days || '3 to 5' };
 
+  // Categories managed in Admin > Categories (only the ones switched on for the store). Pages fall back to their built-in five.
+  window.ELARA_CATEGORIES = cats && cats.length ? cats : null;
   window.ELARA_SETTINGS = settings || {};
   window.ELARA_PREVIEW = PREVIEW;
   if (PREVIEW) {
