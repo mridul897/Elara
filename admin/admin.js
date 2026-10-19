@@ -120,7 +120,6 @@
     root.innerHTML =
       '<div class="app' + (collapsed ? ' collapsed' : '') + '" id="app">' +
       '<aside class="sidebar">' + A.brand(true) +
-      '<button class="search" type="button" id="gsearch">' + A.ic('magnifying-glass', 16) + '<span class="ph">Search…</span><span class="kbd">⌘K</span></button>' +
       '<div id="navs" class="nav-wrap">' + navHtml(opts.active, role, counts) + '</div>' +
       '<div class="spacer"></div>' +
       '<a class="nav-item" href="../my-contact-screen.html" title="Get help">' + A.ic('questionmark-circle', 18) + '<span class="lbl">Get help</span></a>' +
@@ -131,7 +130,7 @@
       '<header class="mtop"><span class="mlogo">E</span><p class="mttl">' + A.esc(opts.mtitle || (opts.crumbs && opts.crumbs[0] && opts.crumbs[0].t) || 'ELARA') + '</p><button class="mbell" id="mbell" aria-label="Notifications">' + A.ic('bell', 20) + '</button></header>' +
       '<div class="main"><header class="topbar"><div class="crumbs">' +
       (opts.crumbs || []).map(function (c, i, a) { return (c.href ? '<a href="' + c.href + '">' + A.esc(c.t) + '</a>' : '<span>' + A.esc(c.t) + '</span>') + (i < a.length - 1 ? '<span class="sep">' + A.ic('chevron-right-small', 16) + '</span>' : ''); }).join('') +
-      '</div><button class="btn icon" aria-label="Notifications" id="bell">' + A.ic('bell', 18) + '</button>' +
+      '</div><button class="search topsearch" type="button" id="gsearch" aria-label="Search orders, customers and products">' + A.ic('magnifying-glass', 16) + '<span class="ph">Search orders, customers, products…</span><span class="kbd">Ctrl K</span></button><div class="tb-gap"></div><button class="btn icon" aria-label="Notifications" id="bell">' + A.ic('bell', 18) + '</button>' +
       '<a class="btn" href="../index.html" target="_blank" rel="noopener">View store</a></header>' +
       '<main class="page" id="page"></main></div>' +
       '<nav class="mtabs" aria-label="Main">' + mobileTabs(opts.active, role, counts) + '</nav></div>';

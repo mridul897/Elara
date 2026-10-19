@@ -73,9 +73,16 @@ p, h1, h2, h3 { margin: 0; }
 
 .main { flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; overflow: hidden; }
 .topbar { height: 56px; flex: none; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; gap: 12px; padding: 0 24px; }
-.crumbs { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+.crumbs { flex: 1 1 0; min-width: 130px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
 .crumbs a { color: var(--sub); font-weight: 400; }
 .crumbs .sep { color: var(--mute); display: flex; }
+/* search lives in the top bar, centred in the gap between the page name and the date / bell */
+.topsearch { flex: 0 1 420px; min-width: 150px; width: 100%; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.topsearch:hover { border-color: #c9ccd3; }
+.topsearch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.topsearch .ph { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tb-gap { flex: 1 1 0; min-width: 0; }
+@media (max-width: 1180px) { .topsearch .kbd { display: none; } }
 .page { flex: 1; min-height: 0; overflow-y: auto; padding: 24px 32px 32px; display: flex; flex-direction: column; gap: 20px; }
 
 /* ---------- controls ---------- */
