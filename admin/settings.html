@@ -101,8 +101,6 @@ A.boot({
         '<section class="card" id="analytics"><h3>Analytics</h3><p class="note">Paste your IDs to measure visits and Facebook ads. Nothing is loaded until you add one.</p>' +
         '<div class="f"><label for="gaId">Google Analytics ID</label><input class="text" id="gaId" placeholder="G-XXXXXXXXXX" value="' + A.esc(S.analytics.ga_id || '') + '"' + (owner ? '' : ' disabled') + '></div>' +
         '<div class="f"><label for="fbId">Facebook Pixel ID</label><input class="text" id="fbId" inputmode="numeric" placeholder="1234567890123456" value="' + A.esc(S.analytics.fb_pixel || '') + '"' + (owner ? '' : ' disabled') + '></div></section>' +
-        '<section class="card"><h3>Your account</h3><div class="f"><label>Email</label><input class="text" value="' + A.esc(ctx.user.email) + '" disabled></div>' +
-        '<button class="btn block" id="chpw">Change password</button><button class="btn block" id="soAll">Sign out everywhere</button></section>' +
         (owner ? '<section class="card" style="gap:8px"><h3>Recent activity</h3><a href="activity.html" style="font-size:13px;color:var(--accent);font-weight:500">View all activity and problems</a>' + (log.length ? log.slice(0, 5).map(function (a) { return '<p class="act">' + A.esc(activityLine(a)) + '</p>'; }).join('') : '<p class="act">Nothing yet. Changes your team makes show up here.</p>') + '</section>' : '') +
         '</div></div>';
       drawTeam(); wire();
@@ -154,18 +152,6 @@ A.boot({
         });
         var pop = b.parentNode.querySelector('.pop'); if (pop) pop.classList.add('right');
       });
-      $('chpw').addEventListener('click', function () {
-        A.modal('<h3>Change password</h3><div class="f"><label for="np">New password</label><input class="text" id="np" type="password" autocomplete="new-password" placeholder="At least 8 characters"></div><p class="err-text" id="pe" hidden style="color:var(--bad);font-size:12px"></p><div class="actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="npOk">Update password</button></div>', function (o, close) {
-          o.querySelector('#npOk').addEventListener('click', async function () {
-            var v = o.querySelector('#np').value, er = o.querySelector('#pe');
-            if (v.length < 8) { er.textContent = 'Use at least 8 characters.'; er.hidden = false; return; }
-            var u = await A.sb.auth.updateUser({ password: v });
-            if (u.error) { er.textContent = u.error.message; er.hidden = false; return; }
-            close(); A.toast('Password updated');
-          });
-        });
-      });
-      $('soAll').addEventListener('click', async function () { await A.sb.auth.signOut({ scope: 'global' }); try { sessionStorage.removeItem('elara.admin.alive'); } catch (e) {} location.href = 'index.html'; });
       window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
     }
     // staff see their own account only: keep the page useful and read-only

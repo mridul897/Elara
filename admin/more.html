@@ -22,6 +22,7 @@ A.boot({
     var owner = ctx.role === 'owner';
     var rows = [];
     if (owner) rows.push(['categories.html', 'tag', 'Categories'], ['reviews.html', 'star', 'Reviews', ctx.counts.reviews || 0], ['promotions.html', 'percent', 'Promotions'], ['content.html', 'file-text', 'Content'], ['messages.html', 'mail', 'Messages', ctx.counts.messages || 0], ['settings.html', 'settings-gear1', 'Settings']);
+    rows.unshift(['profile.html', 'user', 'Profile']);
     rows.push(['../my-contact-screen.html', 'questionmark-circle', 'Get help'], ['../index.html', 'arrow-up-right', 'View store']);
     page.innerHTML = '<div class="mmore">' +
       '<div class="mcard muser"><span class="avatar">' + A.esc(A.initials(ctx.name)) + '</span><div><p class="n">' + A.esc(ctx.name) + '</p><p class="e">' + (owner ? 'Owner' : 'Staff') + ' · ' + A.esc(ctx.user.email) + '</p></div></div>' +

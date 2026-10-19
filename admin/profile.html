@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Profile · ELARA Admin</title>
+<link rel="icon" href="favicon1.png">
+<link rel="stylesheet" href="../assets/fonts/fonts.css">
+<link rel="stylesheet" href="admin.css">
+<style>
+  .pwrap { max-width: 920px; display: flex; flex-direction: column; gap: 20px; }
+  .hero { display: flex; align-items: center; gap: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); padding: 24px; }
+  .bigav { width: 76px; height: 76px; border-radius: 999px; background: var(--avatar); display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 500; flex: none; }
+  .hero .who { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .hero .nm { font-family: 'Fraunces', Georgia, serif; font-weight: 300; font-size: 32px; letter-spacing: -1.2px; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; }
+  .hero .em { font-size: 14px; color: var(--sub); overflow: hidden; text-overflow: ellipsis; }
+  .hero .actions { display: flex; gap: 8px; flex: none; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+  .pc { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .pc h3 { font-size: 15px; font-weight: 600; }
+  .pc .sub2 { font-size: 13px; color: var(--sub); margin-top: -8px; line-height: 1.4; }
+  .f { display: flex; flex-direction: column; gap: 6px; }
+  .f > label { font-size: 13px; font-weight: 500; }
+  .help { font-size: 12px; color: var(--mute); line-height: 1.4; }
+  .kv { display: flex; flex-direction: column; }
+  .kv .r { display: flex; justify-content: space-between; gap: 16px; padding: 11px 0; border-top: 1px solid var(--border); font-size: 13px; }
+  .kv .r:first-child { border-top: 0; padding-top: 0; }
+  .kv .k { color: var(--sub); } .kv .v { font-weight: 500; text-align: right; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .row-sw { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .row-sw .t { font-size: 13px; font-weight: 500; } .row-sw .d { font-size: 12px; color: var(--mute); margin-top: 2px; }
+  .tog { width: 36px; height: 20px; border-radius: 10px; border: 0; padding: 0; background: #d5d8de; position: relative; transition: background .15s; flex: none; }
+  .tog::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s; }
+  .tog[aria-checked="true"] { background: var(--accent); } .tog[aria-checked="true"]::after { left: 18px; }
+  .act { display: flex; flex-direction: column; }
+  .act .a { display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--border); font-size: 13px; }
+  .act .a:first-child { border-top: 0; padding-top: 0; }
+  .act .a .w { color: var(--mute); width: 92px; flex: none; }
+  .act .a .x { min-width: 0; }
+  .err-text { font-size: 12px; color: var(--bad); }
+  .pri { height: 36px; border: 0; border-radius: var(--r); background: var(--accent); color: #fff; font-size: 13px; font-weight: 500; padding: 0 16px; align-self: flex-start; }
+  .pri:hover { background: #2d4ec9; } .pri[disabled] { opacity: .6; }
+  @media (max-width: 899.98px) { .grid { grid-template-columns: 1fr; } .hero { flex-wrap: wrap; padding: 18px; } .hero .nm { font-size: 26px; } .hero .actions { width: 100%; } .hero .actions .btn { flex: 1; } .bigav { width: 60px; height: 60px; font-size: 21px; } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="icons.js"></script>
+<script src="admin.js"></script>
+<script>
+A.boot({
+  active: 'profile',
+  crumbs: [{ t: 'Profile' }],
+  render: async function (page, ctx) {
+    var $ = function (id) { return document.getElementById(id); };
+    var owner = ctx.role === 'owner';
+    var me = ctx.user;
+    var prof = await A.sb.from('profiles').select('full_name,role,email,created_at').eq('id', me.id).maybeSingle();
+    var P = prof.data || {};
+    var name = P.full_name || '', since = P.created_at || me.created_at;
+    var longDate = function (iso) { if (!iso) return 'Not available'; var d = new Date(iso); return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }); };
+    var keep = true; try { keep = localStorage.getItem('elara.admin.keep') !== '0'; } catch (e) {}
+
+    function describe(a) {
+      var d = a.detail || {}, n = (d.after && (d.after.name || d.after.id || d.after.code)) || a.entity_id;
+      if (a.entity === 'products' && a.action === 'update' && d.before && d.after && d.before.price !== d.after.price) return 'Changed the price of ' + n + ' (' + A.money(d.before.price) + ' to ' + A.money(d.after.price) + ')';
+      if (a.entity === 'products') return (a.action === 'insert' ? 'Added product ' : a.action === 'delete' ? 'Deleted product ' : 'Updated ') + n;
+      if (a.entity === 'orders') { var st = d.before && d.after && d.before.status !== d.after.status ? ' to ' + d.after.status : ''; return 'Updated order ' + a.entity_id + st; }
+      if (a.entity === 'promo_codes') return (a.action === 'insert' ? 'Created' : a.action === 'delete' ? 'Deleted' : 'Changed') + ' promo code ' + a.entity_id;
+      if (a.entity === 'reviews') return 'Moderated a review' + (d.after ? ' (' + d.after.status + ')' : '');
+      if (a.entity === 'settings') return 'Changed the ' + a.entity_id + ' settings';
+      return a.action.charAt(0).toUpperCase() + a.action.slice(1) + ' ' + a.entity;
+    }
+
+    page.innerHTML =
+      '<div class="page-head keep"><div class="t"><h1 class="h1">Profile</h1><p class="sub">Your account, security and recent work</p></div></div>' +
+      '<div class="pwrap">' +
+      '<section class="hero"><div class="bigav">' + A.esc(A.initials(name || me.email)) + '</div><div class="who"><span class="nm" id="heroName">' + A.esc(name || me.email) + '</span>' +
+      '<span class="em">' + A.esc(me.email) + '</span><span><span class="badge ' + (owner ? 'b-ok' : 'b-mute') + '">' + (owner ? 'Owner' : 'Staff') + '</span></span></div>' +
+      '<div class="actions"><button class="btn" id="soBtn">' + A.ic('arrow-out-of-box', 16) + 'Sign out</button></div></section>' +
+      '<div class="grid">' +
+        '<section class="pc"><h3>Your details</h3><div class="f"><label for="pname">Display name</label><input class="text" id="pname" maxlength="60" autocomplete="name" value="' + A.esc(name) + '" placeholder="Your name"><p class="help">Shown in the sidebar, on order notes and in the activity list.</p></div>' +
+        '<div class="f"><label>Email</label><input class="text" value="' + A.esc(me.email) + '" disabled><p class="help">This is your sign-in email. The shop owner changes it in Supabase.</p></div>' +
+        '<p class="err-text" id="perr" hidden></p><button class="pri" id="saveName">Save name</button></section>' +
+        '<section class="pc"><h3>Account</h3><div class="kv">' +
+          '<div class="r"><span class="k">Role</span><span class="v">' + (owner ? 'Owner: sees prices, revenue, settings and the team' : 'Staff: handles orders') + '</span></div>' +
+          '<div class="r"><span class="k">Member since</span><span class="v">' + longDate(since) + '</span></div>' +
+          '<div class="r"><span class="k">Last sign-in</span><span class="v">' + (me.last_sign_in_at ? A.when ? A.when(me.last_sign_in_at) : longDate(me.last_sign_in_at) : 'This session') + '</span></div>' +
+          '<div class="r"><span class="k">Permissions</span><span class="v">' + (owner ? 'Full access' : 'Orders only') + '</span></div></div></section>' +
+        '<section class="pc"><h3>Security</h3><p class="sub2">Keep your account safe.</p>' +
+          '<div class="row-sw"><div><div class="t">Stay signed in on this device</div><div class="d">Turn off on a shared computer. You will be signed out when the browser closes.</div></div><button class="tog" id="keepTog" role="switch" aria-checked="' + keep + '" aria-label="Stay signed in on this device"></button></div>' +
+          '<button class="btn block" id="chpw">Change password</button><button class="btn block" id="soAll">Sign out everywhere</button></section>' +
+        '<section class="pc" id="actCard"><h3>Your recent activity</h3><div class="act" id="act"><p class="help">Loading…</p></div>' + (owner ? '<a href="activity.html" style="font-size:13px;color:var(--accent);font-weight:500">View all activity and problems</a>' : '') + '</section>' +
+      '</div></div>';
+
+    // name
+    $('saveName').addEventListener('click', async function () {
+      var v = $('pname').value.trim(), er = $('perr'), btn = $('saveName'); er.hidden = true;
+      if (v.length < 2) { er.textContent = 'Use at least 2 characters.'; er.hidden = false; return; }
+      btn.disabled = true; btn.textContent = 'Saving…';
+      var r = await A.sb.rpc('update_my_profile', { p_name: v });
+      if (r.error && owner && /update_my_profile|PGRST202|function/i.test((r.error.message || '') + (r.error.code || ''))) {
+        var u = await A.sb.from('profiles').update({ full_name: v }).eq('id', me.id).select('id').maybeSingle();    // owners may edit profiles directly
+        r = u.error || !u.data ? { error: u.error || { message: 'not allowed' } } : { data: { ok: true } };
+      }
+      btn.disabled = false; btn.textContent = 'Save name';
+      if (r.error || !r.data || r.data.ok === false) {
+        er.textContent = r.data && r.data.error ? r.data.error : (r.error && /update_my_profile|PGRST202|function/i.test((r.error.message || '') + (r.error.code || '')) ? 'One setup step first: run supabase/14-profile.sql in the Supabase SQL Editor.' : 'Could not save: ' + ((r.error && r.error.message) || 'try again'));
+        er.hidden = false; return;
+      }
+      $('heroName').textContent = v; A.toast('Name saved. It updates in the sidebar on the next page.');
+    });
+    // stay signed in
+    $('keepTog').addEventListener('click', function () {
+      keep = !keep; this.setAttribute('aria-checked', String(keep));
+      try { localStorage.setItem('elara.admin.keep', keep ? '1' : '0'); if (!keep) sessionStorage.setItem('elara.admin.alive', '1'); } catch (e) {}
+      A.toast(keep ? 'You will stay signed in on this device.' : 'You will be signed out when this browser closes.');
+    });
+    // password + sign out
+    $('chpw').addEventListener('click', function () {
+      A.modal('<h3>Change password</h3><div class="f"><label for="np">New password</label><input class="text" id="np" type="password" autocomplete="new-password" placeholder="At least 8 characters"></div><p class="err-text" id="pe" hidden></p><div class="actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="npOk">Update password</button></div>', function (o, close) {
+        o.querySelector('#npOk').addEventListener('click', async function () {
+          var v = o.querySelector('#np').value, er = o.querySelector('#pe');
+          if (v.length < 8) { er.textContent = 'Use at least 8 characters.'; er.hidden = false; return; }
+          var u = await A.sb.auth.updateUser({ password: v });
+          if (u.error) { er.textContent = u.error.message; er.hidden = false; return; }
+          close(); A.toast('Password updated');
+        });
+      });
+    });
+    $('soBtn').addEventListener('click', A.signOut);
+    $('soAll').addEventListener('click', async function () { await A.sb.auth.signOut({ scope: 'global' }); try { sessionStorage.removeItem('elara.admin.alive'); } catch (e) {} location.href = 'index.html'; });
+
+    // recent activity by this person (staff cannot read the log: the card then says so)
+    var lg = await A.sb.from('activity_log').select('*').eq('actor', me.id).order('at', { ascending: false }).limit(8);
+    if (lg.error) $('act').innerHTML = '<p class="help">Activity is only listed for owners.</p>';
+    else if (!(lg.data || []).length) $('act').innerHTML = '<p class="help">Nothing yet. Changes you make to orders, products and settings will show up here.</p>';
+    else $('act').innerHTML = lg.data.map(function (a) { return '<div class="a"><span class="w">' + A.esc(A.when ? A.when(a.at) : a.at) + '</span><span class="x">' + A.esc(describe(a)) + '</span></div>'; }).join('');
+  }
+});
+</script>
+</body>
+</html>

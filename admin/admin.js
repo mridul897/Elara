@@ -57,7 +57,7 @@
     ['Catalog', [['products', 'Products', 'package'], ['categories', 'Categories', 'tag'], ['reviews', 'Reviews', 'star']]],
     ['Store', [['content', 'Content', 'file-text'], ['messages', 'Messages', 'mail'], ['settings', 'Settings', 'settings-gear1']]]
   ];
-  var BUILT = { orders: 1, products: 1, dashboard: 1, promotions: 1, customers: 1, reviews: 1, content: 1, settings: 1, more: 1, messages: 1, activity: 1, categories: 1 };   // pages that exist so far
+  var BUILT = { orders: 1, products: 1, dashboard: 1, promotions: 1, customers: 1, reviews: 1, content: 1, settings: 1, more: 1, messages: 1, activity: 1, categories: 1, profile: 1 };   // pages that exist so far
 
   A.brand = function (withCollapse) {
     return '<div class="brand"><img class="fav" src="favicon1.png" alt="">' +
@@ -111,7 +111,7 @@
     var role = pr.data && pr.data.role;
     var who = (pr.data && pr.data.full_name) || s.user.email;
     if (role !== 'owner' && role !== 'staff') { await A.sb.auth.signOut(); location.replace('index.html?denied=1'); return; }
-    if (role === 'staff' && opts.active !== 'orders') { location.replace('orders.html'); return; }
+    if (role === 'staff' && opts.active !== 'orders' && opts.active !== 'profile') { location.replace('orders.html'); return; }
 
     var counts = {};
     var collapsed = false; try { collapsed = localStorage.getItem('elara.admin.collapsed') === '1'; } catch (e) {}
@@ -122,8 +122,9 @@
       '<aside class="sidebar">' + A.brand(true) +
       '<div id="navs" class="nav-wrap">' + navHtml(opts.active, role, counts) + '</div>' +
       '<div class="spacer"></div>' +
+      '<a class="nav-item' + (opts.active === 'profile' ? ' on' : '') + '" href="profile.html" title="Profile" data-nav="profile">' + A.ic('user', 18) + '<span class="lbl">Profile</span></a>' +
       '<a class="nav-item" href="../my-contact-screen.html" title="Get help">' + A.ic('questionmark-circle', 18) + '<span class="lbl">Get help</span></a>' +
-      '<div class="user pop-wrap"><div class="avatar">' + A.esc(initials) + '</div><div class="t"><p class="n">' + A.esc(who) + '</p><p class="e">' + A.esc(s.user.email) + '</p></div>' +
+      '<div class="user pop-wrap"><a class="avatar" href="profile.html" title="Your profile" style="text-decoration:none;color:inherit">' + A.esc(initials) + '</a><a class="t" href="profile.html" title="Your profile" style="text-decoration:none;color:inherit"><p class="n">' + A.esc(who) + '</p><p class="e">' + A.esc(s.user.email) + '</p></a>' +
       '<button class="more" id="userMore" aria-label="Account menu">' + A.ic('dot-grid1x3-horizontal', 18) + '</button>' +
       '<div class="pop" id="userPop" hidden style="top:auto;bottom:calc(100% + 6px);left:0;min-width:200px"><button id="signOut">Sign out</button></div></div>' +
       '</aside>' +

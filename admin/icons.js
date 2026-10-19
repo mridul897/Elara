@@ -148,3 +148,6 @@ window.ADMIN_ICONS = {
 
 /* tag: added for Categories (same style as the Central Icons set) */
 window.ADMIN_ICONS.tag = { "vb": "0 0 18 18", "p": "<path d=\"M9.1 2.7H14.3V7.9L8.3 13.9C7.9 14.3 7.3 14.3 6.9 13.9L3.1 10.1C2.7 9.7 2.7 9.1 3.1 8.7L9.1 2.7Z\" stroke=\"currentColor\" stroke-width=\"1.125\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <circle cx=\"11.7\" cy=\"5.3\" r=\".8\" fill=\"currentColor\"/>" };
+
+/* user: single person, for Profile */
+window.ADMIN_ICONS.user = { "vb": "0 0 18 18", "p": "<circle cx=\"9\" cy=\"6.1\" r=\"2.9\" stroke=\"currentColor\" stroke-width=\"1.125\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/> <path d=\"M3.4 14.7C3.9 12.1 6.1 10.5 9 10.5C11.9 10.5 14.1 12.1 14.6 14.7\" stroke=\"currentColor\" stroke-width=\"1.125\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>" };

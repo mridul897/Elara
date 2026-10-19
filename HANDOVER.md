@@ -23,6 +23,7 @@ Accounts to keep safe: GitHub, Vercel, Supabase, the owner login (email + passwo
 - **Reviews**: approve or hide customer reviews. Only approved ones show on the store.
 - **Messages**: contact-form messages and the list of emails collected by the newsletter, welcome popup and "notify me".
 - **Content**: announcement bar, home hero, new arrivals, policy pages, contact details. Press **Publish changes**.
+- **Profile** (bottom of the sidebar, or tap your name): your name, role, sign-in details, "stay signed in", change password, sign out everywhere and your recent activity. Owners and staff each see their own. Changing your name needs `supabase/14-profile.sql` run once.
 - **Settings**: payment methods on/off, team, low-stock level, analytics IDs, password.
 - **Preview on store** (product page) shows what is saved, including drafts, before customers see it.
 - **Ctrl + K** searches orders, customers and products. The bell lists what needs attention.
@@ -36,7 +37,7 @@ Accounts to keep safe: GitHub, Vercel, Supabase, the owner login (email + passwo
 
 ## The SQL files (supabase/), run in this order, once each
 
-`01-schema` → `02-seed-1..4` → `03-storage` → `04-first-owner` (put your email in) → `05-orders-admin` → `06-track-address` → `07-promo-start` → `08-team-reviews` → `11-launch-ready` → `12-clean-dashes` → `13-categories`.
+`01-schema` → `02-seed-1..4` → `03-storage` → `04-first-owner` (put your email in) → `05-orders-admin` → `06-track-address` → `07-promo-start` → `08-team-reviews` → `11-launch-ready` → `12-clean-dashes` → `13-categories` → `14-profile`.
 Optional: `09-demo-data-1..3` (sample orders), `10-demo-clear` (removes them).
 Run them in Supabase → SQL Editor. They are safe to run again.
 
